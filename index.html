@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters: Ultimate</title>
+    <title>Chess Masters: Elemental Wars</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,10 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        body { background-color: #18191a; color: #e4e6eb; font-family: 'Roboto', sans-serif; }
-        .app-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        body { background-color: #18191a; color: #e4e6eb; font-family: 'Roboto', sans-serif; overflow-x: hidden; }
+        .app-container { max-width: 1200px; margin: 0 auto; padding: 20px; position: relative; z-index: 10; }
         
-        /* Cards & Buttons */
         .card-dark { background-color: #242526; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); margin-bottom: 20px; border: 1px solid #333; }
         .btn-primary-custom { background-color: #2D88FF; color: white; font-weight: bold; border: none; }
         .btn-primary-custom:hover { background-color: #1A73E8; color: white; }
@@ -22,56 +21,69 @@
         .hidden { display: none !important; }
         .id-badge { background: #3a3b3c; color: #b0b3b8; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 5px; }
 
-        /* Board */
-        #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; user-select: none; position: relative; }
+        #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; user-select: none; position: relative; z-index: 20; }
         .board-wrapper { position: relative; max-width: 550px; margin: 0 auto; }
         
         /* Overlays */
         #queue-overlay, #end-screen-overlay, .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 2000;
+            background: rgba(0,0,0,0.9); z-index: 3000;
             display: flex; justify-content: center; align-items: center; flex-direction: column;
         }
-        .modal-content-custom { background: #242526; width: 500px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; position: relative; max-height: 90vh; overflow-y: auto; text-align: center; }
+        .modal-content-custom { background: #242526; width: 500px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; position: relative; max-height: 90vh; overflow-y: auto; z-index: 3001; }
 
-        /* Notifications */
+        /* UI Elements */
         .notification-bell { position: relative; cursor: pointer; font-size: 1.2rem; margin-right: 15px; }
         .notification-badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; justify-content: center; align-items: center; }
         .notif-item { background: #3a3b3c; padding: 10px; border-radius: 5px; margin-bottom: 5px; font-size: 0.9em; text-align: left; }
-        
-        /* Friends */
-        .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; cursor: pointer; text-align: left; }
+        .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; cursor: pointer; }
         .friend-item:hover { background: #3a3b3c; }
         .best-friend { color: #f1c40f; text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); } 
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .status-online { background-color: #2ecc71; box-shadow: 0 0 5px #2ecc71; }
-        .status-ingame { background-color: #e74c3c; }
-        .status-offline { background-color: #7f8c8d; }
-
-        /* Game UI */
-        .win-title { color: #2ecc71; font-size: 3rem; font-weight: 900; }
-        .lose-title { color: #e74c3c; font-size: 3rem; font-weight: 900; }
-        .highlight-dot { background-color: rgba(45, 136, 255, 0.8); width: 25%; height: 25%; border-radius: 50%; position: absolute; top: 37.5%; left: 37.5%; pointer-events: none; }
+        
+        /* Click System */
+        .highlight-dot { background-color: rgba(45, 136, 255, 0.8); width: 25%; height: 25%; border-radius: 50%; position: absolute; top: 37.5%; left: 37.5%; pointer-events: none; z-index: 50; }
         .highlight-square { box-shadow: inset 0 0 3px 3px rgba(255, 255, 0, 0.5); }
         .square-55d63 { cursor: pointer; }
 
         /* Shop */
         .coin-display { background: #f1c40f; color: #000; padding: 5px 12px; border-radius: 20px; font-weight: bold; margin-right: 15px; box-shadow: 0 0 10px rgba(241, 196, 15, 0.5); cursor: pointer; }
-        .skin-card { background: #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; border: 2px solid transparent; transition: 0.2s; }
+        .skin-card { background: #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: center; border: 2px solid transparent; transition: 0.2s; }
         .skin-card:hover { transform: translateY(-2px); }
         .skin-card.owned { border-color: #2ecc71; }
         .skin-card.active { border-color: #2D88FF; box-shadow: 0 0 15px rgba(45, 136, 255, 0.4); }
         .skin-preview { width: 30px; height: 30px; display: inline-block; margin: 2px; border-radius: 4px; }
         
-        /* Kill FX */
+        /* KILL ANIMATIONS */
         .kill-effect {
             position: absolute; width: 100%; height: 100%; top: 0; left: 0;
             display: flex; justify-content: center; align-items: center;
-            font-size: 4rem; pointer-events: none; z-index: 9999;
-            animation: pop-fade 1.2s forwards; text-shadow: 0 0 20px black; font-weight: bold;
+            font-size: 4rem; pointer-events: none; z-index: 100;
+            animation: pop-fade 1s forwards; text-shadow: 0 0 20px black; font-weight: bold;
         }
         @keyframes pop-fade { 0% { transform: scale(0.5); opacity: 0; } 20% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
         
+        /* WIN EFFECTS (Backgrounds) */
+        #win-effect-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2500; pointer-events: none; display: none; }
+        
+        /* Fire Win */
+        .win-fire { background: radial-gradient(circle, rgba(255,50,0,0.2) 0%, transparent 70%); animation: flicker 0.5s infinite; }
+        @keyframes flicker { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
+        
+        /* Water Win */
+        .win-water { background: linear-gradient(180deg, rgba(0,0,255,0.1), rgba(0,255,255,0.1)); animation: flow 2s infinite linear; }
+        @keyframes flow { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
+
+        /* Forest Win */
+        .win-forest { background-color: rgba(0, 100, 0, 0.2); }
+        
+        /* Gold Win */
+        .win-gold { background-color: rgba(255, 215, 0, 0.1); animation: sparkle 1s infinite; }
+        @keyframes sparkle { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        /* Dark Win */
+        .win-dark { background-color: rgba(0,0,0,0.7); box-shadow: inset 0 0 100px black; }
+
+        .win-title { font-size: 4rem; font-weight: 900; text-shadow: 0 0 20px black; }
         .pulse { animation: pulse-animation 2s infinite; }
         @keyframes pulse-animation { 0% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.7; } }
     </style>
@@ -79,6 +91,8 @@
 <body>
 
     <style id="dynamic-skin-styles"></style>
+
+    <div id="win-effect-layer"></div>
 
     <div id="shop-modal" class="modal-overlay hidden">
         <div class="modal-content-custom">
@@ -112,28 +126,19 @@
         <div class="modal-content-custom">
             <div style="width:80px;height:80px;background:#2D88FF;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:2rem;"><i class="fas fa-user"></i></div>
             <h3 id="profile-name">User</h3><p class="text-muted" id="profile-id">#0</p>
-            <div class="d-flex justify-content-center gap-3">
-                <div><h4 id="profile-wins" class="text-warning m-0">0</h4><small>Wins</small></div>
-                <div><h4 id="profile-status" class="text-success m-0">Online</h4><small>Status</small></div>
-            </div>
-            <hr>
-            <div id="profile-actions" class="d-grid gap-2"></div>
+            <div class="d-flex justify-content-center gap-3"><div><h4 id="profile-wins" class="text-warning m-0">0</h4><small>Wins</small></div><div><h4 id="profile-status" class="text-success m-0">Online</h4><small>Status</small></div></div><hr><div id="profile-actions" class="d-grid gap-2"></div>
             <button onclick="closeModal('profile-modal')" class="btn btn-outline-secondary mt-3 w-100">Schließen</button>
         </div>
     </div>
 
     <div id="private-menu-modal" class="modal-overlay hidden">
-        <div class="modal-content-custom">
-            <h3>Privates Spiel</h3>
-            <div class="d-grid gap-3 mt-4"><button onclick="openPrivateCreate()" class="btn btn-primary btn-lg">Erstellen</button><button onclick="openPrivateJoin()" class="btn btn-outline-light btn-lg">Beitreten</button></div>
-            <button onclick="closeModal('private-menu-modal')" class="btn btn-link mt-3">Abbrechen</button>
-        </div>
+        <div class="modal-content-custom"><h3>Privat</h3><div class="d-grid gap-3 mt-4"><button onclick="openPrivateCreate()" class="btn btn-primary btn-lg">Erstellen</button><button onclick="openPrivateJoin()" class="btn btn-outline-light btn-lg">Beitreten</button></div><button onclick="closeModal('private-menu-modal')" class="btn btn-link mt-3">Abbrechen</button></div>
     </div>
     <div id="private-create-modal" class="modal-overlay hidden">
-        <div class="modal-content-custom"><h4>Warte auf Spieler...</h4><div id="host-code-display" class="fw-bold fs-1 bg-dark p-2 rounded mb-3 text-success">...</div><div class="spinner-border spinner-border-sm text-warning"></div><br><button onclick="cancelPrivateHost()" class="btn btn-danger w-100 mt-3">Abbrechen</button></div>
+        <div class="modal-content-custom"><h4>Warte...</h4><div id="host-code-display" class="fw-bold fs-1 bg-dark p-2 rounded mb-3 text-success">...</div><div class="spinner-border spinner-border-sm text-warning"></div><br><button onclick="cancelPrivateHost()" class="btn btn-danger w-100 mt-3">Abbrechen</button></div>
     </div>
     <div id="private-join-modal" class="modal-overlay hidden">
-        <div class="modal-content-custom"><h4>Code eingeben</h4><input id="private-join-input" class="form-control text-center mb-3 fs-4" style="text-transform:uppercase"><button onclick="submitPrivateJoin()" class="btn btn-success w-100">Beitreten</button><button onclick="closeModal('private-join-modal')" class="btn btn-secondary w-100 mt-2">Abbrechen</button></div>
+        <div class="modal-content-custom"><h4>Code</h4><input id="private-join-input" class="form-control text-center mb-3 fs-4" style="text-transform:uppercase"><button onclick="submitPrivateJoin()" class="btn btn-success w-100">Beitreten</button><button onclick="closeModal('private-join-modal')" class="btn btn-secondary w-100 mt-2">Abbrechen</button></div>
     </div>
 
     <div id="end-screen-overlay" class="hidden">
@@ -143,9 +148,7 @@
     </div>
 
     <div id="settings-modal" class="modal-overlay hidden">
-        <div class="modal-content-custom">
-            <h4>Einstellungen</h4><input type="text" id="settings-username" class="form-control mb-3" placeholder="Neuer Name"><input type="password" id="settings-password" class="form-control mb-3" placeholder="Neues Passwort"><div class="d-flex justify-content-end gap-2"><button onclick="closeModal('settings-modal')" class="btn btn-secondary">Abbrechen</button><button onclick="saveSettings()" class="btn btn-success">Speichern</button></div>
-        </div>
+        <div class="modal-content-custom"><h4>Einstellungen</h4><input type="text" id="settings-username" class="form-control mb-3" placeholder="Neuer Name"><input type="password" id="settings-password" class="form-control mb-3" placeholder="Neues Passwort"><div class="d-flex justify-content-end gap-2"><button onclick="closeModal('settings-modal')" class="btn btn-secondary">Abbrechen</button><button onclick="saveSettings()" class="btn btn-success">Speichern</button></div></div>
     </div>
 
     <div class="app-container">
@@ -162,12 +165,7 @@
 
         <div id="auth-screen">
             <div class="card-dark text-center" style="max-width: 400px; margin: 50px auto;">
-                <h3>Login</h3>
-                <input id="email-input" class="form-control mb-2" placeholder="E-Mail">
-                <input id="password-input" type="password" class="form-control mb-3" placeholder="Passwort">
-                <input id="username-input" class="form-control mb-3" placeholder="Username (Registrierung)">
-                <button onclick="loginUser()" class="btn btn-primary-custom w-100 mb-2">Login</button>
-                <button onclick="registerUserWithId()" class="btn btn-outline-light w-100">Konto erstellen</button>
+                <h3>Login</h3><input id="email-input" class="form-control mb-2" placeholder="E-Mail"><input id="password-input" type="password" class="form-control mb-3" placeholder="Passwort"><input id="username-input" class="form-control mb-3" placeholder="Username (Registrierung)"><button onclick="loginUser()" class="btn btn-primary-custom w-100 mb-2">Login</button><button onclick="registerUserWithId()" class="btn btn-outline-light w-100">Konto erstellen</button>
             </div>
         </div>
 
@@ -177,19 +175,12 @@
                     <div class="card-dark text-center" style="padding: 40px 20px; min-height: 400px;">
                         <h2 class="fw-bold mb-4">Bereit?</h2>
                         <button onclick="joinRankedQueue()" class="btn btn-primary-custom btn-lg w-100 p-4 mb-3"><i class="fas fa-globe"></i> RANKED MATCH</button>
-                        <div class="row g-2 mb-3">
-                            <div class="col-6"><button onclick="startBotGame()" class="btn btn-warning w-100 p-3 fw-bold"><i class="fas fa-robot"></i> VS BOT</button></div>
-                            <div class="col-6"><button onclick="showPrivateMenu()" class="btn btn-info w-100 p-3 fw-bold"><i class="fas fa-user-secret"></i> PRIVAT</button></div>
-                        </div>
+                        <div class="row g-2 mb-3"><div class="col-6"><button onclick="startBotGame()" class="btn btn-warning w-100 p-3 fw-bold"><i class="fas fa-robot"></i> VS BOT</button></div><div class="col-6"><button onclick="showPrivateMenu()" class="btn btn-info w-100 p-3 fw-bold"><i class="fas fa-user-secret"></i> PRIVAT</button></div></div>
                         <button onclick="openShop()" class="btn btn-outline-warning w-100"><i class="fas fa-store"></i> SKIN SHOP</button>
                     </div>
                 </div>
                 <div class="col-md-5">
-                    <div class="card-dark">
-                        <h5>Freunde</h5>
-                        <div class="input-group mb-3"><input type="number" id="friend-id-input" class="form-control" placeholder="ID"><button onclick="sendFriendRequest()" class="btn btn-outline-info">Add</button></div>
-                        <div id="friends-list" style="max-height: 300px; overflow-y: auto;"></div>
-                    </div>
+                    <div class="card-dark"><h5>Freunde</h5><div class="input-group mb-3"><input type="number" id="friend-id-input" class="form-control" placeholder="ID"><button onclick="sendFriendRequest()" class="btn btn-outline-info">Add</button></div><div id="friends-list" style="max-height: 300px; overflow-y: auto;"></div></div>
                 </div>
             </div>
         </div>
@@ -228,14 +219,14 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // --- SKINS ---
+        // --- SKINS & WIN EFFECTS ---
         const SKINS = {
-            'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', anim: '' },
-            'water': { name: 'Atlantis', price: 50, colorW: '#a8d0e6', colorB: '#374785', filter: 'hue-rotate(180deg) brightness(1.2) contrast(1.2)', anim: '🌊' },
-            'fire': { name: 'Inferno', price: 100, colorW: '#f6c7b6', colorB: '#a31621', filter: 'sepia(1) saturate(5) hue-rotate(-50deg)', anim: '💥' },
-            'forest': { name: 'Smaragd', price: 200, colorW: '#c8e6c9', colorB: '#2e7d32', filter: 'sepia(1) hue-rotate(80deg) saturate(2)', anim: '🍃' },
-            'dark': { name: 'Shadow', price: 500, colorW: '#95a5a6', colorB: '#2c3e50', filter: 'grayscale(100%) contrast(1.5)', anim: '💀' },
-            'gold': { name: 'Midas', price: 1000, colorW: '#f9e79f', colorB: '#b7950b', filter: 'sepia(1) saturate(3) hue-rotate(10deg)', anim: '✨' }
+            'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', anim: '', winClass: '' },
+            'water': { name: 'Atlantis', price: 50, colorW: '#a8d0e6', colorB: '#374785', filter: 'hue-rotate(180deg) brightness(1.2)', anim: '🌊', winClass: 'win-water' },
+            'fire': { name: 'Inferno', price: 100, colorW: '#f6c7b6', colorB: '#a31621', filter: 'sepia(1) saturate(5) hue-rotate(-50deg)', anim: '💥', winClass: 'win-fire' },
+            'forest': { name: 'Smaragd', price: 200, colorW: '#c8e6c9', colorB: '#2e7d32', filter: 'sepia(1) hue-rotate(80deg)', anim: '🍃', winClass: 'win-forest' },
+            'dark': { name: 'Shadow', price: 500, colorW: '#95a5a6', colorB: '#2c3e50', filter: 'grayscale(100%) contrast(1.5)', anim: '💀', winClass: 'win-dark' },
+            'gold': { name: 'Midas', price: 1000, colorW: '#f9e79f', colorB: '#b7950b', filter: 'sepia(1) saturate(3) hue-rotate(10deg)', anim: '✨', winClass: 'win-gold' }
         };
 
         let currentUser = null, userData = null;
@@ -254,10 +245,8 @@
                         if(!userData.coins) userData.coins = 0;
                         if(!userData.inventory) userData.inventory = ['default'];
                         if(!userData.equippedSkin) userData.equippedSkin = 'default';
-                        updateHeader();
-                        loadFriends();
-                        listenNotifications();
-                        if(!$('#shop-modal').hasClass('hidden')) renderShopUI(); // Live Update Shop
+                        updateHeader(); loadFriends(); listenNotifications();
+                        if(!$('#shop-modal').hasClass('hidden')) renderShopUI();
                         if(userData.activeGameId && $('#game-screen').hasClass('hidden')) {
                             db.collection('games').doc(userData.activeGameId).get().then(g => {
                                 if(g.exists && g.data().status !== 'finished' && g.data().status !== 'aborted') loadOnlineGame(userData.activeGameId);
@@ -270,12 +259,7 @@
             } else showScreen('auth-screen');
         });
 
-        function updateHeader() {
-            $('#nav-username').text(userData.username);
-            $('#nav-userid').text(`#${userData.displayId}`);
-            $('#nav-coins').text(userData.coins);
-            $('#nav-user-area').removeClass('hidden');
-        }
+        function updateHeader() { $('#nav-username').text(userData.username); $('#nav-userid').text(`#${userData.displayId}`); $('#nav-coins').text(userData.coins); $('#nav-user-area').removeClass('hidden'); }
 
         // --- SHOP ---
         function openShop() { renderShopUI(); $('#shop-modal').removeClass('hidden'); }
@@ -285,9 +269,7 @@
             for (const [key, skin] of Object.entries(SKINS)) {
                 const owned = userData.inventory.includes(key);
                 const active = userData.equippedSkin === key;
-                let btnHtml = active ? `<button class="btn btn-sm btn-success disabled w-100">Aktiv</button>` :
-                              owned ? `<button onclick="equipSkin('${key}')" class="btn btn-sm btn-outline-primary w-100">Wählen</button>` :
-                              `<button onclick="buySkin('${key}')" class="btn btn-sm btn-warning w-100">${skin.price} <i class="fas fa-coins"></i></button>`;
+                let btnHtml = active ? `<button class="btn btn-sm btn-success disabled w-100">Aktiv</button>` : owned ? `<button onclick="equipSkin('${key}')" class="btn btn-sm btn-outline-primary w-100">Wählen</button>` : `<button onclick="buySkin('${key}')" class="btn btn-sm btn-warning w-100">${skin.price} <i class="fas fa-coins"></i></button>`;
                 list.append(`<div class="col-6 col-md-4"><div class="skin-card ${owned?'owned':''} ${active?'active':''}"><h5>${skin.name} ${skin.anim}</h5><div class="d-flex justify-content-center mb-2"><div class="skin-preview" style="background:${skin.colorW}"></div><div class="skin-preview" style="background:${skin.colorB}"></div></div>${btnHtml}</div></div>`);
             }
         }
@@ -306,11 +288,13 @@
             css += `img[src*="/b"] { filter: ${sB.filter} !important; transition: all 0.3s; } `;
             document.getElementById('dynamic-skin-styles').innerHTML = css;
         }
+        
         function triggerKillAnim(sq, skinKey) {
             const anim = (SKINS[skinKey] || SKINS['default']).anim;
             if(!anim) return;
-            $(`.square-${sq}`).append(`<div class="kill-effect">${anim}</div>`);
-            setTimeout(() => $('.kill-effect').remove(), 1200);
+            const el = $(`<div class="kill-effect">${anim}</div>`);
+            $(`.square-${sq}`).append(el);
+            setTimeout(() => el.remove(), 1200);
         }
 
         // --- GAME LOGIC ---
@@ -338,8 +322,8 @@
                 if(data.fen && data.fen !== game.fen()) {
                     const temp = new Chess(game.fen());
                     const m = temp.move(data.lastMoveSan);
+                    // Kill Animation: Always check based on who MOVED
                     if(m && (m.flags.includes('c')||m.flags.includes('e'))) {
-                        // Anim: Wer hat geschlagen? Der Skin des Spielers, der zog.
                         const attSkin = (m.color==='w') ? currentWhiteSkin : currentBlackSkin;
                         triggerKillAnim(m.to, attSkin);
                     }
@@ -347,11 +331,10 @@
                     if(data.lastMoveSan) addLog(data.lastMoveSan);
                 }
                 if(data.status === 'aborted') showEndScreen('aborted');
-                if(data.result) showEndScreen(data.result);
+                if(data.result) showEndScreen(data.result, data.result === 'w' ? currentWhiteSkin : currentBlackSkin);
             });
         }
 
-        // --- CLICK & MOVE ---
         function handleSquareClick() {
             if(game.game_over() || (gameMode==='online' && game.turn()!==myColor)) return;
             const sq = $(this).attr('data-square');
@@ -359,6 +342,7 @@
                 const move = game.move({from:selectedSquare, to:sq, promotion:'q'});
                 if(move) {
                     selectedSquare = null; removeHighlights();
+                    // Instant Local Feedback
                     if(move.captured) {
                         const mySkin = (myColor==='w') ? currentWhiteSkin : currentBlackSkin;
                         triggerKillAnim(move.to, mySkin);
@@ -372,84 +356,82 @@
                 }
             } else { if(game.get(sq) && game.get(sq).color === (gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); } }
         }
+
         function updateGameOnline(move) {
             let res = null;
             if(game.game_over()) {
-                if(game.in_checkmate()) { res = game.turn()==='w'?'b':'w'; if(res===myColor) db.collection('users').doc(currentUser.uid).update({wins: firebase.firestore.FieldValue.increment(1), coins: firebase.firestore.FieldValue.increment(50)}); } 
-                else res = 'draw';
+                if(game.in_checkmate()) { 
+                    res = game.turn()==='w'?'b':'w'; 
+                    if(res === myColor) db.collection('users').doc(currentUser.uid).update({wins: firebase.firestore.FieldValue.increment(1), coins: firebase.firestore.FieldValue.increment(50)});
+                } else res = 'draw';
             }
-            db.collection('games').doc(currentGameId).update({fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: res}); board.position(game.fen()); addLog(move.san);
+            db.collection('games').doc(currentGameId).update({fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: res});
+            board.position(game.fen()); addLog(move.san);
         }
 
-        // --- QUEUE ---
-        function joinRankedQueue() {
-            $('#queue-overlay').removeClass('hidden'); queueTime=0; if(queueInterval)clearInterval(queueInterval); queueInterval=setInterval(()=>{queueTime++;$('#queue-timer').text(`Zeit: ${queueTime}s`);checkMatchmaking();},2000);
-            db.collection('queue').doc(currentUser.uid).set({uid:currentUser.uid,username:userData.username,displayId:userData.displayId,joinedAt:firebase.firestore.FieldValue.serverTimestamp(),gameId:null,skin:userData.equippedSkin});
-            if(queueListener)queueListener(); queueListener=db.collection('queue').doc(currentUser.uid).onSnapshot(d=>{if(d.exists&&d.data().gameId){leaveQueue(false);db.collection('queue').doc(currentUser.uid).delete();db.collection('users').doc(currentUser.uid).update({activeGameId:d.data().gameId});loadOnlineGame(d.data().gameId);}});
-        }
-        async function checkMatchmaking(){
-            const s=await db.collection('queue').orderBy('joinedAt','asc').limit(2).get();
-            if(s.size>=2){
-                const p1=s.docs[0].data(), p2=s.docs[1].data();
-                if(p1.uid===currentUser.uid){
-                    const g=db.collection('games').doc();
-                    await g.set({white:p1.uid, whiteName:p1.username, whiteId:p1.displayId, whiteSkin:p1.skin, black:p2.uid, blackName:p2.username, blackId:p2.displayId, blackSkin:p2.skin, fen:'start', turn:'w', status:'active', createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-                    const b=db.batch(); b.update(db.collection('queue').doc(p1.uid),{gameId:g.id}); b.update(db.collection('queue').doc(p2.uid),{gameId:g.id}); await b.commit();
+        // --- END SCREEN WITH WIN EFFECTS ---
+        function showEndScreen(res, winnerSkinKey) {
+            $('#end-screen-overlay').removeClass('hidden');
+            // Remove old effects
+            $('#win-effect-layer').removeClass().hide();
+            
+            let txt="SIEG!", c="text-success", r="";
+            if(res==='aborted'){txt="GEGNER WEG";c="text-danger";}
+            else if(res==='draw'){txt="REMIS";c="text-warning";}
+            else if(res!==myColor && myColor!=='spectator'){txt="VERLOREN";c="text-danger";}
+            else { 
+                r="+50 Coins!"; 
+                // Apply WIN EFFECT
+                if(winnerSkinKey) {
+                    const effectClass = (SKINS[winnerSkinKey] || SKINS['default']).winClass;
+                    if(effectClass) {
+                        $('#win-effect-layer').addClass(effectClass).show();
+                    }
                 }
             }
+            $('#end-title').text(txt).removeClass().addClass('win-title '+c); 
+            $('#end-reward').text(r);
+            db.collection('users').doc(currentUser.uid).update({activeGameId: null});
         }
-        function leaveQueue(d=true){ $('#queue-overlay').addClass('hidden'); if(queueInterval)clearInterval(queueInterval); if(queueListener)queueListener(); if(d)db.collection('queue').doc(currentUser.uid).delete(); }
 
-        // --- FRIENDS & ONLINE CHECK ---
-        async function loadFriends() {
-            const list = $('#friends-list');
-            if(!userData.friends || userData.friends.length === 0) { list.html('<div class="text-center small mt-3">Keine Freunde</div>'); return; }
-            const d = await Promise.all(userData.friends.map(u => db.collection('users').doc(u).get()));
-            list.empty();
-            const now = Date.now();
-            d.forEach(o => {
-                if(!o.exists) return; const f=o.data();
-                // Auto-fix bidirectional
-                if(!f.friends || !f.friends.includes(currentUser.uid)) db.collection('users').doc(o.id).update({friends: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)});
-                
-                // Status Logic: 1. Active Game? -> RED. 2. Last seen < 2min? -> GREEN. 3. -> GREY.
-                let statusClass = 'status-offline';
-                if(f.activeGameId) statusClass = 'status-ingame';
-                else if(f.lastSeen && (now - f.lastSeen.toMillis() < 120000)) statusClass = 'status-online';
-
-                const isBest = (userData.bestFriends && userData.bestFriends.includes(o.id));
-                const el = $(`<div class="friend-item" onclick="openProfile('${o.id}')"><div><i class="fas fa-star ${isBest?'best-friend':'text-muted'} me-2" onclick="toggleBest(event,'${o.id}')"></i><b>${f.username}</b> <small>#${f.displayId}</small></div><span class="status-dot ${statusClass}"></span></div>`);
-                if(isBest) list.prepend(el); else list.append(el);
-            });
+        function backToLobby() { 
+            if(gameListener) gameListener(); 
+            $('#end-screen-overlay').addClass('hidden'); 
+            $('#win-effect-layer').hide(); // Stop effect
+            db.collection('users').doc(currentUser.uid).update({activeGameId: null}); 
+            showScreen('lobby-screen'); 
         }
-        
-        // --- STANDARD FUNCTIONS (Compact) ---
+
+        // --- REST STANDARD ---
         function highlight(sq) { removeHighlights(); $(`.square-${sq}`).addClass('highlight-square'); game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
         function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
+        function leaveGame() { if(confirm("Verlassen?")) { if(gameMode==='online') db.collection('games').doc(currentGameId).update({status:'aborted'}); backToLobby(); } }
         function startBotGame() { gameMode='bot'; myColor='w'; currentWhiteSkin=userData.equippedSkin; currentBlackSkin='default'; showScreen('game-screen'); updateBoardVisuals(); game=new Chess(); board=Chessboard('board', {position:'start', draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'}); $('#board').off('click').on('click', '.square-55d63', handleSquareClick); $('#player-top').text("Bot"); $('#player-bottom').text("Du"); }
         function botMove() { if(game.game_over())return; const m=game.moves({verbose:true}); const move=m[Math.floor(Math.random()*m.length)]; game.move(move.san); board.position(game.fen()); if(move.captured) triggerKillAnim(move.to, 'default'); }
-        function showEndScreen(res) { $('#end-screen-overlay').removeClass('hidden'); let txt="SIEG!", c="text-success", r=""; if(res==='aborted'){txt="GEGNER WEG";c="text-danger";} else if(res==='draw'){txt="REMIS";c="text-warning";} else if(res!==myColor&&myColor!=='spectator'){txt="VERLOREN";c="text-danger";} else if(res===myColor) r="+50 Coins!"; $('#end-title').text(txt).removeClass().addClass('win-title '+c); $('#end-reward').text(r); if(myColor!=='spectator') db.collection('users').doc(currentUser.uid).update({activeGameId: null}); }
-        function backToLobby() { if(gameListener)gameListener(); $('#end-screen-overlay').addClass('hidden'); db.collection('users').doc(currentUser.uid).update({activeGameId: null}); showScreen('lobby-screen'); }
-        function leaveGame() { if(confirm("Verlassen?")) { if(gameMode==='online' && myColor!=='spectator') db.collection('games').doc(currentGameId).update({status:'aborted'}); backToLobby(); } }
-        function registerUserWithId() { const e=$('#email-input').val(),p=$('#password-input').val(),n=$('#username-input').val(); const c=db.collection('config').doc('userCounter'); auth.createUserWithEmailAndPassword(e,p).then(cr=>{ db.runTransaction(async t=>{const d=await t.get(c); let i=d.exists?d.data().count+1:1; t.set(c,{count:i}); t.set(db.collection('users').doc(cr.user.uid),{username:n,displayId:i,uid:cr.user.uid,wins:0,coins:0,inventory:['default'],equippedSkin:'default',friends:[]});});}); }
-        function loginUser() { auth.signInWithEmailAndPassword($('#email-input').val(), $('#password-input').val()); }
-        function logout() { auth.signOut(); location.reload(); }
-        function showScreen(id) { $('.hidden').removeClass('hidden').addClass('hidden'); $('#auth-screen, #lobby-screen, #game-screen').addClass('hidden'); $(`#${id}`).removeClass('hidden'); }
-        function closeModal(id) { $(`#${id}`).addClass('hidden'); }
-        function openNotifModal() { $('#notif-modal').removeClass('hidden'); }
-        function openSettings() { $('#settings-modal').removeClass('hidden'); }
+        function joinRankedQueue() { $('#queue-overlay').removeClass('hidden'); queueTime=0; if(queueInterval)clearInterval(queueInterval); queueInterval=setInterval(()=>{queueTime++;$('#queue-timer').text(`Zeit: ${queueTime}s`);checkMatchmaking();},2000); db.collection('queue').doc(currentUser.uid).set({uid:currentUser.uid,username:userData.username,displayId:userData.displayId,joinedAt:firebase.firestore.FieldValue.serverTimestamp(),gameId:null,skin:userData.equippedSkin}); if(queueListener)queueListener(); queueListener=db.collection('queue').doc(currentUser.uid).onSnapshot(d=>{if(d.exists&&d.data().gameId){leaveQueue(false);db.collection('queue').doc(currentUser.uid).delete();db.collection('users').doc(currentUser.uid).update({activeGameId:d.data().gameId});loadOnlineGame(d.data().gameId);}}); }
+        async function checkMatchmaking(){ const s=await db.collection('queue').orderBy('joinedAt','asc').limit(2).get(); if(s.size>=2){const p1=s.docs[0].data(),p2=s.docs[1].data(); if(p1.uid===currentUser.uid){const g=db.collection('games').doc(); await g.set({white:p1.uid,whiteName:p1.username,whiteId:p1.displayId,whiteSkin:p1.skin,black:p2.uid,blackName:p2.username,blackId:p2.displayId,blackSkin:p2.skin,fen:'start',turn:'w',status:'active',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); const b=db.batch(); b.update(db.collection('queue').doc(p1.uid),{gameId:g.id}); b.update(db.collection('queue').doc(p2.uid),{gameId:g.id}); await b.commit();}}}
+        function leaveQueue(d=true){ $('#queue-overlay').addClass('hidden'); if(queueInterval)clearInterval(queueInterval); if(queueListener)queueListener(); if(d)db.collection('queue').doc(currentUser.uid).delete(); }
+        function createPrivateGame(){ const c=Math.random().toString(36).substring(2,7).toUpperCase(); db.collection('games').doc(c).set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,status:'waiting_private',fen:'start',turn:'w',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); $('#host-code-display').text(c); $('#private-create-modal').removeClass('hidden'); hostListener=db.collection('games').doc(c).onSnapshot(d=>{if(d.exists&&d.data().status==='active'){hostListener();closeModal('private-create-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);}}); currentGameId=c; }
+        function submitPrivateJoin(){ const c=$('#private-join-input').val().trim().toUpperCase(); db.collection('games').doc(c).get().then(d=>{if(d.exists&&d.data().status==='waiting_private'){db.collection('games').doc(c).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{closeModal('private-join-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);});}else alert("Fehler");}); }
+        function registerUserWithId(){ const e=$('#email-input').val(),p=$('#password-input').val(),n=$('#username-input').val(); const c=db.collection('config').doc('userCounter'); auth.createUserWithEmailAndPassword(e,p).then(cr=>{ db.runTransaction(async t=>{const d=await t.get(c); let i=d.exists?d.data().count+1:1; t.set(c,{count:i}); t.set(db.collection('users').doc(cr.user.uid),{username:n,displayId:i,uid:cr.user.uid,wins:0,coins:0,inventory:['default'],equippedSkin:'default',friends:[]});});}); }
+        function loginUser(){ auth.signInWithEmailAndPassword($('#email-input').val(), $('#password-input').val()); }
+        function logout(){ auth.signOut(); location.reload(); }
+        function showScreen(id){ $('.hidden').removeClass('hidden').addClass('hidden'); $('#auth-screen, #lobby-screen, #game-screen').addClass('hidden'); $(`#${id}`).removeClass('hidden'); }
+        function closeModal(id){ $(`#${id}`).addClass('hidden'); }
+        function openNotifModal(){ $('#notif-modal').removeClass('hidden'); }
+        function openSettings(){ $('#settings-modal').removeClass('hidden'); }
         function saveSettings(){ const n=$('#settings-username').val(); if(n)db.collection('users').doc(currentUser.uid).update({username:n}); closeModal('settings-modal'); }
-        function addLog(s) { $('#move-history').append(`<div>${s}</div>`).scrollTop(999); }
-        function sendFriendRequest(){ const i=$('#friend-id-input').val();if(!i)return; db.collection('users').where('displayId','==',parseInt(i)).get().then(s=>{if(s.empty)return alert("404"); const t=s.docs[0]; db.collection('users').doc(t.id).collection('notifications').add({type:'friend_request',fromUid:currentUser.uid,title:'Freundschaft',message:`${userData.username} will Freund sein.`,timestamp:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>alert("Gesendet"));}); }
+        function addLog(s){ $('#move-history').append(`<div>${s}</div>`).scrollTop(999); }
+        function sendFriendRequest(){ const i=$('#friend-id-input').val();if(!i)return; db.collection('users').where('displayId','==',parseInt(i)).get().then(s=>{if(s.empty)return alert("404"); const t=s.docs[0]; db.collection('users').doc(t.id).collection('notifications').add({type:'friend_request',fromUid:currentUser.uid,title:'Anfrage',message:`${userData.username} will Freund sein.`,timestamp:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>alert("Gesendet"));}); }
+        async function loadFriends(){ const l=$('#friends-list'); if(!userData.friends||userData.friends.length===0){l.html('<div class="text-center small mt-3">Keine Freunde</div>');return;} const d=await Promise.all(userData.friends.map(u=>db.collection('users').doc(u).get())); l.empty(); d.forEach(o=>{if(!o.exists)return;const f=o.data();if(!f.friends.includes(currentUser.uid))db.collection('users').doc(o.id).update({friends:firebase.firestore.FieldValue.arrayUnion(currentUser.uid)});const b=userData.bestFriends&&userData.bestFriends.includes(o.id); l.append(`<div class="friend-item" onclick="openProfile('${o.id}')"><div><i class="fas fa-star ${b?'best-friend':'text-muted'} me-2" onclick="toggleBest(event,'${o.id}')"></i><b>${f.username}</b> <small>#${f.displayId}</small></div>${f.activeGameId?'<span class="badge bg-danger">Spiel</span>':'<i class="fas fa-circle text-success"></i>'}</div>`); }); }
         function toggleBest(e,u){ e.stopPropagation(); let o=userData.bestFriends&&userData.bestFriends.includes(u)?'arrayRemove':'arrayUnion'; db.collection('users').doc(currentUser.uid).update({bestFriends:firebase.firestore.FieldValue[o](u)}); }
         function listenNotifications(){ if(notifListener)notifListener(); notifListener=db.collection('users').doc(currentUser.uid).collection('notifications').orderBy('timestamp','desc').onSnapshot(s=>{ $('#bell-badge').text(s.size).toggleClass('hidden',s.size===0); let h=s.size===0?'<div class="text-center small p-3">Leer</div>':''; s.forEach(d=>{const n=d.data(); h+=`<div class="notif-item"><b>${n.title}</b><div class="small mb-2">${n.message}</div><div class="d-flex gap-2"><button onclick="handleNotif('${d.id}','${n.type}',true,'${n.fromUid}','${n.payload}')" class="btn btn-sm btn-success flex-grow-1">Ja</button><button onclick="handleNotif('${d.id}','${n.type}',false)" class="btn btn-sm btn-secondary">Nein</button></div></div>`;}); $('#notif-list').html(h); }); }
         function handleNotif(id,t,a,f,p){ const r=db.collection('users').doc(currentUser.uid).collection('notifications').doc(id); if(!a){r.delete();return;} if(t==='friend_request'){const b=db.batch(); b.update(db.collection('users').doc(currentUser.uid),{friends:firebase.firestore.FieldValue.arrayUnion(f)}); b.update(db.collection('users').doc(f),{friends:firebase.firestore.FieldValue.arrayUnion(currentUser.uid)}); b.delete(r); b.commit().then(()=>{closeModal('notif-modal');alert("Freund!");}); } else if(t==='game_invite'){ db.collection('games').doc(p).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{r.delete();closeModal('notif-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:p});loadOnlineGame(p);}); } }
-        function openProfile(u){ db.collection('users').doc(u).get().then(d=>{const f=d.data();$('#profile-name').text(f.username);$('#profile-id').text(`#${f.displayId}`);$('#profile-wins').text(f.wins||0); const o=f.activeGameId?'Spielt':'Online'; $('#profile-status').text(o).attr('class',f.activeGameId?'text-danger':'text-success'); let b=`<button onclick="inviteFriend('${u}','${f.username}')" class="btn btn-primary w-100">Herausfordern</button>`; if(f.activeGameId) b+=`<button onclick="spectateGame('${f.activeGameId}')" class="btn btn-warning w-100 mt-2">Zuschauen</button>`; $('#profile-actions').html(b);$('#profile-modal').removeClass('hidden');});}
+        function openProfile(u){ db.collection('users').doc(u).get().then(d=>{const f=d.data();$('#profile-name').text(f.username);$('#profile-id').text(`#${f.displayId}`);$('#profile-wins').text(f.wins||0);let b=`<button onclick="inviteFriend('${u}','${f.username}')" class="btn btn-primary w-100">Herausfordern</button>`;$('#profile-actions').html(b);$('#profile-modal').removeClass('hidden');});}
         function inviteFriend(u,n){ const g=db.collection('games').doc(); g.set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,black:u,blackName:n,blackId:'?',fen:'start',turn:'w',status:'waiting_friend',createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{ db.collection('users').doc(u).collection('notifications').add({type:'game_invite',fromUid:currentUser.uid,title:'Herausforderung',message:`${userData.username} fordert dich.`,payload:g.id,timestamp:firebase.firestore.FieldValue.serverTimestamp()}); closeModal('profile-modal'); db.collection('users').doc(currentUser.uid).update({activeGameId:g.id}); loadOnlineGame(g.id); }); }
         function spectateGame(id) { closeModal('profile-modal'); loadOnlineGame(id, true); }
         function showPrivateMenu() { $('#private-menu-modal').removeClass('hidden'); }
         function openPrivateCreate() { closeModal('private-menu-modal'); const c=Math.random().toString(36).substring(2,7).toUpperCase(); db.collection('games').doc(c).set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,status:'waiting_private',fen:'start',turn:'w',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); $('#host-code-display').text(c); $('#private-create-modal').removeClass('hidden'); hostListener=db.collection('games').doc(c).onSnapshot(d=>{if(d.exists&&d.data().status==='active'){hostListener();closeModal('private-create-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);}}); currentGameId=c; }
-        function cancelPrivateHost() { if(hostListener)hostListener(); if(currentGameId)db.collection('games').doc(currentGameId).delete(); closeModal('private-create-modal'); }
         function openPrivateJoin() { closeModal('private-menu-modal'); $('#private-join-input').val(''); $('#private-join-modal').removeClass('hidden'); }
         function submitPrivateJoin() { const c=$('#private-join-input').val().trim().toUpperCase(); db.collection('games').doc(c).get().then(d=>{if(d.exists&&d.data().status==='waiting_private'){db.collection('games').doc(c).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{closeModal('private-join-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);});}else alert("Fehler");}); }
     </script>
