@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters: Stable & Clean</title>
+    <title>Chess Masters: Promotion Update</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -56,19 +56,9 @@
         
         /* FX SYSTEM */
         #fx-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; overflow: visible; }
-        
-        .kill-effect { 
-            position: absolute; display: flex; justify-content: center; align-items: center; 
-            font-size: 4.5rem; pointer-events: none; animation: pop-fade 0.8s forwards; 
-            text-shadow: 0 0 15px black; font-weight: bold; transform-origin: center; 
-        }
+        .kill-effect { position: absolute; display: flex; justify-content: center; align-items: center; font-size: 4.5rem; pointer-events: none; animation: pop-fade 0.8s forwards; text-shadow: 0 0 15px black; font-weight: bold; transform-origin: center; }
         @keyframes pop-fade { 0% { transform: scale(0.5); opacity: 0; } 40% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
-        
-        /* PROJECTILE ANIMATION */
-        .projectile {
-            position: absolute; font-size: 3rem; z-index: 200; pointer-events: none;
-            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-        }
+        .projectile { position: absolute; font-size: 3rem; z-index: 200; pointer-events: none; transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
 
         /* Win FX */
         #global-win-fx { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; display: none; }
@@ -92,19 +82,12 @@
         .admin-row { border-bottom: 1px solid #444; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
         .god-mode-active { border: 4px solid #e74c3c !important; box-shadow: 0 0 20px #e74c3c; }
         
-        /* SPECIAL ANIMATIONS */
-        @keyframes hacker-glitch-anim {
-            0% { transform: translate(0); }
-            20% { transform: translate(-1px, 1px); clip-path: inset(5% 0 5% 0); }
-            40% { transform: translate(1px, -1px); clip-path: inset(0 5% 0 5%); }
-            60% { transform: translate(-1px, 0); clip-path: inset(5% 0 5% 0); }
-            80% { transform: translate(1px, 1px); }
-            100% { transform: translate(0); clip-path: inset(0 0 0 0); }
-        }
+        /* Special Animations */
+        @keyframes hacker-glitch-anim { 0% { transform: translate(0); } 20% { transform: translate(-1px, 1px); clip-path: inset(5% 0 5% 0); } 40% { transform: translate(1px, -1px); clip-path: inset(0 5% 0 5%); } 60% { transform: translate(-1px, 0); clip-path: inset(5% 0 5% 0); } 80% { transform: translate(1px, 1px); } 100% { transform: translate(0); clip-path: inset(0 0 0 0); } }
         @keyframes angel-float-anim { 0%, 100% { transform: translateY(0); filter: brightness(1.2) drop-shadow(0 0 2px white); } 50% { transform: translateY(-4px); filter: brightness(1.5) drop-shadow(0 0 8px white); } }
         @keyframes gold-shine-anim { 0%, 100% { filter: brightness(1) sepia(1) saturate(5) hue-rotate(10deg); } 50% { filter: brightness(1.5) sepia(1) saturate(5) hue-rotate(10deg) drop-shadow(0 0 10px gold); } }
 
-        /* WINGS */
+        /* Wings */
         .wing-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 45; display: flex; justify-content: center; align-items: center; }
         .wing-left, .wing-right { font-size: 2.2rem; color: rgba(255,255,255,0.9); text-shadow: 0 0 10px #00ffff; position: absolute; top: -5px; }
         .wing-left { left: -12px; transform: scaleX(-1); animation: wing-flap-l 0.6s infinite alternate ease-in-out; }
@@ -112,12 +95,27 @@
         @keyframes wing-flap-r { from { transform: rotate(0deg); } to { transform: rotate(20deg); } }
         @keyframes wing-flap-l { from { transform: scaleX(-1) rotate(0deg); } to { transform: scaleX(-1) rotate(20deg); } }
 
+        /* PROMOTION MODAL */
+        .promo-btn { font-size: 2rem; width: 60px; height: 60px; margin: 5px; }
     </style>
 </head>
 <body>
 
     <style id="dynamic-skin-styles"></style>
     <div id="global-win-fx"></div>
+
+    <div id="promotion-modal" class="modal-overlay hidden">
+        <div class="modal-content-custom text-center" style="width: 300px;">
+            <h4>Umwandlung</h4>
+            <p class="text-muted">Wähle eine Figur:</p>
+            <div class="d-flex justify-content-center">
+                <button onclick="selectPromotion('q')" class="btn btn-outline-light promo-btn"><i class="fas fa-chess-queen"></i></button>
+                <button onclick="selectPromotion('r')" class="btn btn-outline-light promo-btn"><i class="fas fa-chess-rook"></i></button>
+                <button onclick="selectPromotion('b')" class="btn btn-outline-light promo-btn"><i class="fas fa-chess-bishop"></i></button>
+                <button onclick="selectPromotion('n')" class="btn btn-outline-light promo-btn"><i class="fas fa-chess-knight"></i></button>
+            </div>
+        </div>
+    </div>
 
     <div id="admin-modal" class="modal-overlay hidden"><div class="modal-content-custom" style="width:700px;"><h3 class="text-danger">ADMIN</h3><ul class="nav nav-tabs mb-3"><li class="nav-item"><a class="nav-link" onclick="showAdminTab('eco')">Eco</a></li><li class="nav-item"><a class="nav-link" onclick="showAdminTab('bans')">Bans</a></li></ul><div id="admin-tab-eco"><div class="input-group mb-3"><input type="number" id="admin-target-id" class="form-control" placeholder="ID"><button class="btn btn-light" onclick="adminLoadUser()">Load</button></div><div id="admin-user-info" class="hidden"><h5 id="adm-u-name">...</h5><div class="row g-2 mb-3"><div class="col-6"><input type="number" id="adm-coins" class="form-control"><button class="btn btn-success" onclick="adminSetVal('coins')">Set Coins</button></div><div class="col-6"><input type="number" id="adm-wins" class="form-control"><button class="btn btn-success" onclick="adminSetVal('wins')">Set Wins</button></div></div><div class="input-group mb-3"><input type="text" id="adm-skin-input" class="form-control" placeholder="Skin Key"><button class="btn btn-warning" onclick="adminGiveSkin()">Give Skin</button></div><div class="d-flex gap-2"><button onclick="adminKick()" class="btn btn-outline-warning w-50">Kick</button><button onclick="adminBan()" class="btn btn-danger w-50">BAN</button></div></div></div><div id="admin-tab-bans" class="hidden"><div id="admin-ban-list"></div></div><button onclick="closeModal('admin-modal')" class="btn btn-secondary w-100 mt-3">Close</button></div></div>
     <div id="challenge-wait-modal" class="modal-overlay hidden"><div class="modal-content-custom text-center"><h3>Herausforderung gesendet</h3><div class="spinner-border text-primary my-3"></div><p>Warte auf <span id="challenge-target-name">...</span></p><button onclick="cancelChallenge()" class="btn btn-outline-danger w-100">Abbrechen</button></div></div>
@@ -194,6 +192,7 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
+        // CONFIG
         const SKINS = {
             'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', animCss: '', anim: '⚔️', winBg: '' },
             'water': { name: 'Atlantis', price: 50, colorW: '#a8d0e6', colorB: '#374785', filter: 'hue-rotate(180deg) brightness(1.2)', anim: '🌊', winBg: 'bg-win-water' },
@@ -201,13 +200,11 @@
             'forest': { name: 'Smaragd', price: 200, colorW: '#c8e6c9', colorB: '#2e7d32', filter: 'sepia(1) hue-rotate(80deg) saturate(2)', anim: '🍃', winBg: 'bg-win-forest' },
             'dark': { name: 'Shadow', price: 500, colorW: '#95a5a6', colorB: '#2c3e50', filter: 'grayscale(100%) contrast(1.5)', anim: '💀', winBg: 'bg-win-dark' },
             'gold': { name: 'Midas', price: 1000, colorW: '#f9e79f', colorB: '#b7950b', filter: 'sepia(1) saturate(3) hue-rotate(10deg)', anim: '✨', winBg: 'bg-win-gold' },
-            
-            // ADMIN SKINS
             'admin_gold': { name: 'KING GOLD', price: 99999, adminOnly: true, colorW: '#ffd700', colorB: '#b8860b', filter: 'none', animCss: 'gold-shine-anim', anim: '👑', winBg: 'bg-win-gold' },
             'admin_hacker': { name: 'HACKER', price: 99999, adminOnly: true, colorW: '#0f0', colorB: '#000', filter: 'contrast(1.5) grayscale(1) drop-shadow(0 0 2px white)', animCss: 'hacker-glitch-anim 0.3s infinite', anim: '💻', winBg: 'bg-win-hacker' },
             'admin_angel': { name: 'ARCHANGEL', price: 99999, adminOnly: true, colorW: '#fff', colorB: '#87ceeb', filter: 'brightness(1.5) drop-shadow(0 0 5px white)', animCss: 'angel-float-anim 3s infinite', anim: '👼', winBg: 'bg-win-angel', hasWings: true },
-            'admin_football': { name: 'FUSSBALL', price: 99999, adminOnly: true, colorW: '#4caf50', colorB: '#fff', filter: 'none', anim: '⚽', winBg: 'bg-win-sport', isProjectile: true },
-            'admin_basketball': { name: 'BASKETBALL', price: 99999, adminOnly: true, colorW: '#e67e22', colorB: '#000', filter: 'none', anim: '🏀', winBg: 'bg-win-sport', isProjectile: true }
+            'admin_football': { name: 'FUSSBALL', price: 99999, adminOnly: true, colorW: '#4caf50', colorB: '#fff', filter: 'drop-shadow(0 0 2px white)', anim: '⚽', winBg: 'bg-win-sport', isProjectile: true },
+            'admin_basketball': { name: 'BASKETBALL', price: 99999, adminOnly: true, colorW: '#e67e22', colorB: '#000', filter: 'drop-shadow(0 0 2px white)', anim: '🏀', winBg: 'bg-win-sport', isProjectile: true }
         };
 
         let currentUser = null, userData = null;
@@ -219,6 +216,8 @@
         let currentChallengeGameId = null, currentChallengeNotifId = null, currentChallengeTargetUid = null;
         let isAdmin = false, godMode = false, adminLoadedUserUid = null;
         let wingsInterval = null;
+        // PROMOTION STATE
+        let pendingPromotion = null;
 
         auth.onAuthStateChanged(user => {
             if(user) {
@@ -236,19 +235,20 @@
                         updateHeader(); loadFriends(); listenNotifications(); updateLeaderboard();
                         if(!$('#shop-modal').hasClass('hidden')) renderShopUI();
                         
-                        // FIX: CHECK IF GAME CHANGED BEFORE RELOADING
+                        // ANTI-CRASH FIX: Only load if different game AND currently hidden
                         if(userData.activeGameId && userData.activeGameId !== currentGameId && $('#game-screen').hasClass('hidden')) {
                             db.collection('games').doc(userData.activeGameId).get().then(g => {
                                 if(g.exists && g.data().status !== 'finished' && g.data().status !== 'aborted') loadOnlineGame(userData.activeGameId);
                                 else { db.collection('users').doc(currentUser.uid).update({activeGameId: null}); showScreen('lobby-screen'); }
                             });
-                        } else if (!userData.activeGameId) showScreen('lobby-screen');
+                        } else if (!userData.activeGameId && currentGameId === null) showScreen('lobby-screen');
                     }
                 });
                 setInterval(() => { if(currentUser) db.collection('users').doc(currentUser.uid).update({lastSeen: firebase.firestore.FieldValue.serverTimestamp()}); }, 60000);
             } else showScreen('auth-screen');
         });
 
+        // --- VISUALS ---
         function updateBoardVisuals() {
             const sW = SKINS[currentWhiteSkin] || SKINS['default'];
             const sB = SKINS[currentBlackSkin] || SKINS['default'];
@@ -260,7 +260,7 @@
             let animW = sW.animCss ? `animation: ${sW.animCss};` : '';
             let animB = sB.animCss ? `animation: ${sB.animCss};` : '';
 
-            // ADDED OUTLINES
+            // OUTLINE FIX FOR EVERYONE
             let filterW = `${sW.filter} drop-shadow(0 0 2px black)`;
             let filterB = `${sB.filter} drop-shadow(0 0 2px white)`;
 
@@ -286,19 +286,9 @@
         // --- FX LOGIC ---
         function handleCaptureVisuals(move, skinKey, callback) {
             const skin = SKINS[skinKey] || SKINS['default'];
-            
-            // NO ANIMATION IF DEFAULT
-            if(skinKey === 'default') {
-                callback();
-                return;
-            }
-
-            if (skin.isProjectile) {
-                shootProjectile(move.from, move.to, skin.anim, callback);
-            } else {
-                playKillAnim(move.to, skin.anim);
-                callback(); 
-            }
+            if(skinKey === 'default') { callback(); return; }
+            if (skin.isProjectile) { shootProjectile(move.from, move.to, skin.anim, callback); } 
+            else { playKillAnim(move.to, skin.anim); callback(); }
         }
 
         function playKillAnim(square, emoji) {
@@ -331,12 +321,7 @@
 
             if(gameListener) gameListener();
             gameListener = db.collection('games').doc(id).onSnapshot(doc => {
-                // Stabilized Game End Check
-                if(!doc.exists) { 
-                    console.log("Game doc missing");
-                    // Wait a bit or verify before kicking, but for now safe return
-                    return; 
-                }
+                if(!doc.exists) { db.collection('users').doc(currentUser.uid).update({activeGameId: null}); backToLobby(); return; }
                 const data = doc.data();
                 currentWhiteSkin = data.whiteSkin || 'default'; currentBlackSkin = data.blackSkin || 'default';
                 updateBoardVisuals();
@@ -369,31 +354,59 @@
             });
         }
 
-        // --- CLICK & MOVE ---
+        // --- CLICK & MOVE & PROMOTION ---
         function handleSquareClick() {
             if(game.game_over() || (gameMode==='online' && game.turn()!==myColor)) return;
             const sq = $(this).attr('data-square');
             if(selectedSquare) {
-                const move = game.move({from:selectedSquare, to:sq, promotion:'q'});
-                if(move) {
-                    selectedSquare = null; removeHighlights();
-                    
-                    if(move.captured) {
-                        const mySkin = (myColor==='w') ? currentWhiteSkin : currentBlackSkin;
-                        if(gameMode==='online') db.collection('users').doc(currentUser.uid).update({coins: firebase.firestore.FieldValue.increment(10)});
-                        handleCaptureVisuals(move, mySkin, () => {
-                            if(gameMode==='online') updateGameOnline(move);
-                            else { board.position(game.fen(), true); setTimeout(botMove, 500); }
-                        });
-                    } else {
-                        if(gameMode==='online') updateGameOnline(move);
-                        else { board.position(game.fen(), true); setTimeout(botMove, 500); }
+                // Check Promotion
+                const piece = game.get(selectedSquare);
+                const isPromotion = piece.type === 'p' && 
+                    ((piece.color === 'w' && sq[1] === '8') || (piece.color === 'b' && sq[1] === '1'));
+                
+                // Helper to validate move validity first
+                const tempGame = new Chess(game.fen());
+                const validMove = tempGame.move({from: selectedSquare, to: sq, promotion: 'q'}); // dummy promotion
+
+                if (validMove) {
+                    if (isPromotion) {
+                        pendingPromotion = { from: selectedSquare, to: sq };
+                        $('#promotion-modal').removeClass('hidden');
+                        return;
                     }
+                    executeMove({from: selectedSquare, to: sq, promotion: 'q'});
                 } else {
                     selectedSquare = null; removeHighlights();
                     if(game.get(sq) && game.get(sq).color === (gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); }
                 }
             } else { if(game.get(sq) && game.get(sq).color === (gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); } }
+        }
+
+        function selectPromotion(pType) {
+            $('#promotion-modal').addClass('hidden');
+            if(pendingPromotion) {
+                executeMove({from: pendingPromotion.from, to: pendingPromotion.to, promotion: pType});
+                pendingPromotion = null;
+            }
+        }
+
+        function executeMove(moveObj) {
+            const move = game.move(moveObj);
+            if(move) {
+                selectedSquare = null; removeHighlights();
+                
+                if(move.captured) {
+                    const mySkin = (myColor==='w') ? currentWhiteSkin : currentBlackSkin;
+                    if(gameMode==='online') db.collection('users').doc(currentUser.uid).update({coins: firebase.firestore.FieldValue.increment(10)});
+                    handleCaptureVisuals(move, mySkin, () => {
+                        if(gameMode==='online') updateGameOnline(move);
+                        else { board.position(game.fen(), true); setTimeout(botMove, 500); }
+                    });
+                } else {
+                    if(gameMode==='online') updateGameOnline(move);
+                    else { board.position(game.fen(), true); setTimeout(botMove, 500); }
+                }
+            }
         }
 
         function updateGameOnline(move) {
@@ -405,7 +418,7 @@
                 } else res = 'draw';
             }
             db.collection('games').doc(currentGameId).update({fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: res});
-            if(!move.captured) board.position(game.fen(), true); // Visual update for normal moves
+            if(!move.captured) board.position(game.fen(), true); 
             addLog(move.san);
         }
 
