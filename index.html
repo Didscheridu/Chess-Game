@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters: Sports Fix</title>
+    <title>Chess Masters: Stable & Clean</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -194,7 +194,6 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // CONFIG
         const SKINS = {
             'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', animCss: '', anim: '⚔️', winBg: '' },
             'water': { name: 'Atlantis', price: 50, colorW: '#a8d0e6', colorB: '#374785', filter: 'hue-rotate(180deg) brightness(1.2)', anim: '🌊', winBg: 'bg-win-water' },
@@ -207,9 +206,8 @@
             'admin_gold': { name: 'KING GOLD', price: 99999, adminOnly: true, colorW: '#ffd700', colorB: '#b8860b', filter: 'none', animCss: 'gold-shine-anim', anim: '👑', winBg: 'bg-win-gold' },
             'admin_hacker': { name: 'HACKER', price: 99999, adminOnly: true, colorW: '#0f0', colorB: '#000', filter: 'contrast(1.5) grayscale(1) drop-shadow(0 0 2px white)', animCss: 'hacker-glitch-anim 0.3s infinite', anim: '💻', winBg: 'bg-win-hacker' },
             'admin_angel': { name: 'ARCHANGEL', price: 99999, adminOnly: true, colorW: '#fff', colorB: '#87ceeb', filter: 'brightness(1.5) drop-shadow(0 0 5px white)', animCss: 'angel-float-anim 3s infinite', anim: '👼', winBg: 'bg-win-angel', hasWings: true },
-            // SPORTS (PROJECTILE SKINS) -> Added White Outline
-            'admin_football': { name: 'FUSSBALL', price: 99999, adminOnly: true, colorW: '#4caf50', colorB: '#fff', filter: 'drop-shadow(0 0 2px white)', anim: '⚽', winBg: 'bg-win-sport', isProjectile: true },
-            'admin_basketball': { name: 'BASKETBALL', price: 99999, adminOnly: true, colorW: '#e67e22', colorB: '#000', filter: 'drop-shadow(0 0 2px white)', anim: '🏀', winBg: 'bg-win-sport', isProjectile: true }
+            'admin_football': { name: 'FUSSBALL', price: 99999, adminOnly: true, colorW: '#4caf50', colorB: '#fff', filter: 'none', anim: '⚽', winBg: 'bg-win-sport', isProjectile: true },
+            'admin_basketball': { name: 'BASKETBALL', price: 99999, adminOnly: true, colorW: '#e67e22', colorB: '#000', filter: 'none', anim: '🏀', winBg: 'bg-win-sport', isProjectile: true }
         };
 
         let currentUser = null, userData = null;
@@ -237,7 +235,9 @@
                         
                         updateHeader(); loadFriends(); listenNotifications(); updateLeaderboard();
                         if(!$('#shop-modal').hasClass('hidden')) renderShopUI();
-                        if(userData.activeGameId && $('#game-screen').hasClass('hidden')) {
+                        
+                        // FIX: CHECK IF GAME CHANGED BEFORE RELOADING
+                        if(userData.activeGameId && userData.activeGameId !== currentGameId && $('#game-screen').hasClass('hidden')) {
                             db.collection('games').doc(userData.activeGameId).get().then(g => {
                                 if(g.exists && g.data().status !== 'finished' && g.data().status !== 'aborted') loadOnlineGame(userData.activeGameId);
                                 else { db.collection('users').doc(currentUser.uid).update({activeGameId: null}); showScreen('lobby-screen'); }
@@ -249,7 +249,6 @@
             } else showScreen('auth-screen');
         });
 
-        // --- VISUALS ---
         function updateBoardVisuals() {
             const sW = SKINS[currentWhiteSkin] || SKINS['default'];
             const sB = SKINS[currentBlackSkin] || SKINS['default'];
@@ -258,18 +257,17 @@
             for(let r=1; r<=4; r++) { cols.forEach((c, idx) => { const isBlack = (r + idx) % 2 !== 0; css += `.square-${c}${r} { background-color: ${isBlack ? sW.colorB : sW.colorW} !important; } `; }); }
             for(let r=5; r<=8; r++) { cols.forEach((c, idx) => { const isBlack = (r + idx) % 2 !== 0; css += `.square-${c}${r} { background-color: ${isBlack ? sB.colorB : sB.colorW} !important; } `; }); }
             
-            // STRICT SEPARATION
             let animW = sW.animCss ? `animation: ${sW.animCss};` : '';
             let animB = sB.animCss ? `animation: ${sB.animCss};` : '';
 
-            // Double Check: Only apply to White pieces
-            css += `img[src*="/w"] { filter: ${sW.filter} !important; ${animW} } `;
-            // Only apply to Black pieces
-            css += `img[src*="/b"] { filter: ${sB.filter} !important; ${animB} } `;
-            
+            // ADDED OUTLINES
+            let filterW = `${sW.filter} drop-shadow(0 0 2px black)`;
+            let filterB = `${sB.filter} drop-shadow(0 0 2px white)`;
+
+            css += `img[src*="/w"] { filter: ${filterW} !important; ${animW} } `;
+            css += `img[src*="/b"] { filter: ${filterB} !important; ${animB} } `;
             document.getElementById('dynamic-skin-styles').innerHTML = css;
 
-            // Wings
             if(wingsInterval) clearInterval(wingsInterval);
             $('.wing-container').remove();
             if(sW.hasWings || sB.hasWings) {
@@ -281,16 +279,20 @@
             $('.wing-container').each(function() { if($(this).siblings('img').length === 0) $(this).remove(); });
             if(whiteHas) $('img[src*="/w"]').each(function() { const p = $(this).parent(); if(p.find('.wing-container').length === 0) p.append(`<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>`); });
             else $('img[src*="/w"]').siblings('.wing-container').remove();
-            
             if(blackHas) $('img[src*="/b"]').each(function() { const p = $(this).parent(); if(p.find('.wing-container').length === 0) p.append(`<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>`); });
             else $('img[src*="/b"]').siblings('.wing-container').remove();
         }
 
-        // --- FX LOGIC (FIXED) ---
+        // --- FX LOGIC ---
         function handleCaptureVisuals(move, skinKey, callback) {
             const skin = SKINS[skinKey] || SKINS['default'];
             
-            // NUR WENN ES EIN SCHLAG IST!
+            // NO ANIMATION IF DEFAULT
+            if(skinKey === 'default') {
+                callback();
+                return;
+            }
+
             if (skin.isProjectile) {
                 shootProjectile(move.from, move.to, skin.anim, callback);
             } else {
@@ -310,18 +312,11 @@
             const $from = $(`.square-${fromSq}`);
             const $to = $(`.square-${toSq}`);
             if($from.length === 0 || $to.length === 0) { callback(); return; }
-
-            const p1 = $from.position();
-            const p2 = $to.position();
-            const w = $from.width();
-
+            const p1 = $from.position(); const p2 = $to.position(); const w = $from.width();
             const $ball = $(`<div class="projectile" style="top:${p1.top}px; left:${p1.left}px; width:${w}px; height:${w}px; display:flex; justify-content:center; align-items:center;">${emoji}</div>`);
             $('#fx-overlay').append($ball);
-
             $ball.animate({ top: p2.top, left: p2.left }, 500, 'linear', function() {
-                $ball.remove();
-                playKillAnim(toSq, '💥'); 
-                callback(); 
+                $ball.remove(); playKillAnim(toSq, '💥'); callback(); 
             });
         }
 
@@ -336,10 +331,14 @@
 
             if(gameListener) gameListener();
             gameListener = db.collection('games').doc(id).onSnapshot(doc => {
-                if(!doc.exists) { db.collection('users').doc(currentUser.uid).update({activeGameId: null}); backToLobby(); return; }
+                // Stabilized Game End Check
+                if(!doc.exists) { 
+                    console.log("Game doc missing");
+                    // Wait a bit or verify before kicking, but for now safe return
+                    return; 
+                }
                 const data = doc.data();
-                currentWhiteSkin = data.whiteSkin || 'default'; 
-                currentBlackSkin = data.blackSkin || 'default';
+                currentWhiteSkin = data.whiteSkin || 'default'; currentBlackSkin = data.blackSkin || 'default';
                 updateBoardVisuals();
 
                 if(asSpectator) { myColor='spectator'; board.orientation('white'); $('#player-top').text(data.blackName); $('#player-bottom').text(data.whiteName); }
@@ -352,17 +351,14 @@
                 if(data.fen && data.fen !== game.fen()) {
                     const temp = new Chess(game.fen());
                     const m = temp.move(data.lastMoveSan);
-                    
                     if(m && (m.flags.includes('c') || m.flags.includes('e'))) {
                         const attSkin = (m.color === 'w') ? currentWhiteSkin : currentBlackSkin;
                         handleCaptureVisuals(m, attSkin, () => {
-                            game.load(data.fen);
-                            board.position(data.fen, true);
+                            game.load(data.fen); board.position(data.fen, true);
                             if(data.lastMoveSan) addLog(data.lastMoveSan);
                         });
                     } else {
-                        game.load(data.fen); 
-                        board.position(data.fen, true);
+                        game.load(data.fen); board.position(data.fen, true);
                         if(data.lastMoveSan) addLog(data.lastMoveSan);
                     }
                     removeHighlights();
@@ -385,14 +381,11 @@
                     if(move.captured) {
                         const mySkin = (myColor==='w') ? currentWhiteSkin : currentBlackSkin;
                         if(gameMode==='online') db.collection('users').doc(currentUser.uid).update({coins: firebase.firestore.FieldValue.increment(10)});
-                        
-                        // Handle LOCAL capture
                         handleCaptureVisuals(move, mySkin, () => {
                             if(gameMode==='online') updateGameOnline(move);
                             else { board.position(game.fen(), true); setTimeout(botMove, 500); }
                         });
                     } else {
-                        // Normal move = INSTANT
                         if(gameMode==='online') updateGameOnline(move);
                         else { board.position(game.fen(), true); setTimeout(botMove, 500); }
                     }
@@ -412,25 +405,8 @@
                 } else res = 'draw';
             }
             db.collection('games').doc(currentGameId).update({fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: res});
-            // We do NOT update board here visually for captures to prevent jumps. For normal moves, board updates via snapshot or callback.
+            if(!move.captured) board.position(game.fen(), true); // Visual update for normal moves
             addLog(move.san);
-        }
-
-        // --- BOT GAME (FIX) ---
-        function startBotGame() { 
-            gameMode='bot'; 
-            myColor='w'; 
-            currentWhiteSkin = userData.equippedSkin; 
-            currentBlackSkin = 'default'; // FORCE DEFAULT FOR BOT
-            
-            showScreen('game-screen'); 
-            updateBoardVisuals(); 
-            
-            game=new Chess(); 
-            board=Chessboard('board', {position:'start', moveSpeed:200, draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'}); 
-            $('#board').off('click').on('click', '.square-55d63', handleSquareClick); 
-            $('#player-top').text("Bot"); 
-            $('#player-bottom').text("Du"); 
         }
 
         // --- REST STANDARD ---
@@ -456,6 +432,7 @@
         function highlight(sq) { removeHighlights(); $(`.square-${sq}`).addClass('highlight-square'); game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
         function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
         function leaveGame() { if(confirm("Verlassen?")) { if(gameMode==='online' && myColor!=='spectator') db.collection('games').doc(currentGameId).update({status:'aborted'}); backToLobby(); } }
+        function startBotGame() { gameMode='bot'; myColor='w'; currentWhiteSkin=userData.equippedSkin; currentBlackSkin='default'; showScreen('game-screen'); updateBoardVisuals(); game=new Chess(); board=Chessboard('board', {position:'start', moveSpeed:200, draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'}); $('#board').off('click').on('click', '.square-55d63', handleSquareClick); $('#player-top').text("Bot"); $('#player-bottom').text("Du"); }
         function botMove() { if(game.game_over())return; const m=game.moves({verbose:true}); const move=m[Math.floor(Math.random()*m.length)]; game.move(move.san); board.position(game.fen(), true); if(move.captured) playKillAnim(move.to, 'default'); }
         function joinRankedQueue() { $('#queue-overlay').removeClass('hidden'); queueTime=0; if(queueInterval)clearInterval(queueInterval); queueInterval=setInterval(()=>{queueTime++;$('#queue-timer').text(`Zeit: ${queueTime}s`);checkMatchmaking();},2000); db.collection('queue').doc(currentUser.uid).set({uid:currentUser.uid,username:userData.username,displayId:userData.displayId,joinedAt:firebase.firestore.FieldValue.serverTimestamp(),gameId:null,skin:userData.equippedSkin}); if(queueListener)queueListener(); queueListener=db.collection('queue').doc(currentUser.uid).onSnapshot(d=>{if(d.exists&&d.data().gameId){leaveQueue(false);db.collection('queue').doc(currentUser.uid).delete();db.collection('users').doc(currentUser.uid).update({activeGameId:d.data().gameId});loadOnlineGame(d.data().gameId);}}); }
         async function checkMatchmaking(){ const s=await db.collection('queue').orderBy('joinedAt','asc').limit(2).get(); if(s.size>=2){const p1=s.docs[0].data(),p2=s.docs[1].data(); if(p1.uid===currentUser.uid){const g=db.collection('games').doc(); await g.set({white:p1.uid,whiteName:p1.username,whiteId:p1.displayId,whiteSkin:p1.skin,black:p2.uid,blackName:p2.username,blackId:p2.displayId,blackSkin:p2.skin,fen:'start',turn:'w',status:'active',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); const b=db.batch(); b.update(db.collection('queue').doc(p1.uid),{gameId:g.id}); b.update(db.collection('queue').doc(p2.uid),{gameId:g.id}); await b.commit();}}}
