@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters: Wings & Glitches</title>
+    <title>Chess Masters: Perfect FX</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -25,7 +25,7 @@
         #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; user-select: none; position: relative; z-index: 20; }
         .board-wrapper { position: relative; max-width: 550px; margin: 0 auto; }
         
-        /* SMOOTH PHYSICS */
+        /* SMOOTH MOVEMENT */
         .piece-417db { transition: top 0.2s ease-out, left 0.2s ease-out !important; z-index: 50; position: relative; }
 
         /* Overlays */
@@ -36,7 +36,7 @@
         }
         .modal-content-custom { background: #242526; width: 500px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; position: relative; max-height: 90vh; overflow-y: auto; z-index: 5001; }
 
-        /* UI Elements */
+        /* UI */
         .notification-bell { position: relative; cursor: pointer; font-size: 1.2rem; margin-right: 15px; }
         .notification-badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; justify-content: center; align-items: center; }
         .notif-item { background: #3a3b3c; padding: 10px; border-radius: 5px; margin-bottom: 5px; font-size: 0.9em; text-align: left; }
@@ -48,7 +48,7 @@
         .highlight-square { box-shadow: inset 0 0 3px 3px rgba(255, 255, 0, 0.5); }
         .square-55d63 { cursor: pointer; }
 
-        /* Shop Styles */
+        /* Shop */
         .coin-display { background: #f1c40f; color: #000; padding: 5px 12px; border-radius: 20px; font-weight: bold; margin-right: 15px; box-shadow: 0 0 10px rgba(241, 196, 15, 0.5); cursor: pointer; }
         .skin-card { background: #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: center; border: 2px solid transparent; transition: 0.2s; }
         .skin-card.active { border-color: #2D88FF; box-shadow: 0 0 15px #2D88FF; }
@@ -59,7 +59,7 @@
         .kill-effect { position: absolute; display: flex; justify-content: center; align-items: center; font-size: 4.5rem; pointer-events: none; animation: pop-fade 0.8s forwards; text-shadow: 0 0 15px black; font-weight: bold; transform-origin: center; }
         @keyframes pop-fade { 0% { transform: scale(0.5); opacity: 0; } 40% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
         
-        /* Global Win FX */
+        /* Win FX */
         #global-win-fx { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; display: none; }
         .bg-win-fire { background: radial-gradient(circle, rgba(255, 69, 0, 0.4) 0%, transparent 70%); animation: bg-pulse-red 1s infinite; }
         .bg-win-water { background: radial-gradient(circle, rgba(0, 191, 255, 0.4) 0%, transparent 70%); animation: bg-pulse-blue 2s infinite; }
@@ -80,50 +80,45 @@
         .admin-row { border-bottom: 1px solid #444; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
         .god-mode-active { border: 4px solid #e74c3c !important; box-shadow: 0 0 20px #e74c3c; }
         
-        /* --- SPECIAL SKIN ANIMATIONS --- */
+        /* --- SPECIAL ANIMATIONS --- */
         
-        /* 1. HACKER GLITCH */
+        /* HACKER: INTENSE GLITCH */
         @keyframes hacker-glitch-anim {
-            0% { transform: translate(0); }
-            20% { transform: translate(-2px, 2px); clip-path: inset(10% 0 80% 0); }
-            40% { transform: translate(2px, -2px); clip-path: inset(80% 0 10% 0); }
-            60% { transform: translate(-2px, 0); clip-path: inset(40% 0 40% 0); }
-            80% { transform: translate(2px, 2px); }
-            100% { transform: translate(0); clip-path: inset(0 0 0 0); }
+            0% { clip-path: inset(40% 0 61% 0); transform: translate(-2px, 2px); }
+            20% { clip-path: inset(92% 0 1% 0); transform: translate(0); }
+            40% { clip-path: inset(43% 0 1% 0); transform: translate(2px, -2px); }
+            60% { clip-path: inset(25% 0 58% 0); transform: translate(2px, 2px); }
+            80% { clip-path: inset(54% 0 7% 0); transform: translate(-2px, -2px); }
+            100% { clip-path: inset(58% 0 43% 0); transform: translate(0); }
         }
 
-        /* 2. ANGEL FLOAT */
+        /* ANGEL: FLOAT */
         @keyframes angel-float-anim {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-            100% { transform: translateY(0px); }
+            0%, 100% { transform: translateY(0); filter: brightness(1.2) drop-shadow(0 0 2px white); }
+            50% { transform: translateY(-6px); filter: brightness(1.5) drop-shadow(0 0 10px white); }
         }
 
-        /* 3. GOLD SHINE */
+        /* GOLD: SHINE */
         @keyframes gold-shine-anim {
-            0% { filter: brightness(1) sepia(1) saturate(5) hue-rotate(10deg); }
+            0%, 100% { filter: brightness(1) sepia(1) saturate(5) hue-rotate(10deg); }
             50% { filter: brightness(1.5) sepia(1) saturate(5) hue-rotate(10deg) drop-shadow(0 0 10px gold); }
-            100% { filter: brightness(1) sepia(1) saturate(5) hue-rotate(10deg); }
         }
 
-        /* ANGEL WINGS ELEMENT */
+        /* WINGS */
         .wing-container {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 40; /* Hinter der Figur (50), vor dem Brett (20) */
+            pointer-events: none; z-index: 45; /* Under Piece (50) */
             display: flex; justify-content: center; align-items: center;
         }
         .wing-left, .wing-right {
-            font-size: 2rem; color: rgba(255,255,255,0.7); text-shadow: 0 0 5px white;
-            position: absolute; top: 10px;
-            animation: wing-flap 0.5s infinite alternate ease-in-out;
+            font-size: 2.2rem; color: rgba(255,255,255,0.9); text-shadow: 0 0 10px #00ffff;
+            position: absolute; top: -5px;
         }
-        .wing-left { left: -10px; transform: scaleX(-1); }
-        .wing-right { right: -10px; }
+        .wing-left { left: -12px; transform: scaleX(-1); animation: wing-flap-l 0.6s infinite alternate ease-in-out; }
+        .wing-right { right: -12px; animation: wing-flap-r 0.6s infinite alternate ease-in-out; }
         
-        @keyframes wing-flap { from { transform: rotate(0deg); } to { transform: rotate(15deg); } }
-        /* Fix für gespiegelten Flügel links */
-        .wing-left { animation: wing-flap-left 0.5s infinite alternate ease-in-out; }
-        @keyframes wing-flap-left { from { transform: scaleX(-1) rotate(0deg); } to { transform: scaleX(-1) rotate(15deg); } }
+        @keyframes wing-flap-r { from { transform: rotate(0deg); } to { transform: rotate(20deg); } }
+        @keyframes wing-flap-l { from { transform: scaleX(-1) rotate(0deg); } to { transform: scaleX(-1) rotate(20deg); } }
 
     </style>
 </head>
@@ -132,50 +127,17 @@
     <style id="dynamic-skin-styles"></style>
     <div id="global-win-fx"></div>
 
-    <div id="admin-modal" class="modal-overlay hidden">
-        <div class="modal-content-custom" style="width: 700px;">
-            <h3 class="text-danger fw-bold"><i class="fas fa-shield-alt"></i> ADMIN PANEL</h3>
-            <ul class="nav nav-tabs mb-3">
-                <li class="nav-item"><a class="nav-link active" onclick="showAdminTab('eco')">User & Items</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="showAdminTab('bans')">Banns</a></li>
-            </ul>
-            <div id="admin-tab-eco">
-                <div class="input-group mb-3">
-                    <input type="number" id="admin-target-id" class="form-control" placeholder="Ziel User ID">
-                    <button class="btn btn-outline-light" onclick="adminLoadUser()">Laden</button>
-                </div>
-                <div id="admin-user-info" class="card bg-dark p-3 mb-3 hidden">
-                    <h5>User: <span id="adm-u-name">...</span> (ID: <span id="adm-u-id">...</span>)</h5>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6"><label>Münzen:</label><div class="input-group"><input type="number" id="adm-coins" class="form-control"><button class="btn btn-success" onclick="adminSetVal('coins')">Set</button></div></div>
-                        <div class="col-6"><label>Wins:</label><div class="input-group"><input type="number" id="adm-wins" class="form-control"><button class="btn btn-success" onclick="adminSetVal('wins')">Set</button></div></div>
-                    </div>
-                    <label>Skin geben (Key: admin_gold, admin_hacker, admin_angel):</label>
-                    <div class="input-group mb-3">
-                        <input type="text" id="adm-skin-input" class="form-control" placeholder="Skin Key">
-                        <button class="btn btn-warning" onclick="adminGiveSkin()">Skin geben</button>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button onclick="adminKick()" class="btn btn-outline-warning flex-grow-1">Kick</button>
-                        <button onclick="adminBan()" class="btn btn-danger flex-grow-1">BANNEN</button>
-                    </div>
-                </div>
-            </div>
-            <div id="admin-tab-bans" class="hidden"><h5>Gebannte Spieler</h5><div id="admin-ban-list" style="max-height: 300px; overflow-y:auto;"></div></div>
-            <button onclick="closeModal('admin-modal')" class="btn btn-secondary w-100 mt-3">Schließen</button>
-        </div>
-    </div>
-
-    <div id="challenge-wait-modal" class="modal-overlay hidden"><div class="modal-content-custom text-center"><h3>Herausforderung gesendet</h3><div class="spinner-border text-primary my-3"></div><p class="text-muted">Warte auf <span id="challenge-target-name" class="fw-bold text-white">Freund</span>...</p><button onclick="cancelChallenge()" class="btn btn-outline-danger w-100 rounded-pill">Abbrechen</button></div></div>
-    <div id="shop-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h3 class="fw-bold mb-3"><i class="fas fa-store"></i> Shop</h3><div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-dark rounded"><span>Guthaben:</span><span class="text-warning fw-bold fs-4"><i class="fas fa-coins"></i> <span id="shop-coins">0</span></span></div><div id="skin-list" class="row g-2 text-start"></div><button onclick="closeModal('shop-modal')" class="btn btn-secondary w-100 mt-3">Schließen</button></div></div>
-    <div id="queue-overlay" class="hidden"><div class="text-center"><div class="spinner-border text-primary mb-3" style="width: 4rem; height: 4rem;"></div><h2 class="fw-bold pulse">Suche Gegner...</h2><p class="text-muted" id="queue-timer">Zeit: 0s</p><button onclick="leaveQueue()" class="btn btn-outline-danger mt-4 px-5 rounded-pill">Abbrechen</button></div></div>
-    <div id="notif-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Benachrichtigungen</h4><div id="notif-list" style="max-height: 300px; overflow-y: auto;"></div><button onclick="closeModal('notif-modal')" class="btn btn-secondary w-100 mt-3">Schließen</button></div></div>
-    <div id="profile-modal" class="modal-overlay hidden"><div class="modal-content-custom text-center"><div style="width:80px;height:80px;background:#2D88FF;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:2rem;"><i class="fas fa-user"></i></div><h3 id="profile-name">User</h3><p class="text-muted" id="profile-id">#0</p><div class="d-flex justify-content-center gap-3"><div><h4 id="profile-wins" class="text-warning m-0">0</h4><small>Wins</small></div><div><h4 id="profile-status" class="text-success m-0">Online</h4><small>Status</small></div></div><hr><div id="profile-actions" class="d-grid gap-2"></div><button onclick="closeModal('profile-modal')" class="btn btn-outline-secondary mt-3 w-100">Schließen</button></div></div>
-    <div id="private-menu-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h3>Privat</h3><div class="d-grid gap-3 mt-4"><button onclick="openPrivateCreate()" class="btn btn-primary btn-lg">Erstellen</button><button onclick="openPrivateJoin()" class="btn btn-outline-light btn-lg">Beitreten</button></div><button onclick="closeModal('private-menu-modal')" class="btn btn-link mt-3">Abbrechen</button></div></div>
-    <div id="private-create-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Warte...</h4><div id="host-code-display" class="fw-bold fs-1 bg-dark p-2 rounded mb-3 text-success">...</div><div class="spinner-border spinner-border-sm text-warning"></div><br><button onclick="cancelPrivateHost()" class="btn btn-danger w-100 mt-3">Abbrechen</button></div></div>
-    <div id="private-join-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Code</h4><input id="private-join-input" class="form-control text-center mb-3 fs-4" style="text-transform:uppercase"><button onclick="submitPrivateJoin()" class="btn btn-success w-100">Beitreten</button><button onclick="closeModal('private-join-modal')" class="btn btn-secondary w-100 mt-2">Abbrechen</button></div></div>
-    <div id="settings-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Einstellungen</h4><input type="text" id="settings-username" class="form-control mb-3" placeholder="Neuer Name"><input type="password" id="settings-password" class="form-control mb-3" placeholder="Neues Passwort"><div class="d-flex justify-content-end gap-2"><button onclick="closeModal('settings-modal')" class="btn btn-secondary">Abbrechen</button><button onclick="saveSettings()" class="btn btn-success">Speichern</button></div></div></div>
-    <div id="end-screen-overlay" class="hidden"><div class="modal-content-custom text-center"><div id="end-title" class="win-title">SIEG!</div><div id="end-reward" class="fs-4 text-warning my-2 fw-bold"></div><p id="end-reason" class="text-muted">...</p><button onclick="backToLobby()" class="btn btn-light btn-lg w-100 fw-bold">Zurück zur Lobby</button></div></div>
+    <div id="admin-modal" class="modal-overlay hidden"><div class="modal-content-custom" style="width:700px;"><h3 class="text-danger">ADMIN</h3><ul class="nav nav-tabs mb-3"><li class="nav-item"><a class="nav-link" onclick="showAdminTab('eco')">Eco</a></li><li class="nav-item"><a class="nav-link" onclick="showAdminTab('bans')">Bans</a></li></ul><div id="admin-tab-eco"><div class="input-group mb-3"><input type="number" id="admin-target-id" class="form-control" placeholder="ID"><button class="btn btn-light" onclick="adminLoadUser()">Load</button></div><div id="admin-user-info" class="hidden"><h5 id="adm-u-name">...</h5><div class="row g-2 mb-3"><div class="col-6"><input type="number" id="adm-coins" class="form-control"><button class="btn btn-success" onclick="adminSetVal('coins')">Set Coins</button></div><div class="col-6"><input type="number" id="adm-wins" class="form-control"><button class="btn btn-success" onclick="adminSetVal('wins')">Set Wins</button></div></div><div class="input-group mb-3"><input type="text" id="adm-skin-input" class="form-control" placeholder="Skin Key"><button class="btn btn-warning" onclick="adminGiveSkin()">Give Skin</button></div><div class="d-flex gap-2"><button onclick="adminKick()" class="btn btn-outline-warning w-50">Kick</button><button onclick="adminBan()" class="btn btn-danger w-50">BAN</button></div></div></div><div id="admin-tab-bans" class="hidden"><div id="admin-ban-list"></div></div><button onclick="closeModal('admin-modal')" class="btn btn-secondary w-100 mt-3">Close</button></div></div>
+    <div id="challenge-wait-modal" class="modal-overlay hidden"><div class="modal-content-custom text-center"><h3>Warte...</h3><div class="spinner-border text-primary my-3"></div><p>Warte auf <span id="challenge-target-name">...</span></p><button onclick="cancelChallenge()" class="btn btn-outline-danger w-100">Abbrechen</button></div></div>
+    <div id="shop-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h3>Shop</h3><div class="d-flex justify-content-between mb-3 bg-dark p-2 rounded"><span>Coins:</span><span class="text-warning fw-bold" id="shop-coins">0</span></div><div id="skin-list" class="row g-2"></div><button onclick="closeModal('shop-modal')" class="btn btn-secondary w-100 mt-3">Close</button></div></div>
+    <div id="queue-overlay" class="hidden"><div class="text-center"><div class="spinner-border text-primary mb-3" style="width:4rem;height:4rem;"></div><h2 class="pulse">Suche...</h2><p id="queue-timer">0s</p><button onclick="leaveQueue()" class="btn btn-outline-danger mt-4 px-5 rounded-pill">Abbrechen</button></div></div>
+    <div id="notif-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Notifs</h4><div id="notif-list" style="max-height:300px;overflow:auto;"></div><button onclick="closeModal('notif-modal')" class="btn btn-secondary w-100 mt-3">Close</button></div></div>
+    <div id="profile-modal" class="modal-overlay hidden"><div class="modal-content-custom text-center"><div style="width:80px;height:80px;background:#2D88FF;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:2rem;"><i class="fas fa-user"></i></div><h3 id="profile-name">...</h3><p id="profile-id">#0</p><div class="d-flex justify-content-center gap-3"><div><h4 id="profile-wins" class="text-warning">0</h4><small>Wins</small></div><div><h4 id="profile-status" class="text-success">On</h4><small>Status</small></div></div><hr><div id="profile-actions" class="d-grid gap-2"></div><button onclick="closeModal('profile-modal')" class="btn btn-outline-secondary mt-3 w-100">Close</button></div></div>
+    <div id="private-menu-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h3>Privat</h3><div class="d-grid gap-3 mt-4"><button onclick="openPrivateCreate()" class="btn btn-primary btn-lg">Host</button><button onclick="openPrivateJoin()" class="btn btn-outline-light btn-lg">Join</button></div><button onclick="closeModal('private-menu-modal')" class="btn btn-link mt-3">Close</button></div></div>
+    <div id="private-create-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Code:</h4><div id="host-code-display" class="fw-bold fs-1 bg-dark p-2 rounded mb-3 text-success">...</div><div class="spinner-border spinner-border-sm text-warning"></div><br><button onclick="cancelPrivateHost()" class="btn btn-danger w-100 mt-3">Cancel</button></div></div>
+    <div id="private-join-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Code</h4><input id="private-join-input" class="form-control text-center mb-3 fs-4"><button onclick="submitPrivateJoin()" class="btn btn-success w-100">Join</button><button onclick="closeModal('private-join-modal')" class="btn btn-secondary w-100 mt-2">Cancel</button></div></div>
+    <div id="settings-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Settings</h4><input id="settings-username" class="form-control mb-3" placeholder="Name"><input type="password" id="settings-password" class="form-control mb-3" placeholder="PW"><div class="d-flex justify-content-end gap-2"><button onclick="closeModal('settings-modal')" class="btn btn-secondary">Cancel</button><button onclick="saveSettings()" class="btn btn-success">Save</button></div></div></div>
+    <div id="end-screen-overlay" class="hidden"><div class="modal-content-custom text-center"><div id="end-title" class="win-title">SIEG!</div><div id="end-reward" class="fs-4 text-warning my-2 fw-bold"></div><p id="end-reason" class="text-muted">...</p><button onclick="backToLobby()" class="btn btn-light btn-lg w-100 fw-bold">Lobby</button></div></div>
 
     <div class="app-container">
         <div class="d-flex justify-content-between align-items-center mb-4 p-3 card-dark">
@@ -185,7 +147,7 @@
                 <div class="coin-display" onclick="openShop()"><i class="fas fa-coins"></i> <span id="nav-coins">0</span></div>
                 <div class="me-3 ms-3 fw-bold text-warning" style="font-size:1.1rem;">Wins: <span id="nav-wins">0</span> 🏆</div>
                 <div class="notification-bell ms-3" onclick="openNotifModal()"><i class="fas fa-bell"></i><div id="bell-badge" class="notification-badge hidden">0</div></div>
-                <div class="me-3 text-end ms-3"><div class="fw-bold text-white"><span id="nav-username">Gast</span></div><div class="small text-muted">ID: <span id="nav-userid">#?</span></div></div>
+                <div class="me-3 text-end ms-3"><div class="fw-bold text-white"><span id="nav-username">...</span></div><div class="small text-muted">ID: <span id="nav-userid">#?</span></div></div>
                 <button onclick="openSettings()" class="btn btn-sm btn-outline-light me-2"><i class="fas fa-cog"></i></button>
                 <button onclick="logout()" class="btn btn-sm btn-outline-danger"><i class="fas fa-sign-out-alt"></i></button>
             </div>
@@ -217,15 +179,8 @@
         <div id="game-screen" class="hidden">
             <div class="row">
                 <div class="col-lg-7">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span id="player-top">Gegner</span>
-                        <div class="d-flex gap-2"><button id="god-mode-btn" onclick="toggleGodMode()" class="btn btn-sm btn-outline-danger fw-bold hidden"><i class="fas fa-bolt"></i> GOD MODE</button><span id="game-status-text" class="badge bg-success">Spiel läuft</span></div>
-                    </div>
-                    <div class="board-wrapper">
-                        <div id="board"></div>
-                        <div id="fx-overlay"></div> 
-                    </div>
-                    <div class="mt-2"><span id="player-bottom">Du</span></div>
+                    <div class="d-flex justify-content-between mb-2"><span id="player-top">Gegner</span><div class="d-flex gap-2"><button id="god-mode-btn" onclick="toggleGodMode()" class="btn btn-sm btn-outline-danger fw-bold hidden"><i class="fas fa-bolt"></i> GOD MODE</button><span id="game-status-text" class="badge bg-success">Spiel läuft</span></div></div>
+                    <div class="board-wrapper"><div id="board"></div><div id="fx-overlay"></div></div><div class="mt-2"><span id="player-bottom">Du</span></div>
                 </div>
                 <div class="col-lg-5 mt-3">
                     <div class="card-dark h-100 d-flex flex-column"><h5>Verlauf</h5><div id="move-history" class="move-log flex-grow-1 mb-3" style="height:250px;overflow-y:auto;background:#222;padding:10px;"></div><button onclick="leaveGame()" class="btn btn-danger w-100">Aufgeben</button></div>
@@ -242,42 +197,34 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBqCKRhB87r_r-IgbOd9ESm9MQLKTGwSU0",
-            authDomain: "chess-dff93.firebaseapp.com",
-            projectId: "chess-dff93",
-            storageBucket: "chess-dff93.firebasestorage.app",
-            messagingSenderId: "1013706120323",
-            appId: "1:1013706120323:web:768c8e77c5f49479150fb6"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyBqCKRhB87r_r-IgbOd9ESm9MQLKTGwSU0", authDomain: "chess-dff93.firebaseapp.com", projectId: "chess-dff93", storageBucket: "chess-dff93.firebasestorage.app", messagingSenderId: "1013706120323", appId: "1:1013706120323:web:768c8e77c5f49479150fb6" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
 
+        // SKINS
         const SKINS = {
-            'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', anim: '⚔️', winBg: '', animCss: '' },
+            'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', animCss: '', anim: '⚔️', winBg: '' },
             'water': { name: 'Atlantis', price: 50, colorW: '#a8d0e6', colorB: '#374785', filter: 'hue-rotate(180deg) brightness(1.2)', anim: '🌊', winBg: 'bg-win-water' },
             'fire': { name: 'Inferno', price: 100, colorW: '#f6c7b6', colorB: '#a31621', filter: 'sepia(1) saturate(5) hue-rotate(-50deg)', anim: '💥', winBg: 'bg-win-fire' },
             'forest': { name: 'Smaragd', price: 200, colorW: '#c8e6c9', colorB: '#2e7d32', filter: 'sepia(1) hue-rotate(80deg) saturate(2)', anim: '🍃', winBg: 'bg-win-forest' },
             'dark': { name: 'Shadow', price: 500, colorW: '#95a5a6', colorB: '#2c3e50', filter: 'grayscale(100%) contrast(1.5)', anim: '💀', winBg: 'bg-win-dark' },
             'gold': { name: 'Midas', price: 1000, colorW: '#f9e79f', colorB: '#b7950b', filter: 'sepia(1) saturate(3) hue-rotate(10deg)', anim: '✨', winBg: 'bg-win-gold' },
-            
-            // ADMIN SKINS
             'admin_gold': { name: 'KING GOLD', price: 99999, adminOnly: true, colorW: '#ffd700', colorB: '#b8860b', filter: 'none', animCss: 'gold-shine-anim', anim: '👑', winBg: 'bg-win-gold' },
-            'admin_hacker': { name: 'HACKER', price: 99999, adminOnly: true, colorW: '#0f0', colorB: '#000', filter: 'contrast(1.5) grayscale(1)', animCss: 'hacker-glitch-anim', anim: '💻', winBg: 'bg-win-hacker' },
-            'admin_angel': { name: 'ARCHANGEL', price: 99999, adminOnly: true, colorW: '#fff', colorB: '#87ceeb', filter: 'brightness(1.5) drop-shadow(0 0 5px white)', animCss: 'angel-float-anim', anim: '👼', winBg: 'bg-win-angel', hasWings: true }
+            // HACKER: Glitch animation only 0.2s duration but continuous
+            'admin_hacker': { name: 'HACKER', price: 99999, adminOnly: true, colorW: '#0f0', colorB: '#000', filter: 'contrast(1.5) grayscale(1)', animCss: 'hacker-glitch-anim 0.2s infinite', anim: '💻', winBg: 'bg-win-hacker' },
+            // ANGEL: Wings enabled
+            'admin_angel': { name: 'ARCHANGEL', price: 99999, adminOnly: true, colorW: '#fff', colorB: '#87ceeb', filter: 'brightness(1.5) drop-shadow(0 0 5px white)', animCss: 'angel-float-anim 3s infinite', anim: '👼', winBg: 'bg-win-angel', hasWings: true }
         };
 
         let currentUser = null, userData = null;
         let game = new Chess(), board = null, myColor = 'w';
         let currentGameId = null, gameMode = 'online';
         let gameListener = null, queueListener = null, notifListener = null, hostListener = null, challengeListener = null;
-        let selectedSquare = null, queueInterval = null, queueTime = 0;
+        let selectedSquare = null, queueInterval = null, queueTime = 0, wingsInterval = null;
         let currentWhiteSkin = 'default', currentBlackSkin = 'default';
         let currentChallengeGameId = null, currentChallengeNotifId = null, currentChallengeTargetUid = null;
-        
         let isAdmin = false, godMode = false, adminLoadedUserUid = null;
-        let wingsInterval = null;
 
         auth.onAuthStateChanged(user => {
             if(user) {
@@ -285,7 +232,7 @@
                 db.collection('users').doc(user.uid).onSnapshot(doc => {
                     if(doc.exists) {
                         userData = doc.data();
-                        if(userData.banned && userData.displayId > 2) { alert("DU BIST GEBANNT!"); auth.signOut(); location.reload(); return; }
+                        if(userData.banned && userData.displayId > 2) { alert("BANNED"); auth.signOut(); location.reload(); return; }
                         isAdmin = (userData.displayId === 2);
                         if(isAdmin) $('#admin-btn').removeClass('hidden');
                         if(!userData.coins) userData.coins = 0;
@@ -294,7 +241,6 @@
                         
                         updateHeader(); loadFriends(); listenNotifications(); updateLeaderboard();
                         if(!$('#shop-modal').hasClass('hidden')) renderShopUI();
-
                         if(userData.activeGameId && $('#game-screen').hasClass('hidden')) {
                             db.collection('games').doc(userData.activeGameId).get().then(g => {
                                 if(g.exists && g.data().status !== 'finished' && g.data().status !== 'aborted') loadOnlineGame(userData.activeGameId);
@@ -307,7 +253,7 @@
             } else showScreen('auth-screen');
         });
 
-        // --- VISUALS & WINGS SYSTEM ---
+        // --- VISUALS ---
         function updateBoardVisuals() {
             const sW = SKINS[currentWhiteSkin] || SKINS['default'];
             const sB = SKINS[currentBlackSkin] || SKINS['default'];
@@ -316,56 +262,58 @@
             for(let r=1; r<=4; r++) { cols.forEach((c, idx) => { const isBlack = (r + idx) % 2 !== 0; css += `.square-${c}${r} { background-color: ${isBlack ? sW.colorB : sW.colorW} !important; } `; }); }
             for(let r=5; r<=8; r++) { cols.forEach((c, idx) => { const isBlack = (r + idx) % 2 !== 0; css += `.square-${c}${r} { background-color: ${isBlack ? sB.colorB : sB.colorW} !important; } `; }); }
             
-            // PIECE ANIMATIONS
-            let animW = sW.animCss ? `animation: ${sW.animCss} 2s infinite;` : '';
-            let animB = sB.animCss ? `animation: ${sB.animCss} 2s infinite;` : '';
+            // Apply Animations ONLY to specific pieces
+            // White pieces get White Skin Animation
+            let animW = sW.animCss ? `animation: ${sW.animCss};` : '';
+            // Black pieces get Black Skin Animation
+            let animB = sB.animCss ? `animation: ${sB.animCss};` : '';
 
             css += `img[src*="/w"] { filter: ${sW.filter} !important; ${animW} } `;
             css += `img[src*="/b"] { filter: ${sB.filter} !important; ${animB} } `;
             document.getElementById('dynamic-skin-styles').innerHTML = css;
 
-            // HANDLE WINGS INJECTION
+            // Wings Logic
             if(wingsInterval) clearInterval(wingsInterval);
             if(sW.hasWings || sB.hasWings) {
-                wingsInterval = setInterval(() => renderWings(sW.hasWings, sB.hasWings), 500);
+                wingsInterval = setInterval(() => renderWings(sW.hasWings, sB.hasWings), 300);
+            } else {
+                $('.wing-container').remove();
             }
         }
 
         function renderWings(whiteHas, blackHas) {
-            // Finde alle Felder, die noch keine Flügel haben, aber eine Engel-Figur enthalten
-            // White Pieces
+            // White Wings
             if(whiteHas) {
                 $('img[src*="/w"]').each(function() {
-                    const parent = $(this).parent(); // The square div
-                    if(parent.find('.wing-container').length === 0) {
-                        parent.append(`<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>`);
-                    }
+                    const p = $(this).parent();
+                    if(p.find('.wing-container').length === 0) p.append(`<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>`);
                 });
+            } else {
+                // Cleanup if white lost angel skin mid-game (rare)
+                $('img[src*="/w"]').siblings('.wing-container').remove();
             }
-            // Black Pieces
+
+            // Black Wings
             if(blackHas) {
                 $('img[src*="/b"]').each(function() {
-                    const parent = $(this).parent();
-                    if(parent.find('.wing-container').length === 0) {
-                        parent.append(`<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>`);
-                    }
+                    const p = $(this).parent();
+                    if(p.find('.wing-container').length === 0) p.append(`<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>`);
                 });
+            } else {
+                $('img[src*="/b"]').siblings('.wing-container').remove();
             }
-            // Cleanup wings from empty squares
-            $('.wing-container').each(function() {
-                if($(this).siblings('img').length === 0) $(this).remove();
-            });
+            
+            // General Cleanup
+            $('.wing-container').each(function() { if($(this).siblings('img').length === 0) $(this).remove(); });
         }
 
         function playKillAnim(square, skinKey) {
             const anim = (SKINS[skinKey] || SKINS['default']).anim;
             if(!anim) return;
-            const $sq = $(`.square-${square}`);
-            if($sq.length === 0) return;
+            const $sq = $(`.square-${square}`); if($sq.length === 0) return;
             const pos = $sq.position();
             const $el = $(`<div class="kill-effect" style="top:${pos.top}px; left:${pos.left}px; width:${$sq.width()}px; height:${$sq.height()}px;">${anim}</div>`);
-            $('#fx-overlay').append($el);
-            setTimeout(() => $el.remove(), 1000);
+            $('#fx-overlay').append($el); setTimeout(() => $el.remove(), 1000);
         }
 
         // --- GAME LOGIC ---
@@ -401,9 +349,8 @@
                     game.load(data.fen); board.position(data.fen, true); removeHighlights();
                     if(data.lastMoveSan) addLog(data.lastMoveSan);
                 }
-                
                 if(data.status === 'aborted') showEndScreen('aborted');
-                if(data.result) { let winnerSkin = null; if(data.result === 'w') winnerSkin = currentWhiteSkin; if(data.result === 'b') winnerSkin = currentBlackSkin; showEndScreen(data.result, winnerSkin); }
+                if(data.result) { let w = null; if(data.result === 'w') w = currentWhiteSkin; if(data.result === 'b') w = currentBlackSkin; showEndScreen(data.result, w); }
             });
         }
 
@@ -431,10 +378,8 @@
         function updateGameOnline(move) {
             let res = null;
             if(game.game_over()) {
-                if(game.in_checkmate()) { 
-                    res = game.turn()==='w'?'b':'w'; 
-                    if(res === myColor) db.collection('users').doc(currentUser.uid).update({wins: firebase.firestore.FieldValue.increment(1), coins: firebase.firestore.FieldValue.increment(50)});
-                } else res = 'draw';
+                if(game.in_checkmate()) { res = game.turn()==='w'?'b':'w'; if(res === myColor) db.collection('users').doc(currentUser.uid).update({wins: firebase.firestore.FieldValue.increment(1), coins: firebase.firestore.FieldValue.increment(50)}); } 
+                else res = 'draw';
             }
             db.collection('games').doc(currentGameId).update({fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: res});
             board.position(game.fen(), true); addLog(move.san);
@@ -443,38 +388,29 @@
         // --- ADMIN ---
         function openAdminPanel() { $('#admin-modal').removeClass('hidden'); }
         function showAdminTab(tab) { $('#admin-tab-eco, #admin-tab-bans').addClass('hidden'); $(`#admin-tab-${tab}`).removeClass('hidden'); if(tab==='bans')loadBanList(); }
-        function adminLoadUser() {
-            const id = parseInt($('#admin-target-id').val());
-            db.collection('users').where('displayId', '==', id).get().then(s => {
-                if(s.empty) return alert("User nicht gefunden");
-                const d = s.docs[0].data(); adminLoadedUserUid = s.docs[0].id;
-                $('#adm-u-name').text(d.username); $('#adm-u-id').text(d.displayId);
-                $('#adm-coins').val(d.coins||0); $('#adm-wins').val(d.wins||0);
-                $('#admin-user-info').removeClass('hidden');
-            });
-        }
-        function adminSetVal(field) { if(!adminLoadedUserUid) return; db.collection('users').doc(adminLoadedUserUid).update({[field]: parseInt($(`#adm-${field}`).val())}).then(()=>alert("Updated!")); }
-        function adminKick() { if(!adminLoadedUserUid) return; db.collection('users').doc(adminLoadedUserUid).get().then(d => { if(d.data().activeGameId) db.collection('games').doc(d.data().activeGameId).update({status: 'aborted'}).then(()=>alert("Gekickt!")); }); }
-        function adminBan() { if(!adminLoadedUserUid) return; if(parseInt($('#adm-u-id').text()) === 2) return alert("Admin immun!"); db.collection('users').doc(adminLoadedUserUid).update({banned: true}).then(()=>{ alert("GEBANNT!"); adminLoadUser(); }); }
-        function loadBanList() { db.collection('users').where('banned', '==', true).get().then(s => { let h = ''; s.forEach(d => { h += `<div class="admin-row"><span>${d.data().username} (#${d.data().displayId})</span><button class="btn btn-sm btn-success" onclick="adminUnban('${d.id}')">Entbannen</button></div>`; }); $('#admin-ban-list').html(h || "Keine Bans."); }); }
+        function adminLoadUser() { const id = parseInt($('#admin-target-id').val()); db.collection('users').where('displayId', '==', id).get().then(s => { if(s.empty) return alert("User 404"); const d = s.docs[0].data(); adminLoadedUserUid = s.docs[0].id; $('#adm-u-name').text(d.username); $('#adm-u-id').text(d.displayId); $('#adm-coins').val(d.coins||0); $('#adm-wins').val(d.wins||0); $('#admin-user-info').removeClass('hidden'); }); }
+        function adminSetVal(field) { if(!adminLoadedUserUid) return; db.collection('users').doc(adminLoadedUserUid).update({[field]: parseInt($(`#adm-${field}`).val())}).then(()=>alert("Saved")); }
+        function adminKick() { if(!adminLoadedUserUid) return; db.collection('users').doc(adminLoadedUserUid).get().then(d => { if(d.data().activeGameId) db.collection('games').doc(d.data().activeGameId).update({status: 'aborted'}).then(()=>alert("Kicked")); }); }
+        function adminBan() { if(!adminLoadedUserUid) return; if(parseInt($('#adm-u-id').text()) === 2) return alert("Nope"); db.collection('users').doc(adminLoadedUserUid).update({banned: true}).then(()=>{ alert("BANNED"); adminLoadUser(); }); }
+        function loadBanList() { db.collection('users').where('banned', '==', true).get().then(s => { let h = ''; s.forEach(d => { h += `<div class="admin-row"><span>${d.data().username} (#${d.data().displayId})</span><button class="btn btn-sm btn-success" onclick="adminUnban('${d.id}')">Unban</button></div>`; }); $('#admin-ban-list').html(h || "None"); }); }
         function adminUnban(uid) { db.collection('users').doc(uid).update({banned: false}).then(()=>loadBanList()); }
-        function adminGiveSkin() { const sk=$('#adm-skin-input').val(); if(!SKINS[sk]) return alert("Skin 404"); if(!adminLoadedUserUid) return; db.collection('users').doc(adminLoadedUserUid).update({inventory: firebase.firestore.FieldValue.arrayUnion(sk)}).then(()=>alert("Skin gegeben!")); }
+        function adminGiveSkin() { const sk=$('#adm-skin-input').val(); if(!SKINS[sk]) return alert("Invalid"); if(!adminLoadedUserUid) return; db.collection('users').doc(adminLoadedUserUid).update({inventory: firebase.firestore.FieldValue.arrayUnion(sk)}).then(()=>alert("Given")); }
         function toggleGodMode() { godMode = !godMode; if(godMode) { $('#god-mode-btn').addClass('god-mode-active').html('<i class="fas fa-bolt"></i> GOD ON'); board = Chessboard('board', { position: game.fen(), draggable: true, onDrop: onGodDrop, pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png' }); updateBoardVisuals(); } else { $('#god-mode-btn').removeClass('god-mode-active').html('<i class="fas fa-bolt"></i> GOD MODE'); board = Chessboard('board', { position: game.fen(), draggable: false, pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png' }); $('#board').off('click').on('click', '.square-55d63', handleSquareClick); updateBoardVisuals(); } }
         function onGodDrop(source, target, piece, newPos) { if(!isAdmin || !godMode) return 'snapback'; const newFen = Chessboard.objToFen(newPos) + " " + game.turn() + " - - 0 1"; db.collection('games').doc(currentGameId).update({ fen: newFen, lastMoveSan: "GOD MODE" }); game.load(newFen); }
 
-        // --- REST STANDARD ---
+        // --- REST ---
         function updateHeader() { $('#nav-username').text(userData.username); $('#nav-userid').text(`#${userData.displayId}`); $('#nav-coins').text(userData.coins); $('#nav-wins').text(userData.wins || 0); $('#nav-user-area').removeClass('hidden'); }
         function updateLeaderboard() { db.collection('users').orderBy('wins', 'desc').limit(10).onSnapshot(snap => { let h=''; let r=1; snap.forEach(doc => { const u = doc.data(); let rc = r===1?'rank-1':(r===2?'rank-2':(r===3?'rank-3':'')); h += `<div class="leaderboard-item"><span class="${rc}">#${r} ${u.username}</span><span class="text-warning fw-bold">${u.wins||0} 🏆</span></div>`; r++; }); $('#leaderboard-list').html(h); }); }
         function openShop() { renderShopUI(); $('#shop-modal').removeClass('hidden'); }
         function renderShopUI() { $('#shop-coins').text(userData.coins); const list = $('#skin-list'); list.empty(); for (const [key, skin] of Object.entries(SKINS)) { if(skin.adminOnly && !userData.inventory.includes(key)) continue; const owned = userData.inventory.includes(key); const active = userData.equippedSkin === key; let btnHtml = active ? `<button class="btn btn-sm btn-success disabled w-100">Aktiv</button>` : owned ? `<button onclick="equipSkin('${key}')" class="btn btn-sm btn-outline-primary w-100">Wählen</button>` : `<button onclick="buySkin('${key}')" class="btn btn-sm btn-warning w-100">${skin.price} <i class="fas fa-coins"></i></button>`; list.append(`<div class="col-6 col-md-4"><div class="skin-card ${owned?'owned':''} ${active?'active':''}"><h5>${skin.name} ${skin.anim}</h5><div class="d-flex justify-content-center mb-2"><div class="skin-preview" style="background:${skin.colorW}"></div><div class="skin-preview" style="background:${skin.colorB}"></div></div>${btnHtml}</div></div>`); } }
-        function buySkin(key) { if(userData.coins >= SKINS[key].price) db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(-SKINS[key].price), inventory: firebase.firestore.FieldValue.arrayUnion(key) }); else alert("Zu wenig Coins!"); }
+        function buySkin(key) { if(userData.coins >= SKINS[key].price) db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(-SKINS[key].price), inventory: firebase.firestore.FieldValue.arrayUnion(key) }); else alert("Need Coins"); }
         function equipSkin(key) { db.collection('users').doc(currentUser.uid).update({ equippedSkin: key }); }
         function showEndScreen(res, winnerSkin) { $('#end-screen-overlay').removeClass('hidden'); $('#global-win-fx').hide().removeClass(); let txt="SIEG!", c="text-success", r=""; if(res==='aborted'){txt="GEGNER WEG";c="text-danger";} else if(res==='draw'){txt="REMIS";c="text-warning";} else if(res!==myColor&&myColor!=='spectator'){txt="VERLOREN";c="text-danger";} else { r="+50 Coins!"; if(winnerSkin && SKINS[winnerSkin].winBg) $('#global-win-fx').addClass(SKINS[winnerSkin].winBg).fadeIn(500); } $('#end-title').text(txt).removeClass().addClass('win-title '+c); $('#end-reward').text(r); if(myColor!=='spectator') db.collection('users').doc(currentUser.uid).update({activeGameId: null}); }
         function backToLobby() { if(gameListener) gameListener(); $('#end-screen-overlay').addClass('hidden'); $('#global-win-fx').fadeOut(200); if(wingsInterval) clearInterval(wingsInterval); db.collection('users').doc(currentUser.uid).update({activeGameId: null}); showScreen('lobby-screen'); }
         function highlight(sq) { removeHighlights(); $(`.square-${sq}`).addClass('highlight-square'); game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
         function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
         function leaveGame() { if(confirm("Verlassen?")) { if(gameMode==='online' && myColor!=='spectator') db.collection('games').doc(currentGameId).update({status:'aborted'}); backToLobby(); } }
-        function startBotGame() { gameMode='bot'; myColor='w'; currentWhiteSkin=userData.equippedSkin; currentBlackSkin='default'; showScreen('game-screen'); updateBoardVisuals(); game=new Chess(); board=Chessboard('board', {position:'start', moveSpeed:250, draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'}); $('#board').off('click').on('click', '.square-55d63', handleSquareClick); $('#player-top').text("Bot"); $('#player-bottom').text("Du"); }
+        function startBotGame() { gameMode='bot'; myColor='w'; currentWhiteSkin=userData.equippedSkin; currentBlackSkin='default'; showScreen('game-screen'); updateBoardVisuals(); game=new Chess(); board=Chessboard('board', {position:'start', moveSpeed:200, draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'}); $('#board').off('click').on('click', '.square-55d63', handleSquareClick); $('#player-top').text("Bot"); $('#player-bottom').text("Du"); }
         function botMove() { if(game.game_over())return; const m=game.moves({verbose:true}); const move=m[Math.floor(Math.random()*m.length)]; game.move(move.san); board.position(game.fen(), true); if(move.captured) playKillAnim(move.to, 'default'); }
         function joinRankedQueue() { $('#queue-overlay').removeClass('hidden'); queueTime=0; if(queueInterval)clearInterval(queueInterval); queueInterval=setInterval(()=>{queueTime++;$('#queue-timer').text(`Zeit: ${queueTime}s`);checkMatchmaking();},2000); db.collection('queue').doc(currentUser.uid).set({uid:currentUser.uid,username:userData.username,displayId:userData.displayId,joinedAt:firebase.firestore.FieldValue.serverTimestamp(),gameId:null,skin:userData.equippedSkin}); if(queueListener)queueListener(); queueListener=db.collection('queue').doc(currentUser.uid).onSnapshot(d=>{if(d.exists&&d.data().gameId){leaveQueue(false);db.collection('queue').doc(currentUser.uid).delete();db.collection('users').doc(currentUser.uid).update({activeGameId:d.data().gameId});loadOnlineGame(d.data().gameId);}}); }
         async function checkMatchmaking(){ const s=await db.collection('queue').orderBy('joinedAt','asc').limit(2).get(); if(s.size>=2){const p1=s.docs[0].data(),p2=s.docs[1].data(); if(p1.uid===currentUser.uid){const g=db.collection('games').doc(); await g.set({white:p1.uid,whiteName:p1.username,whiteId:p1.displayId,whiteSkin:p1.skin,black:p2.uid,blackName:p2.username,blackId:p2.displayId,blackSkin:p2.skin,fen:'start',turn:'w',status:'active',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); const b=db.batch(); b.update(db.collection('queue').doc(p1.uid),{gameId:g.id}); b.update(db.collection('queue').doc(p2.uid),{gameId:g.id}); await b.commit();}}}
@@ -496,7 +432,7 @@
         function listenNotifications(){ if(notifListener)notifListener(); notifListener=db.collection('users').doc(currentUser.uid).collection('notifications').orderBy('timestamp','desc').onSnapshot(s=>{ $('#bell-badge').text(s.size).toggleClass('hidden',s.size===0); let h=s.size===0?'<div class="text-center small p-3">Leer</div>':''; s.forEach(d=>{const n=d.data(); h+=`<div class="notif-item"><b>${n.title}</b><div class="small mb-2">${n.message}</div><div class="d-flex gap-2"><button onclick="handleNotif('${d.id}','${n.type}',true,'${n.fromUid}','${n.payload}')" class="btn btn-sm btn-success flex-grow-1">Ja</button><button onclick="handleNotif('${d.id}','${n.type}',false)" class="btn btn-sm btn-secondary">Nein</button></div></div>`;}); $('#notif-list').html(h); }); }
         function handleNotif(id,t,a,f,p){ const r=db.collection('users').doc(currentUser.uid).collection('notifications').doc(id); if(!a){r.delete();return;} if(t==='friend_request'){const b=db.batch(); b.update(db.collection('users').doc(currentUser.uid),{friends:firebase.firestore.FieldValue.arrayUnion(f)}); b.update(db.collection('users').doc(f),{friends:firebase.firestore.FieldValue.arrayUnion(currentUser.uid)}); b.delete(r); b.commit().then(()=>{closeModal('notif-modal');alert("Freund!");}); } else if(t==='game_invite'){ db.collection('games').doc(p).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{r.delete();closeModal('notif-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:p});loadOnlineGame(p);}); } }
         function openProfile(u){ db.collection('users').doc(u).get().then(d=>{const f=d.data();$('#profile-name').text(f.username);$('#profile-id').text(`#${f.displayId}`);$('#profile-wins').text(f.wins||0);let b=`<button onclick="inviteFriend('${u}','${f.username}')" class="btn btn-primary w-100">Herausfordern</button>`;$('#profile-actions').html(b);$('#profile-modal').removeClass('hidden');});}
-        function inviteFriend(u,n){ const g=db.collection('games').doc(); g.set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,black:u,blackName:n,blackId:'?',fen:'start',turn:'w',status:'waiting_friend',createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{ db.collection('users').doc(u).collection('notifications').add({type:'game_invite',fromUid:currentUser.uid,title:'Herausforderung',message:`${userData.username} fordert dich.`,payload:g.id,timestamp:firebase.firestore.FieldValue.serverTimestamp()}).then(n=>{currentChallengeGameId=g.id;currentChallengeNotifId=n.id;currentChallengeTargetUid=u;$('#challenge-target-name').text(n);$('#challenge-wait-modal').removeClass('hidden');closeModal('profile-modal');if(challengeListener)challengeListener();challengeListener=g.onSnapshot(d=>{if(d.exists&&d.data().status==='active'){if(challengeListener)challengeListener();$('#challenge-wait-modal').addClass('hidden');db.collection('users').doc(currentUser.uid).update({activeGameId:g.id});loadOnlineGame(g.id);}});});});}
+        function inviteFriend(u,n){ const g=db.collection('games').doc(); g.set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,black:u,blackName:n,blackId:'?',fen:'start',turn:'w',status:'waiting_friend',createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{ db.collection('users').doc(u).collection('notifications').add({type:'game_invite',fromUid:currentUser.uid,title:'Herausforderung',message:`${userData.username} fordert dich.`,payload:g.id,timestamp:firebase.firestore.FieldValue.serverTimestamp()}); closeModal('profile-modal'); db.collection('users').doc(currentUser.uid).update({activeGameId:g.id}); loadOnlineGame(g.id); }); }
         function cancelChallenge() { if(challengeListener) challengeListener(); db.collection('games').doc(currentChallengeGameId).delete(); db.collection('users').doc(currentChallengeTargetUid).collection('notifications').doc(currentChallengeNotifId).delete(); $('#challenge-wait-modal').addClass('hidden'); }
     </script>
 </body>
