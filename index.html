@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters Pro - Bot & Friends</title>
+    <title>Chess Masters Social</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -17,10 +17,6 @@
         .card-dark { background-color: #242526; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); margin-bottom: 20px; border: 1px solid #333; }
         .btn-primary-custom { background-color: #2D88FF; color: white; font-weight: bold; border: none; }
         .btn-primary-custom:hover { background-color: #1A73E8; color: white; }
-        .btn-bot { background-color: #e67e22; color: white; font-weight: bold; border: none; }
-        .btn-bot:hover { background-color: #d35400; color: white; }
-        .btn-private { background-color: #9b59b6; color: white; font-weight: bold; border: none; }
-        .btn-private:hover { background-color: #8e44ad; color: white; }
         
         .hidden { display: none !important; }
         .id-badge { background: #3a3b3c; color: #b0b3b8; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 5px; }
@@ -28,46 +24,75 @@
         #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; user-select: none; }
         .board-wrapper { position: relative; max-width: 550px; margin: 0 auto; }
         
-        /* Queue Overlay */
-        #queue-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(36, 37, 38, 0.95); z-index: 500;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            border-radius: 10px;
-        }
-        .pulse-ring {
-            border: 4px solid #2D88FF; border-radius: 50%; height: 60px; width: 60px;
-            animation: pulsate 2s infinite; margin-bottom: 20px;
-        }
-        @keyframes pulsate { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
-
-        /* End Screen Overlay */
-        #end-screen-overlay {
+        /* Overlays */
+        #queue-overlay, #end-screen-overlay, .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 9999;
+            background: rgba(0,0,0,0.85); z-index: 2000;
             display: flex; justify-content: center; align-items: center;
         }
-        .end-card { background: #242526; padding: 40px; border-radius: 20px; text-align: center; border: 2px solid #444; min-width: 300px; }
-        .win-title { font-size: 3rem; font-weight: 900; color: #2ecc71; text-shadow: 0 0 20px rgba(46, 204, 113, 0.5); }
-        .lose-title { font-size: 3rem; font-weight: 900; color: #e74c3c; text-shadow: 0 0 20px rgba(231, 76, 60, 0.5); }
-        
-        /* Modal */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; display: flex; justify-content: center; align-items: center; }
-        .modal-content-custom { background: #242526; width: 400px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; }
+        .modal-content-custom { background: #242526; width: 400px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; position: relative; }
 
-        .move-log { height: 250px; overflow-y: auto; background: #18191a; padding: 10px; border-radius: 6px; }
-
-        /* --- Click System Styles --- */
-        .highlight-dot {
-            background-color: rgba(45, 136, 255, 0.8);
-            width: 25%; height: 25%; border-radius: 50%;
-            position: absolute; top: 37.5%; left: 37.5%; pointer-events: none;
+        /* Notifications */
+        .notification-bell { position: relative; cursor: pointer; font-size: 1.2rem; margin-right: 15px; }
+        .notification-badge { 
+            position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; 
+            border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; 
+            display: flex; justify-content: center; align-items: center; 
         }
+        .notif-item { background: #3a3b3c; padding: 10px; border-radius: 5px; margin-bottom: 5px; font-size: 0.9em; }
+
+        /* Friend List */
+        .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; }
+        .friend-item:hover { background: #3a3b3c; }
+        .best-friend { color: #f1c40f; } /* Gold Stern */
+
+        /* Profile Card */
+        .profile-avatar { width: 80px; height: 80px; background: #2D88FF; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; margin: 0 auto 10px auto; }
+        .stat-box { background: #333; padding: 10px; border-radius: 5px; text-align: center; flex: 1; margin: 5px; }
+
+        /* Game Elements */
+        .highlight-dot { background-color: rgba(45, 136, 255, 0.8); width: 25%; height: 25%; border-radius: 50%; position: absolute; top: 37.5%; left: 37.5%; pointer-events: none; }
         .highlight-square { box-shadow: inset 0 0 3px 3px rgba(255, 255, 0, 0.5); }
         .square-55d63 { cursor: pointer; }
+        
+        .win-title { color: #2ecc71; font-size: 3rem; font-weight: 900; }
+        .lose-title { color: #e74c3c; font-size: 3rem; font-weight: 900; }
     </style>
 </head>
 <body>
+
+    <div id="notif-modal" class="modal-overlay hidden">
+        <div class="modal-content-custom">
+            <h4><i class="fas fa-bell"></i> Benachrichtigungen</h4>
+            <div id="notif-list" style="max-height: 300px; overflow-y: auto; margin-top: 15px;">
+                </div>
+            <button onclick="closeModal('notif-modal')" class="btn btn-secondary w-100 mt-3">Schließen</button>
+        </div>
+    </div>
+
+    <div id="profile-modal" class="modal-overlay hidden">
+        <div class="modal-content-custom text-center">
+            <div class="profile-avatar"><i class="fas fa-user"></i></div>
+            <h3 id="profile-name">Username</h3>
+            <p class="text-muted" id="profile-id">#123</p>
+            
+            <div class="d-flex justify-content-center">
+                <div class="stat-box">
+                    <h4 id="profile-wins" class="text-warning m-0">0</h4>
+                    <small>Wins</small>
+                </div>
+                <div class="stat-box">
+                    <h4 id="profile-status" class="text-success m-0">Online</h4>
+                    <small>Status</small>
+                </div>
+            </div>
+            
+            <hr>
+            <div id="profile-actions" class="d-grid gap-2">
+                </div>
+            <button onclick="closeModal('profile-modal')" class="btn btn-outline-secondary mt-3 w-100">Schließen</button>
+        </div>
+    </div>
 
     <div id="settings-modal" class="modal-overlay hidden">
         <div class="modal-content-custom">
@@ -75,15 +100,14 @@
             <input type="text" id="settings-username" class="form-control mb-3" placeholder="Neuer Name">
             <input type="password" id="settings-password" class="form-control mb-3" placeholder="Neues Passwort">
             <div class="d-flex justify-content-end gap-2">
-                <button onclick="closeSettings()" class="btn btn-secondary">Abbrechen</button>
+                <button onclick="closeModal('settings-modal')" class="btn btn-secondary">Abbrechen</button>
                 <button onclick="saveSettings()" class="btn btn-success">Speichern</button>
             </div>
-            <div id="settings-msg" class="mt-2 small"></div>
         </div>
     </div>
 
     <div id="end-screen-overlay" class="hidden">
-        <div class="end-card">
+        <div class="modal-content-custom text-center">
             <div id="end-title" class="win-title">SIEG!</div>
             <p id="end-reason" class="text-muted my-3">...</p>
             <button onclick="backToLobby()" class="btn btn-light btn-lg w-100 fw-bold">Zurück zur Lobby</button>
@@ -93,14 +117,20 @@
     <div class="app-container">
         
         <div class="d-flex justify-content-between align-items-center mb-4 p-3 card-dark">
-            <h3 class="m-0 fw-bold"><i class="fas fa-chess"></i> CHESS PRO</h3>
-            <div id="nav-user-area" class="hidden d-flex align-items-center gap-3">
-                <div>
-                    <span id="nav-username" class="fw-bold text-white">Gast</span>
-                    <span id="nav-userid" class="id-badge">#?</span>
+            <h3 class="m-0 fw-bold"><i class="fas fa-chess"></i> CHESS SOCIAL</h3>
+            <div id="nav-user-area" class="hidden d-flex align-items-center">
+                
+                <div class="notification-bell" onclick="openNotifModal()">
+                    <i class="fas fa-bell"></i>
+                    <div id="bell-badge" class="notification-badge hidden">0</div>
                 </div>
-                <button onclick="openSettings()" class="btn btn-sm btn-outline-light"><i class="fas fa-cog"></i></button>
-                <button onclick="logout()" class="btn btn-sm btn-outline-danger">Logout</button>
+
+                <div class="me-3 text-end">
+                    <div class="fw-bold text-white"><span id="nav-username">Gast</span></div>
+                    <div class="small text-muted">ID: <span id="nav-userid">#?</span> | Wins: <span id="nav-wins" class="text-warning">0</span></div>
+                </div>
+                <button onclick="openSettings()" class="btn btn-sm btn-outline-light me-2"><i class="fas fa-cog"></i></button>
+                <button onclick="logout()" class="btn btn-sm btn-outline-danger"><i class="fas fa-sign-out-alt"></i></button>
             </div>
         </div>
 
@@ -119,61 +149,38 @@
         <div id="lobby-screen" class="hidden">
             <div class="row">
                 <div class="col-md-7">
-                    <div class="card-dark text-center" style="padding: 30px 20px; position: relative; min-height: 400px;">
+                    <div class="card-dark text-center" style="padding: 40px 20px; position: relative; min-height: 400px;">
                         
-                        <div id="queue-overlay" class="hidden">
-                            <div class="pulse-ring"></div>
-                            <h3>Suche Gegner...</h3>
-                            <p class="text-muted">Ranked Matchmaking</p>
-                            <p class="small text-muted" id="queue-time">0s</p>
+                        <div id="queue-overlay" class="hidden" style="position: absolute; border-radius: 10px;">
+                            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+                            <h3 class="mt-3">Suche Gegner...</h3>
                             <button onclick="leaveQueue()" class="btn btn-outline-danger mt-3">Abbrechen</button>
                         </div>
 
-                        <h2 class="fw-bold mb-4">Modus wählen</h2>
+                        <h2 class="fw-bold mb-4">Spielen</h2>
+                        <button onclick="joinQueue()" class="btn btn-primary-custom btn-lg w-100 p-3 mb-3"><i class="fas fa-globe"></i> RANKED MATCH</button>
                         
-                        <div class="d-grid gap-3">
-                            <button onclick="joinQueue()" class="btn btn-primary-custom btn-lg p-3">
-                                <i class="fas fa-trophy"></i> RANKED SPIELEN (Warteschlange)
-                            </button>
-                            
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <button onclick="startBotGame()" class="btn btn-bot w-100 p-3">
-                                        <i class="fas fa-robot"></i> GEGEN BOT
-                                    </button>
-                                </div>
-                                <div class="col-6">
-                                    <button onclick="createPrivateGame()" class="btn btn-private w-100 p-3">
-                                        <i class="fas fa-user-secret"></i> PRIVATER RAUM
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr>
-                        <p class="small text-muted mb-1">Privatem Spiel beitreten:</p>
-                        <div class="d-flex justify-content-center gap-2">
-                            <input type="text" id="join-id-input" class="form-control" style="max-width: 150px;" placeholder="Code eingeben...">
-                            <button onclick="joinGameByCode()" class="btn btn-secondary">Beitreten</button>
+                        <div class="row g-2">
+                            <div class="col-6"><button onclick="startBotGame()" class="btn btn-warning w-100 p-3 fw-bold"><i class="fas fa-robot"></i> VS BOT</button></div>
+                            <div class="col-6"><button onclick="createPrivateGame()" class="btn btn-info w-100 p-3 fw-bold"><i class="fas fa-user-secret"></i> PRIVATE</button></div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="col-md-5">
                     <div class="card-dark">
-                        <h5 class="text-info"><i class="fas fa-user-friends"></i> Freunde</h5>
-                        <div class="input-group mb-2">
-                            <input type="number" id="friend-id-input" class="form-control" placeholder="User ID (z.B. 42)">
-                            <button onclick="addFriendById()" class="btn btn-outline-info">Add</button>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="m-0 text-info"><i class="fas fa-user-friends"></i> Freunde</h5>
+                            <small class="text-muted">Klick für Profil</small>
                         </div>
-                        <div id="friends-list" style="max-height: 150px; overflow-y: auto;" class="small">
-                            <span class="text-muted">Lade Freunde...</span>
+                        
+                        <div class="input-group mb-3">
+                            <input type="number" id="friend-id-input" class="form-control form-control-sm" placeholder="ID eingeben (z.B. 42)">
+                            <button onclick="sendFriendRequest()" class="btn btn-sm btn-outline-info">Anfrage</button>
                         </div>
-                    </div>
 
-                    <div class="card-dark">
-                        <h5 class="text-warning"><i class="fas fa-trophy"></i> Top Wins</h5>
-                        <div id="leaderboard-list" style="max-height: 200px; overflow-y: auto;"></div>
+                        <div id="friends-list" style="max-height: 300px; overflow-y: auto;">
+                            </div>
                     </div>
                 </div>
             </div>
@@ -186,27 +193,21 @@
                         <span id="player-top"><i class="fas fa-user"></i> Gegner</span>
                         <span id="game-status-text" class="badge bg-success">Spiel läuft</span>
                     </div>
-                    
                     <div class="board-wrapper">
                         <div id="board"></div>
-                        <div id="wait-overlay" class="hidden board-overlay">
-                            <h4 class="text-white">Warte auf Gegner...</h4>
-                            <p class="text-muted">Teile diesen Code:</p>
-                            <h2 class="text-warning user-select-all" id="private-code-display">...</h2>
-                            <button onclick="leaveGame()" class="btn btn-outline-danger btn-sm mt-3">Abbrechen</button>
+                        <div id="wait-overlay" class="hidden" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                            <h3 class="text-white">Privater Raum</h3>
+                            <p class="text-muted">Code: <b class="text-warning user-select-all" id="private-code-display">...</b></p>
+                            <button onclick="leaveGame()" class="btn btn-danger btn-sm">Verlassen</button>
                         </div>
                     </div>
-
-                    <div class="mt-2">
-                        <span id="player-bottom"><i class="fas fa-user"></i> Du</span>
-                    </div>
+                    <div class="mt-2"><span id="player-bottom"><i class="fas fa-user"></i> Du</span></div>
                 </div>
-
-                <div class="col-lg-5 mt-3 mt-lg-0">
+                <div class="col-lg-5 mt-3">
                     <div class="card-dark h-100 d-flex flex-column">
                         <h5>Verlauf</h5>
                         <div id="move-history" class="move-log flex-grow-1 mb-3"></div>
-                        <button onclick="leaveGame()" class="btn btn-danger w-100">Aufgeben / Verlassen</button>
+                        <button onclick="leaveGame()" class="btn btn-danger w-100">Spiel verlassen</button>
                     </div>
                 </div>
             </div>
@@ -217,275 +218,291 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
-    
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <script>
-        // --- 1. FIREBASE CONFIG ---
+        // --- CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyBqCKRhB87r_r-IgbOd9ESm9MQLKTGwSU0",
             authDomain: "chess-dff93.firebaseapp.com",
             projectId: "chess-dff93",
             storageBucket: "chess-dff93.firebasestorage.app",
             messagingSenderId: "1013706120323",
-            appId: "1:1013706120323:web:768c8e77c5f49479150fb6",
-            measurementId: "G-SK8BMR8YKF"
+            appId: "1:1013706120323:web:768c8e77c5f49479150fb6"
         };
-
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        let currentUser = null;
-        let userData = null;
-        let game = new Chess();
-        let board = null;
-        let currentGameId = null;
-        let myColor = 'w';
-        let gameMode = 'online'; // 'online' oder 'bot'
-        
-        let gameListener = null;
-        let queueListener = null;
-        let queueTimerInterval = null;
+        // GLOBALS
+        let currentUser = null, userData = null;
+        let game = new Chess(), board = null, myColor = 'w';
+        let currentGameId = null, gameMode = 'online';
+        let gameListener = null, queueListener = null, notifListener = null;
         let selectedSquare = null;
 
-        // --- 2. AUTH & INIT ---
+        // --- AUTH ---
         auth.onAuthStateChanged(user => {
             if(user) {
                 currentUser = user;
                 db.collection('users').doc(user.uid).onSnapshot(doc => {
                     if(doc.exists) {
                         userData = doc.data();
-                        updateNavUI();
-                        showScreen('lobby-screen');
-                        updateLeaderboard();
+                        updateHeader();
                         loadFriends();
+                        listenNotifications();
+                        showScreen('lobby-screen');
+                        
+                        // Check if in game or queue
                         checkQueueStatus();
+                        if(userData.activeGameId) loadOnlineGame(userData.activeGameId);
                     }
                 });
-            } else {
-                showScreen('auth-screen');
-            }
+            } else { showScreen('auth-screen'); }
         });
 
-        // --- 3. NEUE FEATURES ---
-
-        // A. BOT MODUS
-        function startBotGame() {
-            gameMode = 'bot';
-            myColor = 'w';
-            currentGameId = 'bot-game';
-            
-            showScreen('game-screen');
-            $('#end-screen-overlay').addClass('hidden');
-            $('#wait-overlay').addClass('hidden');
-            
-            initBoardConfig();
-            $('#player-top').text("Computer (Level 1)");
-            $('#player-bottom').text("Du (Weiß)");
-            $('#game-status-text').text("Lokal vs Bot");
-            
-            game = new Chess();
-            board.position('start');
+        function updateHeader() {
+            $('#nav-username').text(userData.username);
+            $('#nav-userid').text(`#${userData.displayId}`);
+            $('#nav-wins').text(userData.wins || 0);
+            $('#nav-user-area').removeClass('hidden');
         }
 
-        function makeBotMove() {
-            if(game.game_over()) return;
-            
-            // Einfache KI: Schlage Figur, wenn möglich. Sonst Random.
-            const moves = game.moves({ verbose: true });
-            if(moves.length === 0) return;
+        // --- NOTIFICATIONS SYSTEM ---
+        function listenNotifications() {
+            if(notifListener) notifListener();
+            notifListener = db.collection('users').doc(currentUser.uid).collection('notifications')
+                .orderBy('timestamp', 'desc').onSnapshot(snap => {
+                    const count = snap.size;
+                    $('#bell-badge').text(count).toggleClass('hidden', count === 0);
+                    
+                    let html = '';
+                    if(count === 0) html = '<div class="text-center text-muted p-3">Keine Benachrichtigungen</div>';
+                    
+                    snap.forEach(doc => {
+                        const n = doc.data();
+                        html += `
+                            <div class="notif-item">
+                                <div class="fw-bold">${n.title}</div>
+                                <div class="small text-muted mb-2">${n.message}</div>
+                                <div class="d-flex gap-2">
+                                    <button onclick="handleNotif('${doc.id}', '${n.type}', true, '${n.fromUid}', '${n.payload}')" class="btn btn-sm btn-success flex-grow-1">Annehmen</button>
+                                    <button onclick="handleNotif('${doc.id}', '${n.type}', false)" class="btn btn-sm btn-outline-secondary">Ablehnen</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    $('#notif-list').html(html);
+                });
+        }
 
-            // Suche nach Captures
-            let bestMove = moves.find(m => m.flags.includes('c') || m.flags.includes('e')); // Capture or En Passant
+        function handleNotif(notifId, type, accepted, fromUid, payload) {
+            const notifRef = db.collection('users').doc(currentUser.uid).collection('notifications').doc(notifId);
             
-            // Wenn kein Capture, nimm zufälligen Zug
-            if(!bestMove) {
-                bestMove = moves[Math.floor(Math.random() * moves.length)];
+            if(!accepted) {
+                notifRef.delete();
+                return;
             }
-            
-            game.move(bestMove.san);
-            board.position(game.fen());
-            addLog("Bot: " + bestMove.san);
-            checkGameOverLocally();
+
+            if(type === 'friend_request') {
+                // Freunde verknüpfen (Beide Seiten)
+                const batch = db.batch();
+                batch.update(db.collection('users').doc(currentUser.uid), { friends: firebase.firestore.FieldValue.arrayUnion(fromUid) });
+                batch.update(db.collection('users').doc(fromUid), { friends: firebase.firestore.FieldValue.arrayUnion(currentUser.uid) });
+                batch.delete(notifRef);
+                batch.commit().then(() => { closeModal('notif-modal'); alert("Freundschaft angenommen!"); });
+            } 
+            else if (type === 'game_invite') {
+                // Spiel beitreten
+                notifRef.delete();
+                closeModal('notif-modal');
+                joinGameByDirectId(payload);
+            }
         }
 
-        // B. PRIVATE GAME
-        function createPrivateGame() {
-            gameMode = 'online';
-            const gameRef = db.collection('games').doc();
-            const code = Math.random().toString(36).substring(2, 7).toUpperCase(); // Kurzer Code
+        function openNotifModal() { $('#notif-modal').removeClass('hidden'); }
 
-            // Wir nutzen die ID als Code, aber erstellen ein Feld 'code' für schönere Optik
-            // Einfachheitshalber: ID ist der Code
-            db.collection('games').doc(code).set({
-                white: currentUser.uid, whiteName: userData.username, whiteId: userData.displayId,
-                black: null, fen: 'start', turn: 'w', status: 'waiting_private',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                loadOnlineGame(code);
-                $('#wait-overlay').removeClass('hidden'); // Zeige Warte-Screen
-                $('#private-code-display').text(code);
-            });
-        }
-
-        // C. FREUNDE PER ID
-        function addFriendById() {
+        // --- FRIEND SYSTEM ---
+        function sendFriendRequest() {
             const idInput = $('#friend-id-input').val();
             if(!idInput) return;
-            const targetId = parseInt(idInput); // String zu Zahl machen
+            const targetId = parseInt(idInput);
 
             db.collection('users').where('displayId', '==', targetId).get().then(snap => {
-                if(snap.empty) {
-                    alert("Nutzer mit ID #" + targetId + " nicht gefunden.");
-                } else {
-                    const friendDoc = snap.docs[0];
-                    const friendData = friendDoc.data();
-                    
-                    if(friendData.uid === currentUser.uid) return alert("Das bist du selbst.");
+                if(snap.empty) return alert("User nicht gefunden.");
+                const targetUser = snap.docs[0];
+                if(targetUser.id === currentUser.uid) return alert("Das bist du.");
 
-                    // In Array speichern
-                    db.collection('users').doc(currentUser.uid).update({
-                        friends: firebase.firestore.FieldValue.arrayUnion(friendData.uid)
-                    }).then(() => {
-                        alert("Freund hinzugefügt!");
-                        $('#friend-id-input').val('');
-                    });
-                }
+                // Check ob schon Freunde
+                if(userData.friends && userData.friends.includes(targetUser.id)) return alert("Ihr seid schon Freunde.");
+
+                // Benachrichtigung senden
+                db.collection('users').doc(targetUser.id).collection('notifications').add({
+                    type: 'friend_request',
+                    fromUid: currentUser.uid,
+                    title: 'Freundschaftsanfrage',
+                    message: `${userData.username} möchte dein Freund sein.`,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    payload: null
+                }).then(() => {
+                    alert("Anfrage gesendet!");
+                    $('#friend-id-input').val('');
+                });
             });
         }
 
         function loadFriends() {
             if(!userData.friends || userData.friends.length === 0) {
-                $('#friends-list').html('<span class="text-muted">Keine Freunde.</span>');
+                $('#friends-list').html('<div class="text-center text-muted small mt-3">Noch keine Freunde.<br>Gib eine ID ein!</div>');
                 return;
             }
 
-            // Wir laden die Freundesdaten. Achtung: Bei vielen Freunden ist das ineffizient, 
-            // aber für dieses Projekt okay.
-            $('#friends-list').html('');
-            userData.friends.forEach(uid => {
-                db.collection('users').doc(uid).get().then(doc => {
-                    if(doc.exists) {
-                        const f = doc.data();
-                        const isOnline = f.status === 'online' ? '<span class="text-success">●</span>' : '<span class="text-muted">○</span>';
-                        $('#friends-list').append(`
-                            <div class="d-flex justify-content-between p-1 border-bottom border-dark">
-                                <span>${isOnline} ${f.username} <span class="text-muted">#${f.displayId}</span></span>
+            // Freunde laden
+            // Hinweis: Firestore "in" Query ist limitiert auf 10, daher holen wir Docs einzeln bei Klick oder rendern simple Liste.
+            // Besser: Wir holen die Daten dynamisch.
+            const friendsList = $('#friends-list');
+            friendsList.empty();
+
+            userData.friends.forEach(fUid => {
+                db.collection('users').doc(fUid).get().then(doc => {
+                    if(!doc.exists) return;
+                    const f = doc.data();
+                    const isBest = (userData.bestFriends && userData.bestFriends.includes(fUid));
+                    const isPlaying = !!f.activeGameId;
+                    const starClass = isBest ? 'best-friend' : 'text-muted';
+                    const icon = isPlaying ? '<i class="fas fa-eye text-danger"></i>' : '<i class="fas fa-circle text-success small"></i>';
+                    
+                    const el = $(`
+                        <div class="friend-item" onclick="openProfile('${fUid}')">
+                            <div>
+                                <i class="fas fa-star ${starClass} me-2" onclick="toggleBestFriend(event, '${fUid}')"></i>
+                                <b>${f.username}</b> <small class="text-muted">#${f.displayId}</small>
                             </div>
-                        `);
-                    }
+                            <div class="d-flex align-items-center gap-2">
+                                ${isPlaying ? '<span class="badge bg-danger small">Im Spiel</span>' : ''}
+                                ${icon}
+                            </div>
+                        </div>
+                    `);
+                    
+                    // Sortierung: Beste Freunde oben
+                    if(isBest) friendsList.prepend(el); else friendsList.append(el);
                 });
             });
         }
 
-        // --- 4. QUEUE & MATCHMAKING ---
-        function joinQueue() {
-            gameMode = 'online';
-            if(!userData) return;
-            showQueueUI();
-            db.collection('queue').doc(currentUser.uid).set({
-                uid: currentUser.uid, username: userData.username, displayId: userData.displayId,
-                joinedAt: firebase.firestore.FieldValue.serverTimestamp(), gameId: null
+        function toggleBestFriend(e, uid) {
+            e.stopPropagation(); // Nicht Profil öffnen
+            let op = userData.bestFriends && userData.bestFriends.includes(uid) ? 'arrayRemove' : 'arrayUnion';
+            db.collection('users').doc(currentUser.uid).update({
+                bestFriends: firebase.firestore.FieldValue[op](uid)
+            });
+        }
+
+        // --- PROFILE & ACTIONS ---
+        function openProfile(uid) {
+            db.collection('users').doc(uid).get().then(doc => {
+                const f = doc.data();
+                $('#profile-name').text(f.username);
+                $('#profile-id').text(`#${f.displayId}`);
+                $('#profile-wins').text(f.wins || 0);
+                
+                const isPlaying = !!f.activeGameId;
+                $('#profile-status').text(isPlaying ? "Spielt gerade" : "Online")
+                    .removeClass().addClass(isPlaying ? "text-danger" : "text-success");
+                
+                let btns = `<button onclick="inviteFriend('${uid}', '${f.username}')" class="btn btn-primary"><i class="fas fa-swords"></i> Herausfordern</button>`;
+                
+                if(isPlaying) {
+                    btns += `<button onclick="spectateGame('${f.activeGameId}')" class="btn btn-warning mt-2"><i class="fas fa-eye"></i> Zuschauen</button>`;
+                }
+
+                $('#profile-actions').html(btns);
+                $('#profile-modal').removeClass('hidden');
+            });
+        }
+
+        function inviteFriend(uid, name) {
+            if(!confirm(`Möchtest du ${name} herausfordern?`)) return;
+            
+            // Spiel erstellen
+            const gameRef = db.collection('games').doc();
+            gameRef.set({
+                white: currentUser.uid, whiteName: userData.username, whiteId: userData.displayId,
+                black: uid, blackName: name, blackId: '?', // Wird geupdated wenn er joint
+                fen: 'start', turn: 'w', status: 'active',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                attemptMatchmaking();
-                listenToMyQueueEntry();
+                // Einladung senden
+                db.collection('users').doc(uid).collection('notifications').add({
+                    type: 'game_invite', fromUid: currentUser.uid, title: 'Herausforderung!',
+                    message: `${userData.username} fordert dich heraus.`,
+                    payload: gameRef.id, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                closeModal('profile-modal');
+                loadOnlineGame(gameRef.id);
             });
         }
 
-        async function attemptMatchmaking() {
-            try {
-                const snapshot = await db.collection('queue').orderBy('joinedAt', 'asc').limit(2).get();
-                if (snapshot.size >= 2) {
-                    const p1 = snapshot.docs[0].data();
-                    const p2 = snapshot.docs[1].data();
-                    await db.runTransaction(async (t) => {
-                        const newGameRef = db.collection('games').doc();
-                        t.update(db.collection('queue').doc(p1.uid), { gameId: newGameRef.id });
-                        t.update(db.collection('queue').doc(p2.uid), { gameId: newGameRef.id });
-                        t.set(newGameRef, {
-                            white: p1.uid, whiteName: p1.username, whiteId: p1.displayId,
-                            black: p2.uid, blackName: p2.username, blackId: p2.displayId,
-                            fen: 'start', turn: 'w', status: 'active', result: null,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    });
-                }
-            } catch (e) { console.log(e); }
+        function spectateGame(gameId) {
+            closeModal('profile-modal');
+            loadOnlineGame(gameId, true); // true = spectator
         }
 
-        function listenToMyQueueEntry() {
-            if(queueListener) queueListener();
-            queueListener = db.collection('queue').doc(currentUser.uid).onSnapshot(doc => {
-                if(doc.exists && doc.data().gameId) {
-                    loadOnlineGame(doc.data().gameId);
-                    db.collection('queue').doc(currentUser.uid).delete();
-                } else if(!doc.exists) hideQueueUI();
-            });
-        }
+        // --- GAME ENGINE ---
+        function loadOnlineGame(id, asSpectator = false) {
+            currentGameId = id;
+            gameMode = 'online';
+            showScreen('game-screen');
+            $('#wait-overlay').addClass('hidden');
+            
+            // Setze active Game ID für User
+            if(!asSpectator) db.collection('users').doc(currentUser.uid).update({ activeGameId: id });
 
-        function leaveQueue() { db.collection('queue').doc(currentUser.uid).delete(); hideQueueUI(); }
-        function checkQueueStatus() {
-            db.collection('queue').doc(currentUser.uid).get().then(doc => {
-                if(doc.exists) {
-                    if(doc.data().gameId) {
-                        loadOnlineGame(doc.data().gameId);
-                        db.collection('queue').doc(currentUser.uid).delete();
-                    } else { showQueueUI(); listenToMyQueueEntry(); attemptMatchmaking(); }
-                }
-            });
-        }
-        function showQueueUI() { $('#queue-overlay').removeClass('hidden'); let s = 0; if(queueTimerInterval) clearInterval(queueTimerInterval); queueTimerInterval = setInterval(() => { s++; $('#queue-time').text(`${s}s`); }, 1000); }
-        function hideQueueUI() { $('#queue-overlay').addClass('hidden'); if(queueTimerInterval) clearInterval(queueTimerInterval); if(queueListener) queueListener(); }
-
-        // --- 5. GAME ENGINE (CLICK) ---
-        function initBoardConfig() {
             game = new Chess();
             $('#move-history').empty();
-            selectedSquare = null;
+            
+            // Board setup: Spectator kann nicht ziehen
             board = Chessboard('board', {
                 position: 'start', draggable: false,
                 pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
             });
-            $('#board').off('click').on('click', '.square-55d63', handleSquareClick);
-        }
 
-        function loadOnlineGame(id) {
-            gameMode = 'online';
-            currentGameId = id;
-            hideQueueUI();
-            showScreen('game-screen');
-            $('#end-screen-overlay').addClass('hidden');
-            $('#wait-overlay').addClass('hidden');
-
-            initBoardConfig();
+            // Click Handler
+            $('#board').off('click').on('click', '.square-55d63', function() {
+                if(asSpectator) return; // Zuschauer dürfen nicht klicken
+                handleSquareClick.call(this);
+            });
 
             if(gameListener) gameListener();
-            
             gameListener = db.collection('games').doc(id).onSnapshot(doc => {
+                if(!doc.exists) return;
                 const data = doc.data();
-                if(!data) return; 
 
-                if (data.white === currentUser.uid) myColor = 'w';
-                else if (data.black === currentUser.uid) myColor = 'b';
+                // Farben & Namen
+                let topName = "Gegner", bottomName = "Du";
                 
-                // UI & Status
-                if(data.status === 'active') {
-                    $('#wait-overlay').addClass('hidden');
-                    const enemyName = (myColor === 'w') ? data.blackName : data.whiteName;
-                    $('#player-top').text(enemyName);
-                    $('#player-bottom').text("Du (" + (myColor==='w'?'Weiß':'Schwarz') + ")");
+                if(asSpectator) {
+                    myColor = 'spectator';
+                    topName = `${data.blackName} (Schwarz)`;
+                    bottomName = `${data.whiteName} (Weiß)`;
+                    board.orientation('white');
+                    $('#game-status-text').text("Zuschauer Modus").removeClass('bg-success').addClass('bg-warning');
+                } else {
+                    if (data.white === currentUser.uid) myColor = 'w';
+                    else if (data.black === currentUser.uid) myColor = 'b';
+                    
+                    bottomName = "Du (" + (myColor==='w'?'Weiß':'Schwarz') + ")";
+                    topName = (myColor==='w' ? data.blackName : data.whiteName) + " (" + (myColor==='w'?'Schwarz':'Weiß') + ")";
+                    board.orientation(myColor === 'w' ? 'white' : 'black');
                 }
+                
+                $('#player-top').text(topName);
+                $('#player-bottom').text(bottomName);
 
-                // Board drehen
-                board.orientation(myColor === 'w' ? 'white' : 'black');
-
-                // Aborted?
-                if(data.status === 'aborted') { showEndScreen('GEWONNEN!', 'Gegner ist weg.', 'win'); return; }
-
-                // Move Update
+                // Moves
                 if(data.fen && data.fen !== game.fen()) {
                     game.load(data.fen);
                     board.position(data.fen);
@@ -493,150 +510,158 @@
                     if(data.lastMoveSan) addLog(data.lastMoveSan);
                 }
 
-                if (data.result) handleGameEnd(data.result);
+                // Ende
+                if(data.result) showEndScreen(data.result);
+                if(data.status === 'aborted') showEndScreen('aborted');
             });
         }
 
-        // CLICK HANDLING
-        function handleSquareClick(e) {
-            // Egal ob Bot oder Online, Prüfung ist gleich
-            if(game.game_over()) return;
+        // --- QUEUE & PRIVATE ---
+        function joinQueue() {
+            gameMode = 'online';
+            $('#queue-overlay').removeClass('hidden');
+            const ref = db.collection('queue').doc(currentUser.uid);
+            ref.set({
+                uid: currentUser.uid, username: userData.username, displayId: userData.displayId,
+                joinedAt: firebase.firestore.FieldValue.serverTimestamp(), gameId: null
+            });
+            // Simple Matchmaker Logic Client-Side (Wie vorher)
+            listenQueue(ref);
+        }
+        function listenQueue(ref) {
+            queueListener = ref.onSnapshot(doc => {
+                if(doc.exists && doc.data().gameId) {
+                    ref.delete();
+                    loadOnlineGame(doc.data().gameId);
+                    $('#queue-overlay').addClass('hidden');
+                } else {
+                    // Try match
+                     db.collection('queue').orderBy('joinedAt').limit(2).get().then(snap => {
+                        if(snap.size >= 2) {
+                            const p1 = snap.docs[0].data(), p2 = snap.docs[1].data();
+                            // Nur einer triggered
+                            if(p1.uid === currentUser.uid) {
+                                const gid = db.collection('games').doc().id;
+                                db.collection('games').doc(gid).set({
+                                    white: p1.uid, whiteName: p1.username, whiteId: p1.displayId,
+                                    black: p2.uid, blackName: p2.username, blackId: p2.displayId,
+                                    fen: 'start', turn: 'w', status: 'active'
+                                });
+                                db.collection('queue').doc(p1.uid).update({gameId: gid});
+                                db.collection('queue').doc(p2.uid).update({gameId: gid});
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        function leaveQueue() { db.collection('queue').doc(currentUser.uid).delete(); $('#queue-overlay').addClass('hidden'); }
+
+        function createPrivateGame() {
+            const gid = Math.random().toString(36).substring(2,7).toUpperCase();
+            db.collection('games').doc(gid).set({
+                white: currentUser.uid, whiteName: userData.username, whiteId: userData.displayId,
+                status: 'waiting_private', fen: 'start', turn: 'w'
+            });
+            loadOnlineGame(gid);
+            $('#wait-overlay').removeClass('hidden');
+            $('#private-code-display').text(gid);
+        }
+
+        function joinGameByDirectId(id) { loadOnlineGame(id); } // Für Invites
+
+        // --- LOGIC: CLICK & MOVE ---
+        function handleSquareClick() {
+            if(gameMode === 'bot' && game.turn() === 'b') return;
             if(gameMode === 'online' && game.turn() !== myColor) return;
-            if(gameMode === 'bot' && game.turn() !== 'w') return; // Im Bot Modus ist man immer Weiß
+            if(game.game_over()) return;
 
             const square = $(this).attr('data-square');
-
-            if (selectedSquare) {
+            if(selectedSquare) {
                 const move = game.move({ from: selectedSquare, to: square, promotion: 'q' });
-                if (move) {
-                    // ZUG GEMACHT
-                    selectedSquare = null;
-                    removeHighlights();
-                    
-                    if(gameMode === 'online') {
-                        sendMoveOnline(move);
-                    } else {
-                        // Bot Mode Local Updates
-                        board.position(game.fen());
-                        addLog(move.san);
-                        checkGameOverLocally();
-                        // Bot Antwort verzögert
-                        setTimeout(makeBotMove, 500);
-                    }
+                if(move) {
+                    selectedSquare = null; removeHighlights();
+                    if(gameMode === 'online') updateGameOnline(move);
+                    else { board.position(game.fen()); setTimeout(botMove, 500); }
                 } else {
-                    const piece = game.get(square);
-                    if (piece && piece.color === (gameMode==='online'?myColor:'w')) {
-                        selectedSquare = square; highlightPossibleMoves(square);
-                    } else { selectedSquare = null; removeHighlights(); }
+                    selectedSquare = null; removeHighlights();
+                    if(game.get(square) && game.get(square).color === (gameMode==='bot'?'w':myColor)) {
+                        selectedSquare = square; highlight(square);
+                    }
                 }
             } else {
-                const piece = game.get(square);
-                if (piece && piece.color === (gameMode==='online'?myColor:'w')) {
-                    selectedSquare = square; highlightPossibleMoves(square);
+                if(game.get(square) && game.get(square).color === (gameMode==='bot'?'w':myColor)) {
+                    selectedSquare = square; highlight(square);
                 }
             }
         }
-
-        function sendMoveOnline(move) {
-            let result = null; let status = 'active';
-            if (game.game_over()) {
-                if (game.in_checkmate()) { result = game.turn() === 'w' ? 'b' : 'w'; incrementWins(); }
-                else if (game.in_draw()) { result = 'draw'; }
-                status = 'finished';
-            }
-            db.collection('games').doc(currentGameId).update({
-                fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: result, status: status
-            });
-            board.position(game.fen());
-            addLog(move.san);
-        }
-
-        function checkGameOverLocally() {
-             if (game.game_over()) {
-                if(game.in_checkmate()) {
-                    // Wer hat gewonnen?
-                    if(game.turn() === 'b') showEndScreen('SIEG!', 'Bot Matt gesetzt.', 'win');
-                    else showEndScreen('VERLOREN!', 'Bot hat dich zerlegt.', 'lose');
-                } else {
-                    showEndScreen('REMIS', 'Unentschieden.', 'draw');
-                }
-             }
-        }
-
-        function highlightPossibleMoves(square) {
+        function highlight(sq) {
             removeHighlights();
-            $(`.square-${square}`).addClass('highlight-square');
-            game.moves({ square: square, verbose: true }).forEach(move => {
-                $(`.square-${move.to}`).append('<div class="highlight-dot"></div>');
-            });
+            $(`.square-${sq}`).addClass('highlight-square');
+            game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>'));
         }
         function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
-
-        // --- COMMON ---
-        function handleGameEnd(result) {
-            if (result === 'draw') showEndScreen('REMIS', 'Unentschieden.', 'draw');
-            else if (result === myColor) showEndScreen('GEWONNEN!', 'Du hast gewonnen.', 'win');
-            else showEndScreen('VERLOREN', 'Schachmatt.', 'lose');
-        }
-        function showEndScreen(title, reason, type) {
-            $('#end-screen-overlay').removeClass('hidden');
-            $('#end-title').text(title).removeClass().addClass(type==='win'?'win-title':(type==='lose'?'lose-title':'draw-title'));
-            $('#end-reason').text(reason);
-        }
-        function backToLobby() { if(gameListener) gameListener(); $('#end-screen-overlay').addClass('hidden'); showScreen('lobby-screen'); }
-        function incrementWins() { db.collection('users').doc(currentUser.uid).update({ wins: firebase.firestore.FieldValue.increment(1) }); }
         
+        function updateGameOnline(move) {
+            let res = null;
+            if(game.game_over()) {
+                if(game.in_checkmate()) { res = game.turn()==='w'?'b':'w'; db.collection('users').doc(currentUser.uid).update({wins: firebase.firestore.FieldValue.increment(1)}); }
+                else res = 'draw';
+            }
+            db.collection('games').doc(currentGameId).update({ fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: res });
+        }
+        
+        // --- BOT ---
+        function startBotGame() {
+            gameMode = 'bot'; showScreen('game-screen'); $('#wait-overlay').addClass('hidden');
+            game = new Chess(); board = Chessboard('board', {position:'start', draggable:false, pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'});
+            $('#board').off('click').on('click', '.square-55d63', handleSquareClick);
+            $('#player-top').text("Bot"); $('#player-bottom').text("Du");
+        }
+        function botMove() {
+            if(game.game_over()) return;
+            const moves = game.moves();
+            const move = moves[Math.floor(Math.random()*moves.length)];
+            game.move(move); board.position(game.fen());
+        }
+
+        // --- HELPERS ---
+        function showEndScreen(res) {
+            $('#end-screen-overlay').removeClass('hidden');
+            let txt = "SIEG!", color = "text-success";
+            if(res === 'aborted') txt = "GEGNER WEG";
+            else if(res === 'draw') { txt = "REMIS"; color = "text-warning"; }
+            else if(res !== myColor && myColor !== 'spectator') { txt = "VERLOREN"; color = "text-danger"; }
+            $('#end-title').text(txt).removeClass().addClass('win-title '+color);
+        }
+        function backToLobby() { 
+            if(gameListener) gameListener(); 
+            if(currentGameId) db.collection('users').doc(currentUser.uid).update({activeGameId: null});
+            $('#end-screen-overlay').addClass('hidden'); showScreen('lobby-screen'); 
+        }
         function leaveGame() {
-            if(confirm("Spiel verlassen?")) {
-                if(gameMode === 'online' && currentGameId) {
-                     db.collection('games').doc(currentGameId).update({ status: 'aborted' });
-                }
+            if(confirm("Verlassen?")) {
+                if(gameMode === 'online' && myColor !== 'spectator') db.collection('games').doc(currentGameId).update({status: 'aborted'});
                 backToLobby();
             }
         }
-        function joinGameByCode() {
-            const code = $('#join-id-input').val().trim().toUpperCase(); // Case insensitive
-            // Wir suchen das Doc direkt (wir haben die ID als Code genutzt)
-            db.collection('games').doc(code).get().then(doc => {
-                if(doc.exists && doc.data().status === 'waiting_private') {
-                    db.collection('games').doc(code).update({
-                         black: currentUser.uid, blackName: userData.username, blackId: userData.displayId, status: 'active'
-                    }).then(() => loadOnlineGame(code));
-                } else { alert("Raum nicht gefunden oder voll."); }
-            });
-        }
-
-        // --- AUTH & HELPERS ---
         function registerUserWithId() {
-            const email = $('#email-input').val(); const pass = $('#password-input').val(); const name = $('#username-input').val();
-            if(!name) return;
+            const email = $('#email-input').val(), pass = $('#password-input').val(), name = $('#username-input').val();
             const cRef = db.collection('config').doc('userCounter');
             auth.createUserWithEmailAndPassword(email, pass).then(cred => {
                 db.runTransaction(async (t) => {
-                    const d = await t.get(cRef); let n = d.exists ? d.data().count + 1 : 1;
-                    t.set(cRef, { count: n });
-                    t.set(db.collection('users').doc(cred.user.uid), { username: name, displayId: n, uid: cred.user.uid, wins: 0, friends: [] });
+                    const d = await t.get(cRef); let n = d.exists?d.data().count+1:1;
+                    t.set(cRef, {count:n});
+                    t.set(db.collection('users').doc(cred.user.uid), {username:name, displayId:n, uid:cred.user.uid, wins:0, friends:[]});
                 });
-            }).catch(e => $('#auth-error').text(e.message));
-        }
-        function loginUser() { auth.signInWithEmailAndPassword($('#email-input').val(), $('#password-input').val()).catch(e=>$('#auth-error').text(e.message)); }
-        function logout() { auth.signOut(); location.reload(); }
-        function updateNavUI() { $('#nav-username').text(userData.username); $('#nav-userid').text('#'+userData.displayId); $('#nav-user-area').removeClass('hidden'); }
-        function updateLeaderboard() {
-            db.collection('users').orderBy('wins', 'desc').limit(10).onSnapshot(s => {
-                let h=''; let r=1; s.forEach(d=>{ let u=d.data(); h+=`<div class="d-flex justify-content-between p-2 border-bottom border-dark"><span>#${r} ${u.username}</span><span class="badge bg-secondary">${u.wins||0}</span></div>`; r++; });
-                $('#leaderboard-list').html(h);
             });
         }
+        function loginUser() { auth.signInWithEmailAndPassword($('#email-input').val(), $('#password-input').val()); }
+        function logout() { auth.signOut(); location.reload(); }
+        function showScreen(id) { $('.hidden').removeClass('hidden').addClass('hidden'); $('#auth-screen, #lobby-screen, #game-screen').addClass('hidden'); $(`#${id}`).removeClass('hidden'); }
+        function closeModal(id) { $(`#${id}`).addClass('hidden'); }
+        function openSettings() { $('#settings-modal').removeClass('hidden'); }
         function addLog(s) { $('#move-history').append(`<div>${s}</div>`).scrollTop(999); }
-        function showScreen(id) { $('.hidden').removeClass('hidden').addClass('hidden'); $('#auth-screen, #lobby-screen, #game-screen').addClass('hidden'); $('#'+id).removeClass('hidden'); }
-        function openSettings(){ $('#settings-modal').removeClass('hidden'); }
-        function closeSettings(){ $('#settings-modal').addClass('hidden'); }
-        function saveSettings(){ 
-            const newName = $('#settings-username').val(); 
-            if(newName && newName !== userData.username) db.collection('users').doc(currentUser.uid).update({ username: newName });
-            closeSettings(); 
-        }
     </script>
 </body>
 </html>
