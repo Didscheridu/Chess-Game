@@ -3,93 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schach Community (Bilder Fix 2.0)</title>
+    <title>Schach Masters Global</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        body { background-color: #212529; color: white; font-family: sans-serif; }
-        .container { max-width: 600px; margin-top: 30px; text-align: center; }
+        body { background-color: #1e1e2e; color: #cdd6f4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* Roblox-Style Container */
+        .app-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        
+        /* Karten Design */
+        .card-custom { background-color: #313244; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: none; padding: 20px; margin-bottom: 20px; }
+        
         .hidden { display: none !important; }
-        #board { width: 100%; max-width: 450px; margin: 0 auto; }
-        .status-box { background: #343a40; padding: 10px; border-radius: 5px; margin-top: 15px; }
-        .user-tag { font-weight: bold; color: #0d6efd; }
-        .error-msg { color: #ff6b6b; margin-top: 10px; font-size: 0.9em; }
-        /* Erzwinge, dass Bilder angezeigt werden */
-        .piece-417db { z-index: 1000; }
+        
+        /* Schachbrett */
+        #board { width: 100%; max-width: 500px; margin: 0 auto; border: 5px solid #45475a; border-radius: 4px; }
+        
+        /* Overlay wenn man auf Gegner wartet */
+        .board-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 1.5rem; font-weight: bold;
+            z-index: 1000;
+            border-radius: 4px;
+        }
+        .board-wrapper { position: relative; max-width: 500px; margin: 0 auto; }
+
+        /* Buttons */
+        .btn-roblox { background-color: #00b06f; color: white; font-weight: bold; border: none; box-shadow: 0 4px 0 #008c59; transition: all 0.1s; }
+        .btn-roblox:active { transform: translateY(4px); box-shadow: none; }
+        .btn-roblox:hover { background-color: #00c980; color: white; }
+
+        .friend-item { background: #45475a; padding: 10px; margin-bottom: 5px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .online-dot { height: 10px; width: 10px; background-color: #bbb; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .online-dot.active { background-color: #00b06f; box-shadow: 0 0 5px #00b06f; }
+
+        .user-tag { color: #89b4fa; font-weight: bold; }
+        .error-msg { color: #f38ba8; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>♟️ Firebase Schach</h1>
+    <div class="app-container">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 style="font-weight: 800;"><i class="fas fa-chess-knight"></i> RO-CHESS</h2>
+            <div id="user-info-header" class="hidden">
+                <span id="header-username" class="me-3 user-tag">gast</span>
+                <button onclick="logout()" class="btn btn-sm btn-outline-danger">Logout</button>
+            </div>
+        </div>
 
         <div id="auth-screen">
-            <div class="card bg-dark text-white p-4">
-                <h3>Anmelden / Registrieren</h3>
+            <div class="card-custom text-center" style="max-width: 400px; margin: 50px auto;">
+                <h3>Willkommen zurück!</h3>
+                <p class="text-muted">Melde dich an, um zu spielen.</p>
                 
-                <div class="mb-3 text-start">
-                    <label>E-Mail Adresse</label>
-                    <input type="email" id="email-input" class="form-control" placeholder="name@beispiel.de">
-                </div>
+                <input type="email" id="email-input" class="form-control mb-2" placeholder="E-Mail">
+                <input type="password" id="password-input" class="form-control mb-3" placeholder="Passwort">
+                <input type="text" id="username-input" class="form-control mb-3" placeholder="Username (nur bei Registrierung)">
+
+                <button onclick="loginUser()" class="btn btn-roblox w-100 mb-2">Einloggen</button>
+                <button onclick="registerUser()" class="btn btn-outline-light w-100">Konto erstellen</button>
                 
-                <div class="mb-3 text-start">
-                    <label>Passwort</label>
-                    <input type="password" id="password-input" class="form-control" placeholder="Dein Passwort">
-                </div>
-
-                <div class="mb-3 text-start">
-                    <label>Benutzername (Nur bei Registrierung)</label>
-                    <input type="text" id="username-input" class="form-control" placeholder="Wie willst du heißen?">
-                </div>
-
-                <div class="d-grid gap-2">
-                    <button onclick="loginUser()" class="btn btn-primary">Einloggen</button>
-                    <button onclick="registerUser()" class="btn btn-outline-light">Neu registrieren</button>
-                </div>
                 <div id="auth-error" class="error-msg"></div>
             </div>
         </div>
 
         <div id="lobby-screen" class="hidden">
-            <div class="status-box mb-4">
-                Hallo, <span id="display-username" class="user-tag">Spieler</span>!<br>
-                <button onclick="logout()" class="btn btn-sm btn-outline-secondary mt-2">Ausloggen</button>
-            </div>
-
-            <div class="row g-2">
-                <div class="col-12">
-                    <button onclick="createGame()" class="btn btn-success w-100 py-3">
-                        ➕ Neues Spiel erstellen (Du bist Weiß)
-                    </button>
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="card-custom text-center">
+                        <h4><i class="fas fa-play-circle"></i> Spielen</h4>
+                        <br>
+                        <button onclick="startGlobalMatchmaking()" class="btn btn-roblox btn-lg w-100 py-3 mb-3">
+                            <i class="fas fa-globe"></i> SCHNELLES SPIEL (RANDOM)
+                        </button>
+                        
+                        <div class="text-muted mb-2">- ODER -</div>
+                        
+                        <button onclick="createPrivateGame()" class="btn btn-outline-primary w-100 mb-2">Privates Spiel erstellen</button>
+                        <div class="input-group mt-2">
+                            <input type="text" id="join-game-id" class="form-control" placeholder="Spiel-ID eingeben">
+                            <button onclick="joinGameById()" class="btn btn-secondary">Beitreten</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-12 mt-3">
-                    <hr>
-                    <h5>Freund herausfordern</h5>
-                    <div class="input-group">
-                        <input type="text" id="join-game-id" class="form-control" placeholder="Spiel-ID eingeben">
-                        <button onclick="joinGame()" class="btn btn-outline-light">Beitreten</button>
+
+                <div class="col-md-5">
+                    <div class="card-custom">
+                        <h4><i class="fas fa-user-friends"></i> Freunde</h4>
+                        <div class="input-group mb-3">
+                            <input type="text" id="friend-name-input" class="form-control form-control-sm" placeholder="Username...">
+                            <button onclick="addFriend()" class="btn btn-sm btn-info">Add</button>
+                        </div>
+                        <div id="friend-list-container" style="max-height: 300px; overflow-y: auto;">
+                            <p class="text-muted small text-center">Noch keine Freunde hinzugefügt.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="game-screen" class="hidden">
-            <div class="d-flex justify-content-between mb-2">
-                <span id="player-white">⚪ Weiß: ?</span>
-                <span id="player-black">⚫ Schwarz: ?</span>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="d-flex justify-content-between mb-2 px-3">
+                        <span id="player-black" style="font-size: 1.1em;"><i class="fas fa-user"></i> Schwarz: ...</span>
+                        <div id="game-status-badge" class="badge bg-warning text-dark">Warte...</div>
+                    </div>
+
+                    <div class="board-wrapper">
+                        <div id="board"></div>
+                        <div id="wait-overlay" class="board-overlay">
+                            <div>
+                                <i class="fas fa-spinner fa-spin"></i><br>
+                                Warte auf Spieler...
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-2 px-3">
+                        <span id="player-white" style="font-size: 1.1em;"><i class="fas fa-user"></i> Weiß: ...</span>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mt-3 mt-md-0">
+                    <div class="card-custom h-100">
+                        <h5>Spiel Info</h5>
+                        <p id="turn-display" class="alert alert-info">Weiß beginnt</p>
+                        <p class="small text-muted">Spiel ID: <span id="current-game-id-display" class="text-white user-select-all"></span></p>
+                        <hr>
+                        <button onclick="leaveGame()" class="btn btn-danger w-100">Verlassen</button>
+                    </div>
+                </div>
             </div>
-            
-            <div id="board"></div>
-            
-            <div class="status-box">
-                <div id="game-status">Status: Warte auf Gegner...</div>
-                <div id="current-turn-info" class="mt-1"></div>
-                <div class="mt-2 text-warning small">Spiel-ID zum Teilen: <span id="current-game-id-display" style="user-select: all; font-size: 1.2em; font-weight: bold;"></span></div>
-            </div>
-            <button onclick="leaveGame()" class="btn btn-danger btn-sm mt-3">Zurück zur Lobby</button>
         </div>
+
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -101,7 +156,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <script>
-        // --- DEINE FIREBASE DATEN ---
+        // --- FIREBASE CONFIG (Deine Daten) ---
         const firebaseConfig = {
             apiKey: "AIzaSyBqCKRhB87r_r-IgbOd9ESm9MQLKTGwSU0",
             authDomain: "chess-dff93.firebaseapp.com",
@@ -116,7 +171,7 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // Globale Variablen
+        // --- GLOBALE VARIABLEN ---
         let currentUser = null;
         let currentUsername = "Unbekannt";
         let currentGameId = null;
@@ -124,67 +179,54 @@
         let game = new Chess();
         let board = null;
         let gameListener = null;
+        let isGameActive = false; // Erst true wenn beide Spieler da sind
 
         // ----------------------------------------------------
-        // AUTHENTICATION LOGIK
+        // 1. AUTH & USER MANAGEMENT
         // ----------------------------------------------------
-
         auth.onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
                 db.collection("users").doc(user.uid).get().then((doc) => {
                     if(doc.exists) {
                         currentUsername = doc.data().username;
-                        document.getElementById('display-username').innerText = currentUsername;
+                        document.getElementById('header-username').innerText = currentUsername;
+                        document.getElementById('user-info-header').classList.remove('hidden');
+                        loadFriendsList();
                         showScreen('lobby-screen');
+                        
+                        // Set status online
+                        db.collection("users").doc(user.uid).update({ status: 'online' });
                     }
                 });
             } else {
                 showScreen('auth-screen');
+                document.getElementById('user-info-header').classList.add('hidden');
             }
         });
 
         function registerUser() {
-            const email = document.getElementById('email-input').value;
-            const password = document.getElementById('password-input').value;
-            const username = document.getElementById('username-input').value;
-            const errorDiv = document.getElementById('auth-error');
+            const email = $('#email-input').val();
+            const password = $('#password-input').val();
+            const username = $('#username-input').val();
+            
+            if(!username) return $('#auth-error').text("Bitte Username wählen!");
 
-            if (!email || !password || !username) {
-                errorDiv.innerText = "Bitte alle Felder ausfüllen!";
-                return;
-            }
-
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    db.collection("users").doc(user.uid).set({
-                        username: username,
-                        email: email,
-                        uid: user.uid
-                    }).then(() => {
-                        errorDiv.innerText = "";
-                    });
-                })
-                .catch((error) => {
-                    errorDiv.innerText = "Fehler: " + error.message;
+            auth.createUserWithEmailAndPassword(email, password).then((cred) => {
+                db.collection("users").doc(cred.user.uid).set({
+                    username: username,
+                    email: email,
+                    uid: cred.user.uid,
+                    friends: [], // Leere Freundesliste
+                    status: 'online'
                 });
+            }).catch(e => $('#auth-error').text(e.message));
         }
 
         function loginUser() {
-            const email = document.getElementById('email-input').value;
-            const password = document.getElementById('password-input').value;
-            const errorDiv = document.getElementById('auth-error');
-
-            if (!email || !password) {
-                errorDiv.innerText = "Bitte E-Mail und Passwort eingeben.";
-                return;
-            }
-
-            auth.signInWithEmailAndPassword(email, password)
-                .catch((error) => {
-                    errorDiv.innerText = "Login fehlgeschlagen: " + error.message;
-                });
+            const email = $('#email-input').val();
+            const password = $('#password-input').val();
+            auth.signInWithEmailAndPassword(email, password).catch(e => $('#auth-error').text(e.message));
         }
 
         function logout() {
@@ -193,76 +235,156 @@
         }
 
         // ----------------------------------------------------
-        // MATCHMAKING & LOBBY
+        // 2. FREUNDE SYSTEM
+        // ----------------------------------------------------
+        function addFriend() {
+            const friendName = $('#friend-name-input').val().trim();
+            if(!friendName) return;
+
+            // 1. User suchen
+            db.collection("users").where("username", "==", friendName).get().then(snapshot => {
+                if(snapshot.empty) {
+                    alert("Benutzer nicht gefunden!");
+                } else {
+                    const friendData = snapshot.docs[0].data();
+                    if(friendData.uid === currentUser.uid) return alert("Du kannst dich nicht selbst adden.");
+                    
+                    // 2. Zu meiner Liste hinzufügen
+                    db.collection("users").doc(currentUser.uid).update({
+                        friends: firebase.firestore.FieldValue.arrayUnion({
+                            uid: friendData.uid,
+                            username: friendData.username
+                        })
+                    }).then(() => {
+                        $('#friend-name-input').val('');
+                        loadFriendsList();
+                    });
+                }
+            });
+        }
+
+        function loadFriendsList() {
+            db.collection("users").doc(currentUser.uid).onSnapshot(doc => {
+                const data = doc.data();
+                const list = $('#friend-list-container');
+                list.empty();
+
+                if(data.friends && data.friends.length > 0) {
+                    data.friends.forEach(friend => {
+                        list.append(`
+                            <div class="friend-item">
+                                <span><i class="fas fa-user"></i> ${friend.username}</span>
+                                <span class="badge bg-secondary">Freund</span>
+                            </div>
+                        `);
+                    });
+                } else {
+                    list.html('<p class="text-muted small text-center">Keine Freunde.</p>');
+                }
+            });
+        }
+
+        // ----------------------------------------------------
+        // 3. MATCHMAKING (GLOBAL & PRIVAT)
         // ----------------------------------------------------
         
-        function createGame() {
-            const gameId = Math.random().toString(36).substring(2, 8); 
+        // A. Random Matchmaking Logik
+        async function startGlobalMatchmaking() {
+            // 1. Suche nach einem Spiel, das "waiting" ist UND noch keinen schwarzen Spieler hat
+            const snapshot = await db.collection("games")
+                .where("status", "==", "waiting")
+                .where("black", "==", null)
+                .limit(1)
+                .get();
+
+            if (!snapshot.empty) {
+                // -> Spiel gefunden! Wir treten bei.
+                const gameDoc = snapshot.docs[0];
+                // Checken ob wir es nicht selbst erstellt haben
+                if(gameDoc.data().white === currentUser.uid) {
+                     alert("Du wartest bereits in einem Spiel!");
+                     enterGame(gameDoc.id, 'w');
+                     return;
+                }
+
+                const gameId = gameDoc.id;
+                console.log("Globales Spiel gefunden: " + gameId);
+                
+                await db.collection("games").doc(gameId).update({
+                    black: currentUser.uid,
+                    joinerName: currentUsername,
+                    status: "active" // Jetzt geht das Spiel los!
+                });
+                
+                enterGame(gameId, 'b');
+
+            } else {
+                // -> Kein Spiel gefunden. Wir erstellen eins.
+                console.log("Kein Spiel gefunden, erstelle neues...");
+                createPrivateGame(true); // true = ist public
+            }
+        }
+
+        // B. Spiel erstellen
+        function createPrivateGame(isGlobal = false) {
+            const gameId = Math.random().toString(36).substring(2, 8);
             
             db.collection("games").doc(gameId).set({
                 creatorId: currentUser.uid,
                 creatorName: currentUsername,
                 white: currentUser.uid,
-                black: null,
+                black: null, // Noch leer
+                joinerName: null,
                 fen: "start",
                 turn: "w",
-                status: "waiting"
+                status: "waiting", // Wichtig für Matchmaking
+                isGlobal: isGlobal
             }).then(() => {
                 enterGame(gameId, 'w');
             });
         }
 
-        function joinGame() {
-            const gameId = document.getElementById('join-game-id').value.trim();
-            if (!gameId) return alert("Bitte ID eingeben!");
-
-            const gameRef = db.collection("games").doc(gameId);
-
-            gameRef.get().then((doc) => {
-                if (doc.exists) {
+        // C. Per ID beitreten
+        function joinGameById() {
+            const id = $('#join-game-id').val().trim();
+            if(!id) return;
+            
+            db.collection("games").doc(id).get().then(doc => {
+                if(doc.exists) {
                     const data = doc.data();
-                    
-                    if (data.status === "waiting" && data.white !== currentUser.uid) {
-                        gameRef.update({
+                    if(data.status === "waiting" && data.black === null) {
+                        db.collection("games").doc(id).update({
                             black: currentUser.uid,
                             joinerName: currentUsername,
                             status: "active"
-                        }).then(() => enterGame(gameId, 'b'));
-                    } 
-                    else if (data.white === currentUser.uid) {
-                        enterGame(gameId, 'w');
+                        }).then(() => enterGame(id, 'b'));
+                    } else if (data.white === currentUser.uid) {
+                        enterGame(id, 'w'); // Rejoin als Host
                     } else if (data.black === currentUser.uid) {
-                        enterGame(gameId, 'b');
+                        enterGame(id, 'b'); // Rejoin als Gast
                     } else {
-                        alert("Dieses Spiel ist voll!");
+                        alert("Spiel voll oder läuft schon.");
                     }
-                } else {
-                    alert("Spiel ID nicht gefunden.");
                 }
             });
         }
 
-        function enterGame(gameId, color) {
-            currentGameId = gameId;
+        // ----------------------------------------------------
+        // 4. SPIEL LOGIK & DISPLAY
+        // ----------------------------------------------------
+
+        function enterGame(id, color) {
+            currentGameId = id;
             myColor = color;
-            document.getElementById('current-game-id-display').innerText = gameId;
+            $('#current-game-id-display').text(id);
             showScreen('game-screen');
+            
             initBoard();
             listenToGame();
         }
 
-        function leaveGame() {
-            if (gameListener) gameListener(); 
-            showScreen('lobby-screen');
-            currentGameId = null;
-            myColor = null;
-        }
-
-        // ----------------------------------------------------
-        // SCHACH LOGIK (MIT NEUEM BILD FIX)
-        // ----------------------------------------------------
         function initBoard() {
-            game = new Chess(); 
+            game = new Chess();
             var config = {
                 draggable: true,
                 position: 'start',
@@ -270,33 +392,46 @@
                 onDrop: onDrop,
                 onSnapEnd: onSnapEnd,
                 orientation: (myColor === 'w') ? 'white' : 'black',
-                
-                // --- HIER IST DER FIX 2.0 ---
-                // Wir nutzen die offizielle Webseite als Quelle, die funktioniert immer
-                pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+                pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png' // Bilder Fix
             };
             board = Chessboard('board', config);
-            updateStatusDisplay();
         }
 
         function listenToGame() {
-            gameListener = db.collection("games").doc(currentGameId).onSnapshot((doc) => {
-                if (doc.exists) {
-                    const data = doc.data();
-                    
-                    document.getElementById('player-white').innerText = "⚪ " + (data.creatorName || "...");
-                    document.getElementById('player-black').innerText = "⚫ " + (data.joinerName || "Warte...");
+            gameListener = db.collection("games").doc(currentGameId).onSnapshot(doc => {
+                if(!doc.exists) return;
+                const data = doc.data();
 
-                    if (data.fen && data.fen !== game.fen()) {
-                        game.load(data.fen);
-                        board.position(data.fen);
-                        updateStatusDisplay();
-                    }
+                // UI Updates
+                $('#player-white').html('<i class="fas fa-user"></i> Weiß: ' + data.creatorName);
+                $('#player-black').html('<i class="fas fa-user"></i> Schwarz: ' + (data.joinerName || "..."));
+
+                // PRÜFUNG: SIND BEIDE DA?
+                if (data.status === "active" && data.white && data.black) {
+                    isGameActive = true;
+                    $('#wait-overlay').addClass('hidden'); // Overlay weg
+                    $('#game-status-badge').removeClass('bg-warning').addClass('bg-success').text('Läuft');
+                } else {
+                    isGameActive = false;
+                    $('#wait-overlay').removeClass('hidden'); // Overlay zeigen
+                    $('#game-status-badge').addClass('bg-warning').removeClass('bg-success').text('Warte auf Gegner...');
+                }
+
+                // Brett Sync
+                if(data.fen && data.fen !== game.fen()) {
+                    game.load(data.fen);
+                    board.position(data.fen);
+                    updateStatusDisplay();
                 }
             });
         }
 
+        // --- ZUG LOGIK ---
         function onDragStart(source, piece) {
+            // 1. SPIEL MUSS AKTIV SEIN (beide Spieler da)
+            if (!isGameActive) return false;
+
+            // 2. Standard Regeln
             if (game.game_over()) return false;
             if (game.turn() !== myColor) return false;
             if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
@@ -314,6 +449,7 @@
 
             if (move === null) return 'snapback';
 
+            // Update Firebase
             db.collection("games").doc(currentGameId).update({
                 fen: game.fen(),
                 turn: game.turn()
@@ -321,35 +457,41 @@
             updateStatusDisplay();
         }
 
-        function onSnapEnd() {
-            board.position(game.fen());
-        }
+        function onSnapEnd() { board.position(game.fen()); }
 
         function updateStatusDisplay() {
-            let status = "";
-            let moveColor = (game.turn() === 'w') ? 'Weiß' : 'Schwarz';
+            let statusText = "";
+            const moveColor = (game.turn() === 'w') ? 'Weiß' : 'Schwarz';
 
             if (game.in_checkmate()) {
-                status = "Matt! " + moveColor + " verliert.";
+                statusText = "Matt! " + moveColor + " verliert.";
+                $('#turn-display').removeClass('alert-info').addClass('alert-danger');
             } else if (game.in_draw()) {
-                status = "Remis.";
+                statusText = "Remis.";
             } else {
-                status = moveColor + " ist dran.";
-                if (game.in_check()) status += " SCHACH!";
+                if(game.turn() === myColor) {
+                    statusText = "DU bist am Zug!";
+                    $('#turn-display').removeClass('alert-secondary').addClass('alert-info');
+                } else {
+                    statusText = "Gegner überlegt...";
+                    $('#turn-display').removeClass('alert-info').addClass('alert-secondary');
+                }
             }
-
-            const myTurn = (game.turn() === myColor);
-            const infoText = myTurn ? "🟢 DU BIST DRAN!" : "🔴 Warten auf Gegner...";
-            
-            document.getElementById('game-status').innerText = status;
-            document.getElementById('current-turn-info').innerText = infoText;
+            $('#turn-display').text(statusText);
         }
 
-        function showScreen(screenId) {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('lobby-screen').classList.add('hidden');
-            document.getElementById('game-screen').classList.add('hidden');
-            document.getElementById(screenId).classList.remove('hidden');
+        function leaveGame() {
+            if(confirm("Spiel wirklich verlassen?")) {
+                if(gameListener) gameListener();
+                showScreen('lobby-screen');
+                currentGameId = null;
+                isGameActive = false;
+            }
+        }
+
+        function showScreen(id) {
+            $('#auth-screen, #lobby-screen, #game-screen').addClass('hidden');
+            $('#' + id).removeClass('hidden');
         }
 
     </script>
