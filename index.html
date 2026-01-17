@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters Pro - Click & Move</title>
+    <title>Chess Masters Pro - Bot & Friends</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -17,6 +17,10 @@
         .card-dark { background-color: #242526; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); margin-bottom: 20px; border: 1px solid #333; }
         .btn-primary-custom { background-color: #2D88FF; color: white; font-weight: bold; border: none; }
         .btn-primary-custom:hover { background-color: #1A73E8; color: white; }
+        .btn-bot { background-color: #e67e22; color: white; font-weight: bold; border: none; }
+        .btn-bot:hover { background-color: #d35400; color: white; }
+        .btn-private { background-color: #9b59b6; color: white; font-weight: bold; border: none; }
+        .btn-private:hover { background-color: #8e44ad; color: white; }
         
         .hidden { display: none !important; }
         .id-badge { background: #3a3b3c; color: #b0b3b8; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 5px; }
@@ -40,7 +44,7 @@
         /* End Screen Overlay */
         #end-screen-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 9999; /* Sehr hoch, damit es über allem liegt */
+            background: rgba(0,0,0,0.9); z-index: 9999;
             display: flex; justify-content: center; align-items: center;
         }
         .end-card { background: #242526; padding: 40px; border-radius: 20px; text-align: center; border: 2px solid #444; min-width: 300px; }
@@ -53,21 +57,13 @@
 
         .move-log { height: 250px; overflow-y: auto; background: #18191a; padding: 10px; border-radius: 6px; }
 
-        /* --- STYLES FÜR PUNKTE (CLICK SYSTEM) --- */
+        /* --- Click System Styles --- */
         .highlight-dot {
             background-color: rgba(45, 136, 255, 0.8);
-            width: 25%;
-            height: 25%;
-            border-radius: 50%;
-            position: absolute;
-            top: 37.5%;
-            left: 37.5%;
-            pointer-events: none; /* Wichtig: Klick muss durch den Punkt auf das Feld gehen */
+            width: 25%; height: 25%; border-radius: 50%;
+            position: absolute; top: 37.5%; left: 37.5%; pointer-events: none;
         }
-        .highlight-square {
-            box-shadow: inset 0 0 3px 3px rgba(255, 255, 0, 0.5);
-        }
-        /* Wenn man auf eine Figur klickt (Mauszeiger) */
+        .highlight-square { box-shadow: inset 0 0 3px 3px rgba(255, 255, 0, 0.5); }
         .square-55d63 { cursor: pointer; }
     </style>
 </head>
@@ -78,7 +74,6 @@
             <h4>Einstellungen</h4>
             <input type="text" id="settings-username" class="form-control mb-3" placeholder="Neuer Name">
             <input type="password" id="settings-password" class="form-control mb-3" placeholder="Neues Passwort">
-            <button onclick="adminFixUserIds()" class="btn btn-warning btn-sm w-100 mb-3">⚠️ Admin: IDs reparieren</button>
             <div class="d-flex justify-content-end gap-2">
                 <button onclick="closeSettings()" class="btn btn-secondary">Abbrechen</button>
                 <button onclick="saveSettings()" class="btn btn-success">Speichern</button>
@@ -124,23 +119,40 @@
         <div id="lobby-screen" class="hidden">
             <div class="row">
                 <div class="col-md-7">
-                    <div class="card-dark text-center" style="padding: 40px 20px; position: relative; min-height: 400px;">
+                    <div class="card-dark text-center" style="padding: 30px 20px; position: relative; min-height: 400px;">
                         
                         <div id="queue-overlay" class="hidden">
                             <div class="pulse-ring"></div>
                             <h3>Suche Gegner...</h3>
-                            <p class="text-muted">Du bist in der Warteschlange.</p>
-                            <p class="small text-muted" id="queue-time">Wartezeit: 0s</p>
+                            <p class="text-muted">Ranked Matchmaking</p>
+                            <p class="small text-muted" id="queue-time">0s</p>
                             <button onclick="leaveQueue()" class="btn btn-outline-danger mt-3">Abbrechen</button>
                         </div>
 
-                        <h1 class="fw-bold mb-4">Bereit?</h1>
-                        <button onclick="joinQueue()" id="btn-matchmaking" class="btn btn-primary-custom btn-lg w-100 py-4 mb-4" style="font-size: 1.5em; box-shadow: 0 0 15px rgba(45, 136, 255, 0.5);">
-                            <i class="fas fa-play"></i> SPIEL SUCHEN
-                        </button>
+                        <h2 class="fw-bold mb-4">Modus wählen</h2>
                         
+                        <div class="d-grid gap-3">
+                            <button onclick="joinQueue()" class="btn btn-primary-custom btn-lg p-3">
+                                <i class="fas fa-trophy"></i> RANKED SPIELEN (Warteschlange)
+                            </button>
+                            
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <button onclick="startBotGame()" class="btn btn-bot w-100 p-3">
+                                        <i class="fas fa-robot"></i> GEGEN BOT
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button onclick="createPrivateGame()" class="btn btn-private w-100 p-3">
+                                        <i class="fas fa-user-secret"></i> PRIVATER RAUM
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <hr>
-                        <div class="d-flex justify-content-center gap-2 mt-3">
+                        <p class="small text-muted mb-1">Privatem Spiel beitreten:</p>
+                        <div class="d-flex justify-content-center gap-2">
                             <input type="text" id="join-id-input" class="form-control" style="max-width: 150px;" placeholder="Code eingeben...">
                             <button onclick="joinGameByCode()" class="btn btn-secondary">Beitreten</button>
                         </div>
@@ -149,8 +161,19 @@
                 
                 <div class="col-md-5">
                     <div class="card-dark">
+                        <h5 class="text-info"><i class="fas fa-user-friends"></i> Freunde</h5>
+                        <div class="input-group mb-2">
+                            <input type="number" id="friend-id-input" class="form-control" placeholder="User ID (z.B. 42)">
+                            <button onclick="addFriendById()" class="btn btn-outline-info">Add</button>
+                        </div>
+                        <div id="friends-list" style="max-height: 150px; overflow-y: auto;" class="small">
+                            <span class="text-muted">Lade Freunde...</span>
+                        </div>
+                    </div>
+
+                    <div class="card-dark">
                         <h5 class="text-warning"><i class="fas fa-trophy"></i> Top Wins</h5>
-                        <div id="leaderboard-list" style="max-height: 250px; overflow-y: auto;"></div>
+                        <div id="leaderboard-list" style="max-height: 200px; overflow-y: auto;"></div>
                     </div>
                 </div>
             </div>
@@ -166,6 +189,12 @@
                     
                     <div class="board-wrapper">
                         <div id="board"></div>
+                        <div id="wait-overlay" class="hidden board-overlay">
+                            <h4 class="text-white">Warte auf Gegner...</h4>
+                            <p class="text-muted">Teile diesen Code:</p>
+                            <h2 class="text-warning user-select-all" id="private-code-display">...</h2>
+                            <button onclick="leaveGame()" class="btn btn-outline-danger btn-sm mt-3">Abbrechen</button>
+                        </div>
                     </div>
 
                     <div class="mt-2">
@@ -215,12 +244,12 @@
         let board = null;
         let currentGameId = null;
         let myColor = 'w';
+        let gameMode = 'online'; // 'online' oder 'bot'
+        
         let gameListener = null;
         let queueListener = null;
         let queueTimerInterval = null;
-
-        // CLICK SYSTEM VARIABLEN
-        let selectedSquare = null; // Welches Feld wurde angeklickt?
+        let selectedSquare = null;
 
         // --- 2. AUTH & INIT ---
         auth.onAuthStateChanged(user => {
@@ -232,6 +261,7 @@
                         updateNavUI();
                         showScreen('lobby-screen');
                         updateLeaderboard();
+                        loadFriends();
                         checkQueueStatus();
                     }
                 });
@@ -240,12 +270,123 @@
             }
         });
 
-        // --- 3. QUEUE SYSTEM ---
+        // --- 3. NEUE FEATURES ---
+
+        // A. BOT MODUS
+        function startBotGame() {
+            gameMode = 'bot';
+            myColor = 'w';
+            currentGameId = 'bot-game';
+            
+            showScreen('game-screen');
+            $('#end-screen-overlay').addClass('hidden');
+            $('#wait-overlay').addClass('hidden');
+            
+            initBoardConfig();
+            $('#player-top').text("Computer (Level 1)");
+            $('#player-bottom').text("Du (Weiß)");
+            $('#game-status-text').text("Lokal vs Bot");
+            
+            game = new Chess();
+            board.position('start');
+        }
+
+        function makeBotMove() {
+            if(game.game_over()) return;
+            
+            // Einfache KI: Schlage Figur, wenn möglich. Sonst Random.
+            const moves = game.moves({ verbose: true });
+            if(moves.length === 0) return;
+
+            // Suche nach Captures
+            let bestMove = moves.find(m => m.flags.includes('c') || m.flags.includes('e')); // Capture or En Passant
+            
+            // Wenn kein Capture, nimm zufälligen Zug
+            if(!bestMove) {
+                bestMove = moves[Math.floor(Math.random() * moves.length)];
+            }
+            
+            game.move(bestMove.san);
+            board.position(game.fen());
+            addLog("Bot: " + bestMove.san);
+            checkGameOverLocally();
+        }
+
+        // B. PRIVATE GAME
+        function createPrivateGame() {
+            gameMode = 'online';
+            const gameRef = db.collection('games').doc();
+            const code = Math.random().toString(36).substring(2, 7).toUpperCase(); // Kurzer Code
+
+            // Wir nutzen die ID als Code, aber erstellen ein Feld 'code' für schönere Optik
+            // Einfachheitshalber: ID ist der Code
+            db.collection('games').doc(code).set({
+                white: currentUser.uid, whiteName: userData.username, whiteId: userData.displayId,
+                black: null, fen: 'start', turn: 'w', status: 'waiting_private',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                loadOnlineGame(code);
+                $('#wait-overlay').removeClass('hidden'); // Zeige Warte-Screen
+                $('#private-code-display').text(code);
+            });
+        }
+
+        // C. FREUNDE PER ID
+        function addFriendById() {
+            const idInput = $('#friend-id-input').val();
+            if(!idInput) return;
+            const targetId = parseInt(idInput); // String zu Zahl machen
+
+            db.collection('users').where('displayId', '==', targetId).get().then(snap => {
+                if(snap.empty) {
+                    alert("Nutzer mit ID #" + targetId + " nicht gefunden.");
+                } else {
+                    const friendDoc = snap.docs[0];
+                    const friendData = friendDoc.data();
+                    
+                    if(friendData.uid === currentUser.uid) return alert("Das bist du selbst.");
+
+                    // In Array speichern
+                    db.collection('users').doc(currentUser.uid).update({
+                        friends: firebase.firestore.FieldValue.arrayUnion(friendData.uid)
+                    }).then(() => {
+                        alert("Freund hinzugefügt!");
+                        $('#friend-id-input').val('');
+                    });
+                }
+            });
+        }
+
+        function loadFriends() {
+            if(!userData.friends || userData.friends.length === 0) {
+                $('#friends-list').html('<span class="text-muted">Keine Freunde.</span>');
+                return;
+            }
+
+            // Wir laden die Freundesdaten. Achtung: Bei vielen Freunden ist das ineffizient, 
+            // aber für dieses Projekt okay.
+            $('#friends-list').html('');
+            userData.friends.forEach(uid => {
+                db.collection('users').doc(uid).get().then(doc => {
+                    if(doc.exists) {
+                        const f = doc.data();
+                        const isOnline = f.status === 'online' ? '<span class="text-success">●</span>' : '<span class="text-muted">○</span>';
+                        $('#friends-list').append(`
+                            <div class="d-flex justify-content-between p-1 border-bottom border-dark">
+                                <span>${isOnline} ${f.username} <span class="text-muted">#${f.displayId}</span></span>
+                            </div>
+                        `);
+                    }
+                });
+            });
+        }
+
+        // --- 4. QUEUE & MATCHMAKING ---
         function joinQueue() {
+            gameMode = 'online';
             if(!userData) return;
             showQueueUI();
-            const queueRef = db.collection('queue').doc(currentUser.uid);
-            queueRef.set({
+            db.collection('queue').doc(currentUser.uid).set({
                 uid: currentUser.uid, username: userData.username, displayId: userData.displayId,
                 joinedAt: firebase.firestore.FieldValue.serverTimestamp(), gameId: null
             }).then(() => {
@@ -279,65 +420,47 @@
             if(queueListener) queueListener();
             queueListener = db.collection('queue').doc(currentUser.uid).onSnapshot(doc => {
                 if(doc.exists && doc.data().gameId) {
-                    loadGame(doc.data().gameId);
+                    loadOnlineGame(doc.data().gameId);
                     db.collection('queue').doc(currentUser.uid).delete();
                 } else if(!doc.exists) hideQueueUI();
             });
         }
 
-        function leaveQueue() {
-            db.collection('queue').doc(currentUser.uid).delete();
-            hideQueueUI();
-        }
-
+        function leaveQueue() { db.collection('queue').doc(currentUser.uid).delete(); hideQueueUI(); }
         function checkQueueStatus() {
             db.collection('queue').doc(currentUser.uid).get().then(doc => {
                 if(doc.exists) {
                     if(doc.data().gameId) {
-                        loadGame(doc.data().gameId);
+                        loadOnlineGame(doc.data().gameId);
                         db.collection('queue').doc(currentUser.uid).delete();
-                    } else {
-                        showQueueUI();
-                        listenToMyQueueEntry();
-                        attemptMatchmaking();
-                    }
+                    } else { showQueueUI(); listenToMyQueueEntry(); attemptMatchmaking(); }
                 }
             });
         }
+        function showQueueUI() { $('#queue-overlay').removeClass('hidden'); let s = 0; if(queueTimerInterval) clearInterval(queueTimerInterval); queueTimerInterval = setInterval(() => { s++; $('#queue-time').text(`${s}s`); }, 1000); }
+        function hideQueueUI() { $('#queue-overlay').addClass('hidden'); if(queueTimerInterval) clearInterval(queueTimerInterval); if(queueListener) queueListener(); }
 
-        function showQueueUI() {
-            $('#queue-overlay').removeClass('hidden');
-            let s = 0; if(queueTimerInterval) clearInterval(queueTimerInterval);
-            queueTimerInterval = setInterval(() => { s++; $('#queue-time').text(`Wartezeit: ${s}s`); }, 1000);
+        // --- 5. GAME ENGINE (CLICK) ---
+        function initBoardConfig() {
+            game = new Chess();
+            $('#move-history').empty();
+            selectedSquare = null;
+            board = Chessboard('board', {
+                position: 'start', draggable: false,
+                pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+            });
+            $('#board').off('click').on('click', '.square-55d63', handleSquareClick);
         }
-        function hideQueueUI() {
-            $('#queue-overlay').addClass('hidden');
-            if(queueTimerInterval) clearInterval(queueTimerInterval);
-            if(queueListener) queueListener();
-        }
 
-
-        // --- 4. GAME ENGINE MIT CLICK SYSTEM ---
-        function loadGame(id) {
+        function loadOnlineGame(id) {
+            gameMode = 'online';
             currentGameId = id;
             hideQueueUI();
             showScreen('game-screen');
-            $('#end-screen-overlay').addClass('hidden'); // Fix für hängenden Screen
+            $('#end-screen-overlay').addClass('hidden');
+            $('#wait-overlay').addClass('hidden');
 
-            game = new Chess();
-            $('#move-history').empty();
-            selectedSquare = null; // Reset selection
-
-            // Board Init - WICHTIG: draggable: false
-            board = Chessboard('board', {
-                position: 'start',
-                draggable: false, // KEIN DRAG MEHR
-                pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
-            });
-
-            // Klick Event Listener hinzufügen
-            // Wir nutzen jQuery um Klicks auf die Felder abzufangen
-            $('#board').off('click').on('click', '.square-55d63', handleSquareClick);
+            initBoardConfig();
 
             if(gameListener) gameListener();
             
@@ -345,30 +468,28 @@
                 const data = doc.data();
                 if(!data) return; 
 
-                // Farbe setzen
                 if (data.white === currentUser.uid) myColor = 'w';
                 else if (data.black === currentUser.uid) myColor = 'b';
                 
-                // UI Namen
-                if(myColor === 'w') {
-                    $('#player-bottom').text(`Du (Weiß)`);
-                    $('#player-top').text(`${data.blackName} (Schwarz)`);
-                    board.orientation('white');
-                } else {
-                    $('#player-bottom').text(`Du (Schwarz)`);
-                    $('#player-top').text(`${data.whiteName} (Weiß)`);
-                    board.orientation('black');
+                // UI & Status
+                if(data.status === 'active') {
+                    $('#wait-overlay').addClass('hidden');
+                    const enemyName = (myColor === 'w') ? data.blackName : data.whiteName;
+                    $('#player-top').text(enemyName);
+                    $('#player-bottom').text("Du (" + (myColor==='w'?'Weiß':'Schwarz') + ")");
                 }
 
-                if(data.status === 'aborted') {
-                    showEndScreen('GEWONNEN!', 'Gegner hat aufgegeben.', 'win');
-                    return;
-                }
+                // Board drehen
+                board.orientation(myColor === 'w' ? 'white' : 'black');
 
+                // Aborted?
+                if(data.status === 'aborted') { showEndScreen('GEWONNEN!', 'Gegner ist weg.', 'win'); return; }
+
+                // Move Update
                 if(data.fen && data.fen !== game.fen()) {
                     game.load(data.fen);
                     board.position(data.fen);
-                    removeHighlights(); // Markierungen entfernen bei neuem Zug
+                    removeHighlights();
                     if(data.lastMoveSan) addLog(data.lastMoveSan);
                 }
 
@@ -376,133 +497,116 @@
             });
         }
 
-        // --- DAS NEUE KLICK-SYSTEM ---
+        // CLICK HANDLING
         function handleSquareClick(e) {
-            // Spiel muss laufen
-            if(game.game_over() || game.turn() !== myColor) return;
+            // Egal ob Bot oder Online, Prüfung ist gleich
+            if(game.game_over()) return;
+            if(gameMode === 'online' && game.turn() !== myColor) return;
+            if(gameMode === 'bot' && game.turn() !== 'w') return; // Im Bot Modus ist man immer Weiß
 
-            // Das geklickte Feld ermitteln (z.B. "e2")
             const square = $(this).attr('data-square');
 
-            // 1. Haben wir schon eine Figur ausgewählt?
             if (selectedSquare) {
-                // Ja -> Versuch einen Zug zu machen
-                const move = game.move({
-                    from: selectedSquare,
-                    to: square,
-                    promotion: 'q' // Immer Dame
-                });
-
+                const move = game.move({ from: selectedSquare, to: square, promotion: 'q' });
                 if (move) {
-                    // GÜLTIGER ZUG!
-                    makeMove(move);
+                    // ZUG GEMACHT
                     selectedSquare = null;
                     removeHighlights();
-                } else {
-                    // Ungültiger Zug -> Ist es vielleicht eine andere eigene Figur?
-                    // Wenn ja, wähle diese aus. Wenn nein, Auswahl aufheben.
-                    const piece = game.get(square);
-                    if (piece && piece.color === myColor) {
-                        selectedSquare = square;
-                        highlightPossibleMoves(square);
+                    
+                    if(gameMode === 'online') {
+                        sendMoveOnline(move);
                     } else {
-                        selectedSquare = null;
-                        removeHighlights();
+                        // Bot Mode Local Updates
+                        board.position(game.fen());
+                        addLog(move.san);
+                        checkGameOverLocally();
+                        // Bot Antwort verzögert
+                        setTimeout(makeBotMove, 500);
                     }
+                } else {
+                    const piece = game.get(square);
+                    if (piece && piece.color === (gameMode==='online'?myColor:'w')) {
+                        selectedSquare = square; highlightPossibleMoves(square);
+                    } else { selectedSquare = null; removeHighlights(); }
                 }
             } else {
-                // Nein -> Figur auswählen
                 const piece = game.get(square);
-                if (piece && piece.color === myColor) {
-                    selectedSquare = square;
-                    highlightPossibleMoves(square);
+                if (piece && piece.color === (gameMode==='online'?myColor:'w')) {
+                    selectedSquare = square; highlightPossibleMoves(square);
                 }
             }
         }
 
-        function highlightPossibleMoves(square) {
-            removeHighlights();
-            
-            // Eigenes Feld markieren
-            $(`.square-${square}`).addClass('highlight-square');
-
-            // Mögliche Züge holen
-            const moves = game.moves({ square: square, verbose: true });
-            
-            if (moves.length === 0) return;
-
-            // Punkte zeichnen
-            moves.forEach(move => {
-                // Punkt in das div des Feldes einfügen
-                $(`.square-${move.to}`).append('<div class="highlight-dot"></div>');
-            });
-        }
-
-        function removeHighlights() {
-            $('.square-55d63').removeClass('highlight-square');
-            $('.highlight-dot').remove();
-        }
-
-        function makeMove(move) {
-            // Firebase Update
-            let result = null;
-            let status = 'active';
-
+        function sendMoveOnline(move) {
+            let result = null; let status = 'active';
             if (game.game_over()) {
-                if (game.in_checkmate()) {
-                    result = game.turn() === 'w' ? 'b' : 'w'; 
-                    incrementWins();
-                } else if (game.in_draw()) {
-                    result = 'draw';
-                }
+                if (game.in_checkmate()) { result = game.turn() === 'w' ? 'b' : 'w'; incrementWins(); }
+                else if (game.in_draw()) { result = 'draw'; }
                 status = 'finished';
             }
-
             db.collection('games').doc(currentGameId).update({
-                fen: game.fen(), turn: game.turn(), lastMoveSan: move.san,
-                result: result, status: status
+                fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: result, status: status
             });
             board.position(game.fen());
             addLog(move.san);
         }
 
-        // --- END SCREEN LOGIC (FIXED) ---
+        function checkGameOverLocally() {
+             if (game.game_over()) {
+                if(game.in_checkmate()) {
+                    // Wer hat gewonnen?
+                    if(game.turn() === 'b') showEndScreen('SIEG!', 'Bot Matt gesetzt.', 'win');
+                    else showEndScreen('VERLOREN!', 'Bot hat dich zerlegt.', 'lose');
+                } else {
+                    showEndScreen('REMIS', 'Unentschieden.', 'draw');
+                }
+             }
+        }
+
+        function highlightPossibleMoves(square) {
+            removeHighlights();
+            $(`.square-${square}`).addClass('highlight-square');
+            game.moves({ square: square, verbose: true }).forEach(move => {
+                $(`.square-${move.to}`).append('<div class="highlight-dot"></div>');
+            });
+        }
+        function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
+
+        // --- COMMON ---
         function handleGameEnd(result) {
             if (result === 'draw') showEndScreen('REMIS', 'Unentschieden.', 'draw');
             else if (result === myColor) showEndScreen('GEWONNEN!', 'Du hast gewonnen.', 'win');
             else showEndScreen('VERLOREN', 'Schachmatt.', 'lose');
         }
-
         function showEndScreen(title, reason, type) {
-            $('#end-screen-overlay').removeClass('hidden'); // Zeigen
-            $('#end-title').text(title);
+            $('#end-screen-overlay').removeClass('hidden');
+            $('#end-title').text(title).removeClass().addClass(type==='win'?'win-title':(type==='lose'?'lose-title':'draw-title'));
             $('#end-reason').text(reason);
-            $('#end-title').removeClass('win-title lose-title draw-title');
-            if(type === 'win') $('#end-title').addClass('win-title');
-            if(type === 'lose') $('#end-title').addClass('lose-title');
-            if(type === 'draw') $('#end-title').addClass('draw-title');
         }
-
-        // FIX FÜR DEN "VERLASSEN" BUTTON
-        function backToLobby() {
-            if(gameListener) gameListener();
-            // Overlay erzwingen auszublenden
-            $('#end-screen-overlay').addClass('hidden');
-            showScreen('lobby-screen');
-        }
-
-        function incrementWins() {
-            db.collection('users').doc(currentUser.uid).update({ wins: firebase.firestore.FieldValue.increment(1) });
-        }
-
+        function backToLobby() { if(gameListener) gameListener(); $('#end-screen-overlay').addClass('hidden'); showScreen('lobby-screen'); }
+        function incrementWins() { db.collection('users').doc(currentUser.uid).update({ wins: firebase.firestore.FieldValue.increment(1) }); }
+        
         function leaveGame() {
-            if(confirm("Aufgeben?")) {
-                if(currentGameId) db.collection('games').doc(currentGameId).update({ status: 'aborted' });
+            if(confirm("Spiel verlassen?")) {
+                if(gameMode === 'online' && currentGameId) {
+                     db.collection('games').doc(currentGameId).update({ status: 'aborted' });
+                }
                 backToLobby();
             }
         }
-        
-        // --- HELPER & AUTH ---
+        function joinGameByCode() {
+            const code = $('#join-id-input').val().trim().toUpperCase(); // Case insensitive
+            // Wir suchen das Doc direkt (wir haben die ID als Code genutzt)
+            db.collection('games').doc(code).get().then(doc => {
+                if(doc.exists && doc.data().status === 'waiting_private') {
+                    db.collection('games').doc(code).update({
+                         black: currentUser.uid, blackName: userData.username, blackId: userData.displayId, status: 'active'
+                    }).then(() => loadOnlineGame(code));
+                } else { alert("Raum nicht gefunden oder voll."); }
+            });
+        }
+
+        // --- AUTH & HELPERS ---
         function registerUserWithId() {
             const email = $('#email-input').val(); const pass = $('#password-input').val(); const name = $('#username-input').val();
             if(!name) return;
@@ -511,7 +615,7 @@
                 db.runTransaction(async (t) => {
                     const d = await t.get(cRef); let n = d.exists ? d.data().count + 1 : 1;
                     t.set(cRef, { count: n });
-                    t.set(db.collection('users').doc(cred.user.uid), { username: name, displayId: n, uid: cred.user.uid, wins: 0 });
+                    t.set(db.collection('users').doc(cred.user.uid), { username: name, displayId: n, uid: cred.user.uid, wins: 0, friends: [] });
                 });
             }).catch(e => $('#auth-error').text(e.message));
         }
@@ -526,11 +630,13 @@
         }
         function addLog(s) { $('#move-history').append(`<div>${s}</div>`).scrollTop(999); }
         function showScreen(id) { $('.hidden').removeClass('hidden').addClass('hidden'); $('#auth-screen, #lobby-screen, #game-screen').addClass('hidden'); $('#'+id).removeClass('hidden'); }
-        function joinGameByCode() { /* ... */ }
         function openSettings(){ $('#settings-modal').removeClass('hidden'); }
         function closeSettings(){ $('#settings-modal').addClass('hidden'); }
-        function saveSettings(){ /* ... */ closeSettings(); }
-        async function adminFixUserIds() { /* ... */ }
+        function saveSettings(){ 
+            const newName = $('#settings-username').val(); 
+            if(newName && newName !== userData.username) db.collection('users').doc(currentUser.uid).update({ username: newName });
+            closeSettings(); 
+        }
     </script>
 </body>
 </html>
