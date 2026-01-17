@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters Pro</title>
+    <title>Chess Masters - Skins & Shop</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -21,47 +21,68 @@
         .hidden { display: none !important; }
         .id-badge { background: #3a3b3c; color: #b0b3b8; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 5px; }
 
-        #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; user-select: none; }
+        #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; user-select: none; position: relative; }
         .board-wrapper { position: relative; max-width: 550px; margin: 0 auto; }
         
-        /* Overlays & Modals */
+        /* Overlays */
         #queue-overlay, #end-screen-overlay, .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 2000;
             display: flex; justify-content: center; align-items: center; flex-direction: column;
         }
-        .modal-content-custom { background: #242526; width: 400px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; position: relative; text-align: center; }
+        .modal-content-custom { background: #242526; width: 500px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; position: relative; max-height: 90vh; overflow-y: auto; }
 
-        /* Notifications */
+        /* Notifications & UI */
         .notification-bell { position: relative; cursor: pointer; font-size: 1.2rem; margin-right: 15px; }
-        .notification-badge { 
-            position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; 
-            border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; 
-            display: flex; justify-content: center; align-items: center; 
-        }
+        .notification-badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; justify-content: center; align-items: center; }
         .notif-item { background: #3a3b3c; padding: 10px; border-radius: 5px; margin-bottom: 5px; font-size: 0.9em; text-align: left; }
-
-        /* Friend List */
         .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; cursor: pointer; }
         .friend-item:hover { background: #3a3b3c; }
         .best-friend { color: #f1c40f; text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); } 
-
-        /* Game Elements */
-        .highlight-dot { background-color: rgba(45, 136, 255, 0.8); width: 25%; height: 25%; border-radius: 50%; position: absolute; top: 37.5%; left: 37.5%; pointer-events: none; }
-        .highlight-square { box-shadow: inset 0 0 3px 3px rgba(255, 255, 0, 0.5); }
-        .square-55d63 { cursor: pointer; }
-        
         .win-title { color: #2ecc71; font-size: 3rem; font-weight: 900; }
         .lose-title { color: #e74c3c; font-size: 3rem; font-weight: 900; }
-
         .pulse { animation: pulse-animation 2s infinite; }
         @keyframes pulse-animation { 0% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.7; } }
         
-        /* Private Code Big */
-        .code-display { font-size: 2.5rem; letter-spacing: 5px; font-weight: bold; color: #2ecc71; background: #111; padding: 10px; border-radius: 5px; margin: 15px 0; border: 1px dashed #444; }
+        .highlight-dot { background-color: rgba(45, 136, 255, 0.8); width: 25%; height: 25%; border-radius: 50%; position: absolute; top: 37.5%; left: 37.5%; pointer-events: none; }
+        .highlight-square { box-shadow: inset 0 0 3px 3px rgba(255, 255, 0, 0.5); }
+        .square-55d63 { cursor: pointer; }
+
+        /* --- SHOP & SKINS --- */
+        .coin-display { background: #f1c40f; color: #000; padding: 5px 12px; border-radius: 20px; font-weight: bold; margin-right: 15px; box-shadow: 0 0 10px rgba(241, 196, 15, 0.5); }
+        .skin-card { background: #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: center; border: 2px solid transparent; transition: 0.2s; }
+        .skin-card:hover { transform: translateY(-2px); }
+        .skin-card.owned { border-color: #2ecc71; }
+        .skin-card.active { border-color: #2D88FF; box-shadow: 0 0 10px #2D88FF; }
+        .skin-preview { width: 40px; height: 40px; display: inline-block; margin: 5px; border-radius: 4px; }
+        
+        /* KILL ANIMATIONS */
+        .kill-effect {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 3rem; pointer-events: none; z-index: 1000;
+            animation: pop-fade 1s forwards;
+        }
+        @keyframes pop-fade { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.5); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+
+        /* SKIN STYLES (Dynamisch per JS gesetzt, aber hier die Logik) */
+        /* Wir nutzen CSS Filter um Bilder umzufärben */
     </style>
 </head>
 <body>
+
+    <div id="shop-modal" class="modal-overlay hidden">
+        <div class="modal-content-custom">
+            <h3 class="fw-bold mb-3"><i class="fas fa-store"></i> Skin Shop</h3>
+            <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-dark rounded">
+                <span>Dein Guthaben:</span>
+                <span class="text-warning fw-bold fs-4"><i class="fas fa-coins"></i> <span id="shop-coins">0</span></span>
+            </div>
+            <div id="skin-list" class="row g-2">
+                </div>
+            <button onclick="closeModal('shop-modal')" class="btn btn-secondary w-100 mt-3">Schließen</button>
+        </div>
+    </div>
 
     <div id="queue-overlay" class="hidden">
         <div class="text-center">
@@ -81,7 +102,7 @@
     </div>
 
     <div id="profile-modal" class="modal-overlay hidden">
-        <div class="modal-content-custom">
+        <div class="modal-content-custom text-center">
             <div style="width: 80px; height: 80px; background: #2D88FF; border-radius: 50%; margin: 0 auto 10px; display:flex; align-items:center; justify-content:center; font-size:2rem;"><i class="fas fa-user"></i></div>
             <h3 id="profile-name">User</h3>
             <p class="text-muted" id="profile-id">#0</p>
@@ -90,11 +111,10 @@
             <button onclick="closeModal('profile-modal')" class="btn btn-outline-secondary mt-3 w-100">Schließen</button>
         </div>
     </div>
-    
+
     <div id="private-menu-modal" class="modal-overlay hidden">
         <div class="modal-content-custom">
-            <h3><i class="fas fa-user-secret"></i> Privates Spiel</h3>
-            <p class="text-muted">Wähle eine Option:</p>
+            <h3>Privates Spiel</h3>
             <div class="d-grid gap-3 mt-4">
                 <button onclick="openPrivateCreate()" class="btn btn-primary btn-lg">Spiel erstellen</button>
                 <button onclick="openPrivateJoin()" class="btn btn-outline-light btn-lg">Code eingeben</button>
@@ -105,27 +125,18 @@
 
     <div id="private-create-modal" class="modal-overlay hidden">
         <div class="modal-content-custom" style="width: 500px;">
-            <h4>Dein Raum ist bereit!</h4>
-            <p class="text-muted">Teile diesen Code mit deinem Freund:</p>
-            
-            <div id="host-code-display" class="code-display user-select-all">...</div>
-            
-            <div class="d-flex align-items-center justify-content-center gap-2 text-warning mb-4">
-                <div class="spinner-border spinner-border-sm" role="status"></div>
-                <span>Warte auf Beitritt...</span>
-            </div>
-            
-            <button onclick="cancelPrivateHost()" class="btn btn-danger w-100">Raum schließen</button>
+            <h4>Raum bereit!</h4>
+            <p>Code:</p>
+            <div id="host-code-display" class="fw-bold fs-1 text-success bg-dark p-2 rounded mb-3">...</div>
+            <div class="spinner-border spinner-border-sm text-warning" role="status"></div> <span>Warte...</span>
+            <button onclick="cancelPrivateHost()" class="btn btn-danger w-100 mt-3">Schließen</button>
         </div>
     </div>
 
     <div id="private-join-modal" class="modal-overlay hidden">
         <div class="modal-content-custom">
-            <h4>Spiel beitreten</h4>
-            <p class="text-muted">Gib den Code vom Host ein:</p>
-            
-            <input type="text" id="private-join-input" class="form-control form-control-lg text-center mb-3" placeholder="CODE" style="text-transform:uppercase; letter-spacing: 2px; font-weight:bold;">
-            
+            <h4>Beitreten</h4>
+            <input type="text" id="private-join-input" class="form-control form-control-lg text-center mb-3" placeholder="CODE">
             <button onclick="submitPrivateJoin()" class="btn btn-success w-100 btn-lg mb-2">Beitreten</button>
             <button onclick="closeModal('private-join-modal')" class="btn btn-secondary w-100">Abbrechen</button>
         </div>
@@ -144,8 +155,9 @@
     </div>
 
     <div id="end-screen-overlay" class="hidden">
-        <div class="modal-content-custom">
+        <div class="modal-content-custom text-center">
             <div id="end-title" class="win-title">SIEG!</div>
+            <div id="end-reward" class="fs-4 text-warning my-2 fw-bold">+50 Coins!</div>
             <p id="end-reason" class="text-muted my-3">...</p>
             <button onclick="backToLobby()" class="btn btn-light btn-lg w-100 fw-bold">Zurück zur Lobby</button>
         </div>
@@ -156,13 +168,18 @@
         <div class="d-flex justify-content-between align-items-center mb-4 p-3 card-dark">
             <h3 class="m-0 fw-bold"><i class="fas fa-chess"></i> CHESS MASTERS</h3>
             <div id="nav-user-area" class="hidden d-flex align-items-center">
+                
+                <div class="coin-display" onclick="openShop()">
+                    <i class="fas fa-coins"></i> <span id="nav-coins">0</span>
+                </div>
+
                 <div class="notification-bell" onclick="openNotifModal()">
                     <i class="fas fa-bell"></i>
                     <div id="bell-badge" class="notification-badge hidden">0</div>
                 </div>
                 <div class="me-3 text-end">
                     <div class="fw-bold text-white"><span id="nav-username">Gast</span></div>
-                    <div class="small text-muted">ID: <span id="nav-userid">#?</span> | Wins: <span id="nav-wins" class="text-warning">0</span></div>
+                    <div class="small text-muted">ID: <span id="nav-userid">#?</span></div>
                 </div>
                 <button onclick="logout()" class="btn btn-sm btn-outline-danger"><i class="fas fa-sign-out-alt"></i></button>
             </div>
@@ -184,16 +201,18 @@
             <div class="row">
                 <div class="col-md-7">
                     <div class="card-dark text-center" style="padding: 40px 20px; min-height: 400px;">
-                        <h2 class="fw-bold mb-4">Bereit zum Spiel?</h2>
+                        <h2 class="fw-bold mb-4">Bereit?</h2>
                         
                         <button onclick="joinRankedQueue()" class="btn btn-primary-custom btn-lg w-100 p-4 mb-3" style="font-size: 1.5rem; box-shadow: 0 0 20px rgba(45, 136, 255, 0.4);">
-                            <i class="fas fa-globe"></i> RANKED MATCH (Suche)
+                            <i class="fas fa-globe"></i> RANKED MATCH
                         </button>
                         
-                        <div class="row g-2">
-                            <div class="col-6"><button onclick="startBotGame()" class="btn btn-warning w-100 p-3 fw-bold"><i class="fas fa-robot"></i> VS BOT</button></div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6"><button onclick="startBotGame()" class="btn btn-warning w-100 p-3 fw-bold"><i class="fas fa-robot"></i> BOT</button></div>
                             <div class="col-6"><button onclick="showPrivateMenu()" class="btn btn-info w-100 p-3 fw-bold"><i class="fas fa-user-secret"></i> PRIVAT</button></div>
                         </div>
+
+                        <button onclick="openShop()" class="btn btn-outline-warning w-100"><i class="fas fa-store"></i> SKIN SHOP ÖFFNEN</button>
                     </div>
                 </div>
                 <div class="col-md-5">
@@ -202,8 +221,8 @@
                             <h5 class="m-0 text-info"><i class="fas fa-user-friends"></i> Freunde</h5>
                         </div>
                         <div class="input-group mb-3">
-                            <input type="number" id="friend-id-input" class="form-control form-control-sm" placeholder="ID eingeben (z.B. 42)">
-                            <button onclick="sendFriendRequest()" class="btn btn-sm btn-outline-info">Anfrage</button>
+                            <input type="number" id="friend-id-input" class="form-control form-control-sm" placeholder="ID eingeben">
+                            <button onclick="sendFriendRequest()" class="btn btn-sm btn-outline-info">Add</button>
                         </div>
                         <div id="friends-list" style="max-height: 300px; overflow-y: auto;"></div>
                     </div>
@@ -256,6 +275,15 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
+        // --- SKIN CONFIGURATION ---
+        const SKINS = {
+            'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', anim: '' },
+            'water': { name: 'Atlantis', price: 100, colorW: '#a8d0e6', colorB: '#374785', filter: 'hue-rotate(180deg) brightness(1.1)', anim: '🌊' },
+            'fire': { name: 'Inferno', price: 250, colorW: '#f6c7b6', colorB: '#a31621', filter: 'sepia(1) saturate(5) hue-rotate(-50deg)', anim: '🔥' },
+            'forest': { name: 'Smaragd', price: 500, colorW: '#c8e6c9', colorB: '#2e7d32', filter: 'hue-rotate(90deg) brightness(0.9)', anim: '🍃' },
+            'dark': { name: 'Shadow', price: 1000, colorW: '#95a5a6', colorB: '#2c3e50', filter: 'grayscale(100%) contrast(1.2)', anim: '💀' }
+        };
+
         // GLOBALS
         let currentUser = null, userData = null;
         let game = new Chess(), board = null, myColor = 'w';
@@ -264,282 +292,191 @@
         let selectedSquare = null;
         let queueInterval = null, queueTime = 0;
 
-        // --- AUTH & RELOAD HANDLING ---
+        // --- AUTH ---
         auth.onAuthStateChanged(user => {
             if(user) {
                 currentUser = user;
                 db.collection('users').doc(user.uid).onSnapshot(doc => {
                     if(doc.exists) {
                         userData = doc.data();
+                        
+                        // Fix old users
+                        if(userData.coins === undefined) userData.coins = 0;
+                        if(!userData.inventory) userData.inventory = ['default'];
+                        if(!userData.equippedSkin) userData.equippedSkin = 'default';
+
                         updateHeader();
                         loadFriends();
                         listenNotifications();
-                        
-                        // Reconnect
                         if(userData.activeGameId && $('#game-screen').hasClass('hidden')) {
                             db.collection('games').doc(userData.activeGameId).get().then(g => {
-                                if(g.exists && g.data().status !== 'finished' && g.data().status !== 'aborted') {
-                                    loadOnlineGame(userData.activeGameId);
-                                } else {
-                                    db.collection('users').doc(currentUser.uid).update({activeGameId: null});
-                                    showScreen('lobby-screen');
-                                }
+                                if(g.exists && g.data().status !== 'finished' && g.data().status !== 'aborted') loadOnlineGame(userData.activeGameId);
+                                else { db.collection('users').doc(currentUser.uid).update({activeGameId: null}); showScreen('lobby-screen'); }
                             });
-                        } else if (!userData.activeGameId) {
-                            showScreen('lobby-screen');
-                        }
+                        } else if (!userData.activeGameId) showScreen('lobby-screen');
                     }
                 });
-                setInterval(() => {
-                    if(currentUser) db.collection('users').doc(currentUser.uid).update({lastSeen: firebase.firestore.FieldValue.serverTimestamp()});
-                }, 60000);
             } else { showScreen('auth-screen'); }
         });
 
         function updateHeader() {
             $('#nav-username').text(userData.username);
             $('#nav-userid').text(`#${userData.displayId}`);
-            $('#nav-wins').text(userData.wins || 0);
+            $('#nav-coins').text(userData.coins);
             $('#nav-user-area').removeClass('hidden');
         }
 
-        // --- QUEUE SYSTEM ---
+        // --- SHOP & SKINS SYSTEM ---
+        function openShop() {
+            $('#shop-coins').text(userData.coins);
+            const list = $('#skin-list');
+            list.empty();
+            
+            for (const [key, skin] of Object.entries(SKINS)) {
+                const owned = userData.inventory.includes(key);
+                const active = userData.equippedSkin === key;
+                let btnHtml = '';
+
+                if (active) btnHtml = `<button class="btn btn-sm btn-success disabled w-100">Ausgerüstet</button>`;
+                else if (owned) btnHtml = `<button onclick="equipSkin('${key}')" class="btn btn-sm btn-outline-primary w-100">Ausrüsten</button>`;
+                else btnHtml = `<button onclick="buySkin('${key}')" class="btn btn-sm btn-warning w-100">${skin.price} <i class="fas fa-coins"></i></button>`;
+
+                list.append(`
+                    <div class="col-6 col-md-4">
+                        <div class="skin-card ${owned?'owned':''} ${active?'active':''}">
+                            <h5>${skin.name} ${skin.anim}</h5>
+                            <div class="d-flex justify-content-center mb-2">
+                                <div class="skin-preview" style="background:${skin.colorW}"></div>
+                                <div class="skin-preview" style="background:${skin.colorB}"></div>
+                            </div>
+                            ${btnHtml}
+                        </div>
+                    </div>
+                `);
+            }
+            $('#shop-modal').removeClass('hidden');
+        }
+
+        function buySkin(key) {
+            const skin = SKINS[key];
+            if(userData.coins >= skin.price) {
+                if(confirm(`${skin.name} für ${skin.price} Coins kaufen?`)) {
+                    db.collection('users').doc(currentUser.uid).update({
+                        coins: firebase.firestore.FieldValue.increment(-skin.price),
+                        inventory: firebase.firestore.FieldValue.arrayUnion(key)
+                    });
+                }
+            } else alert("Nicht genug Coins!");
+        }
+
+        function equipSkin(key) {
+            db.collection('users').doc(currentUser.uid).update({ equippedSkin: key });
+        }
+
+        function applySkinToBoard() {
+            const skinKey = userData.equippedSkin || 'default';
+            const skin = SKINS[skinKey];
+            
+            // CSS Inject für Board Farben
+            const styleId = 'board-skin-style';
+            let styleTag = document.getElementById(styleId);
+            if(!styleTag) {
+                styleTag = document.createElement('style');
+                styleTag.id = styleId;
+                document.head.appendChild(styleTag);
+            }
+            
+            styleTag.innerHTML = `
+                .white-1e1d7 { background-color: ${skin.colorW} !important; color: ${skin.colorB} !important; }
+                .black-3c85d { background-color: ${skin.colorB} !important; color: ${skin.colorW} !important; }
+                .piece-417db { filter: ${skin.filter}; transition: 0.3s; }
+            `;
+        }
+
+        function triggerKillAnim(square) {
+            const skinKey = userData.equippedSkin || 'default';
+            const anim = SKINS[skinKey].anim;
+            if(!anim) return;
+            
+            const sqDiv = $(`.square-${square}`);
+            sqDiv.append(`<div class="kill-effect">${anim}</div>`);
+            setTimeout(() => $('.kill-effect').remove(), 1000);
+        }
+
+        // --- QUEUE ---
         function joinRankedQueue() {
             $('#queue-overlay').removeClass('hidden');
-            queueTime = 0;
-            if(queueInterval) clearInterval(queueInterval);
+            queueTime = 0; if(queueInterval) clearInterval(queueInterval);
             queueInterval = setInterval(() => { queueTime++; $('#queue-timer').text(`Zeit: ${queueTime}s`); checkMatchmaking(); }, 2000);
-
             const ref = db.collection('queue').doc(currentUser.uid);
-            ref.set({
-                uid: currentUser.uid, username: userData.username, displayId: userData.displayId, 
-                joinedAt: firebase.firestore.FieldValue.serverTimestamp(), gameId: null
-            });
-
+            ref.set({uid: currentUser.uid, username: userData.username, displayId: userData.displayId, joinedAt: firebase.firestore.FieldValue.serverTimestamp(), gameId: null});
             if(queueListener) queueListener();
             queueListener = ref.onSnapshot(doc => {
                 if(doc.exists && doc.data().gameId) {
-                    const gid = doc.data().gameId;
-                    leaveQueue(false);
-                    db.collection('queue').doc(currentUser.uid).delete();
-                    db.collection('users').doc(currentUser.uid).update({activeGameId: gid});
-                    loadOnlineGame(gid);
+                    const gid = doc.data().gameId; leaveQueue(false); db.collection('queue').doc(currentUser.uid).delete();
+                    db.collection('users').doc(currentUser.uid).update({activeGameId: gid}); loadOnlineGame(gid);
                 }
             });
         }
-
         async function checkMatchmaking() {
-            const snapshot = await db.collection('queue').orderBy('joinedAt', 'asc').limit(2).get();
-            if(snapshot.size >= 2) {
-                const p1 = snapshot.docs[0].data();
-                const p2 = snapshot.docs[1].data();
-                // Leader Logic
+            const snap = await db.collection('queue').orderBy('joinedAt', 'asc').limit(2).get();
+            if(snap.size >= 2) {
+                const p1 = snap.docs[0].data(), p2 = snap.docs[1].data();
                 if(p1.uid === currentUser.uid) {
                     const gameRef = db.collection('games').doc();
-                    await gameRef.set({
-                        white: p1.uid, whiteName: p1.username, whiteId: p1.displayId,
-                        black: p2.uid, blackName: p2.username, blackId: p2.displayId,
-                        fen: 'start', turn: 'w', status: 'active', createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    const batch = db.batch();
-                    batch.update(db.collection('queue').doc(p1.uid), {gameId: gameRef.id});
-                    batch.update(db.collection('queue').doc(p2.uid), {gameId: gameRef.id});
-                    await batch.commit();
+                    await gameRef.set({white: p1.uid, whiteName: p1.username, whiteId: p1.displayId, black: p2.uid, blackName: p2.username, blackId: p2.displayId, fen: 'start', turn: 'w', status: 'active', createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+                    const b = db.batch(); b.update(db.collection('queue').doc(p1.uid), {gameId: gameRef.id}); b.update(db.collection('queue').doc(p2.uid), {gameId: gameRef.id}); await b.commit();
                 }
             }
         }
+        function leaveQueue(del=true) { $('#queue-overlay').addClass('hidden'); if(queueInterval) clearInterval(queueInterval); if(queueListener) queueListener(); if(del) db.collection('queue').doc(currentUser.uid).delete(); }
 
-        function leaveQueue(deleteEntry = true) {
-            $('#queue-overlay').addClass('hidden');
-            if(queueInterval) clearInterval(queueInterval);
-            if(queueListener) queueListener();
-            if(deleteEntry) db.collection('queue').doc(currentUser.uid).delete();
-        }
-
-        // --- NEW PRIVATE SYSTEM ---
-        function showPrivateMenu() { $('#private-menu-modal').removeClass('hidden'); }
-        
-        // 1. HOSTEN
-        function openPrivateCreate() {
-            closeModal('private-menu-modal');
-            const code = Math.random().toString(36).substring(2,7).toUpperCase();
-            
-            // Spiel erstellen, aber warten
-            db.collection('games').doc(code).set({
-                white: currentUser.uid, whiteName: userData.username, whiteId: userData.displayId,
-                status: 'waiting_private', fen: 'start', turn: 'w', createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            $('#host-code-display').text(code);
-            $('#private-create-modal').removeClass('hidden');
-
-            // Warten bis jemand joined
-            if(hostListener) hostListener();
-            hostListener = db.collection('games').doc(code).onSnapshot(doc => {
-                if(doc.exists && doc.data().status === 'active') {
-                    // Jemand ist beigetreten!
-                    hostListener(); // Stop listener
-                    closeModal('private-create-modal');
-                    db.collection('users').doc(currentUser.uid).update({activeGameId: code});
-                    loadOnlineGame(code);
-                }
-            });
-            currentGameId = code; // Temporär speichern für Cancel
-        }
-
-        function cancelPrivateHost() {
-            if(hostListener) hostListener();
-            if(currentGameId) db.collection('games').doc(currentGameId).delete();
-            closeModal('private-create-modal');
-        }
-
-        // 2. BEITRETEN
-        function openPrivateJoin() {
-            closeModal('private-menu-modal');
-            $('#private-join-input').val('');
-            $('#private-join-modal').removeClass('hidden');
-        }
-
-        function submitPrivateJoin() {
-            const code = $('#private-join-input').val().trim().toUpperCase();
-            if(!code) return;
-
-            db.collection('games').doc(code).get().then(doc => {
-                if(doc.exists && doc.data().status === 'waiting_private') {
-                    db.collection('games').doc(code).update({
-                        black: currentUser.uid, blackName: userData.username, blackId: userData.displayId, status: 'active'
-                    }).then(() => {
-                        closeModal('private-join-modal');
-                        db.collection('users').doc(currentUser.uid).update({activeGameId: code});
-                        loadOnlineGame(code);
-                    });
-                } else {
-                    alert("Code ungültig oder Raum voll.");
-                }
-            });
-        }
-
-        // --- FRIEND & NOTIF ---
-        function sendFriendRequest() {
-            const idInput = $('#friend-id-input').val(); if(!idInput) return;
-            const targetId = parseInt(idInput);
-            db.collection('users').where('displayId', '==', targetId).get().then(snap => {
-                if(snap.empty) return alert("User nicht gefunden.");
-                const targetUser = snap.docs[0];
-                if(targetUser.id === currentUser.uid) return alert("Das bist du.");
-                if(userData.friends && userData.friends.includes(targetUser.id)) return alert("Schon befreundet.");
-                
-                db.collection('users').doc(targetUser.id).collection('notifications').add({
-                    type: 'friend_request', fromUid: currentUser.uid, title: 'Freundschaftsanfrage',
-                    message: `${userData.username} möchte dein Freund sein.`, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => { alert("Anfrage gesendet!"); $('#friend-id-input').val(''); });
-            });
-        }
-        async function loadFriends() {
-            const list = $('#friends-list');
-            if(!userData.friends || userData.friends.length === 0) { list.html('<div class="text-center text-muted small mt-3">Noch keine Freunde.</div>'); return; }
-            const promises = userData.friends.map(uid => db.collection('users').doc(uid).get());
-            const docs = await Promise.all(promises);
-            list.empty();
-            docs.forEach(doc => {
-                if(!doc.exists) return; const f = doc.data(); const fUid = doc.id;
-                if(!f.friends || !f.friends.includes(currentUser.uid)) db.collection('users').doc(fUid).update({friends: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)});
-                const isBest = (userData.bestFriends && userData.bestFriends.includes(fUid));
-                const star = isBest ? 'best-friend' : 'text-muted';
-                const el = $(`<div class="friend-item" onclick="openProfile('${fUid}')"><div><i class="fas fa-star ${star} me-2" onclick="toggleBest(event,'${fUid}')"></i><b>${f.username}</b> <small class="text-muted">#${f.displayId}</small></div>${f.activeGameId ? '<span class="badge bg-danger small">Im Spiel</span>' : '<i class="fas fa-circle text-success small"></i>'}</div>`);
-                if(isBest) list.prepend(el); else list.append(el);
-            });
-        }
-        function toggleBest(e, uid) { e.stopPropagation(); let op = userData.bestFriends && userData.bestFriends.includes(uid) ? 'arrayRemove':'arrayUnion'; db.collection('users').doc(currentUser.uid).update({bestFriends: firebase.firestore.FieldValue[op](uid)}); }
-        function listenNotifications() {
-            if(notifListener) notifListener();
-            notifListener = db.collection('users').doc(currentUser.uid).collection('notifications').orderBy('timestamp', 'desc').onSnapshot(snap => {
-                $('#bell-badge').text(snap.size).toggleClass('hidden', snap.size === 0);
-                let html = snap.size === 0 ? '<div class="text-center text-muted p-3">Keine Benachrichtigungen</div>' : '';
-                snap.forEach(doc => {
-                    const n = doc.data();
-                    html += `<div class="notif-item"><div class="fw-bold">${n.title}</div><div class="small text-muted mb-2">${n.message}</div><div class="d-flex gap-2"><button onclick="handleNotif('${doc.id}','${n.type}',true,'${n.fromUid}','${n.payload}')" class="btn btn-sm btn-success flex-grow-1">Annehmen</button><button onclick="handleNotif('${doc.id}','${n.type}',false)" class="btn btn-sm btn-outline-secondary">Ablehnen</button></div></div>`;
-                });
-                $('#notif-list').html(html);
-            });
-        }
-        function handleNotif(notifId, type, accepted, fromUid, payload) {
-            const notifRef = db.collection('users').doc(currentUser.uid).collection('notifications').doc(notifId);
-            if(!accepted) { notifRef.delete(); return; }
-            if(type === 'friend_request') {
-                const batch = db.batch();
-                batch.update(db.collection('users').doc(currentUser.uid), { friends: firebase.firestore.FieldValue.arrayUnion(fromUid) });
-                batch.update(db.collection('users').doc(fromUid), { friends: firebase.firestore.FieldValue.arrayUnion(currentUser.uid) });
-                batch.delete(notifRef); batch.commit().then(() => { closeModal('notif-modal'); alert("Freund hinzugefügt!"); });
-            } else if (type === 'game_invite') {
-                db.collection('games').doc(payload).update({ black: currentUser.uid, blackName: userData.username, blackId: userData.displayId, status: 'active' })
-                .then(() => { notifRef.delete(); closeModal('notif-modal'); db.collection('users').doc(currentUser.uid).update({activeGameId: payload}); loadOnlineGame(payload); });
-            }
-        }
-        function openProfile(uid) {
-            db.collection('users').doc(uid).get().then(doc => {
-                const f = doc.data();
-                $('#profile-name').text(f.username); $('#profile-id').text(`#${f.displayId}`); $('#profile-wins').text(f.wins||0);
-                const isPlaying = !!f.activeGameId;
-                $('#profile-status').text(isPlaying?"Spielt gerade":"Online").attr('class', isPlaying?"text-danger":"text-success");
-                let btns = `<button onclick="inviteFriend('${uid}','${f.username}')" class="btn btn-primary w-100">Herausfordern</button>`;
-                if(isPlaying) btns += `<button onclick="spectateGame('${f.activeGameId}')" class="btn btn-warning w-100 mt-2">Zuschauen</button>`;
-                $('#profile-actions').html(btns); $('#profile-modal').removeClass('hidden');
-            });
-        }
-        function inviteFriend(uid, name) {
-            const gameRef = db.collection('games').doc();
-            gameRef.set({
-                white: currentUser.uid, whiteName: userData.username, whiteId: userData.displayId,
-                black: uid, blackName: name, blackId: '?', fen: 'start', turn: 'w', status: 'waiting_friend', createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                db.collection('users').doc(uid).collection('notifications').add({ type: 'game_invite', fromUid: currentUser.uid, title: 'Herausforderung!', message: `${userData.username} fordert dich heraus.`, payload: gameRef.id, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-                closeModal('profile-modal'); db.collection('users').doc(currentUser.uid).update({activeGameId: gameRef.id}); loadOnlineGame(gameRef.id);
-            });
-        }
-        function spectateGame(id) { closeModal('profile-modal'); loadOnlineGame(id, true); }
-
-        // --- GAME ENGINE ---
-        function loadOnlineGame(id, asSpectator = false) {
+        // --- GAME LOGIC ---
+        function loadOnlineGame(id) {
             currentGameId = id; gameMode = 'online';
-            showScreen('game-screen'); $('#end-screen-overlay').addClass('hidden'); 
-            
+            showScreen('game-screen'); applySkinToBoard();
             game = new Chess(); $('#move-history').empty(); selectedSquare = null;
             board = Chessboard('board', {position:'start', draggable:false, pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'});
-            $('#board').off('click').on('click', '.square-55d63', function() { if(!asSpectator) handleSquareClick.call(this); });
-
+            $('#board').off('click').on('click', '.square-55d63', handleSquareClick);
+            
             if(gameListener) gameListener();
             gameListener = db.collection('games').doc(id).onSnapshot(doc => {
                 if(!doc.exists) { db.collection('users').doc(currentUser.uid).update({activeGameId: null}); backToLobby(); return; }
                 const data = doc.data();
+                if(data.white === currentUser.uid) myColor = 'w'; else if (data.black === currentUser.uid) myColor = 'b';
+                board.orientation(myColor==='w'?'white':'black');
+                $('#player-top').text(myColor==='w'? data.blackName : data.whiteName);
+                $('#player-bottom').text(`Du (${myColor==='w'?'Weiß':'Schwarz'})`);
+                
+                if(data.fen && data.fen !== game.fen()) {
+                    // Detect Capture for Animation
+                    const tempGame = new Chess(game.fen());
+                    const move = tempGame.move(data.lastMoveSan); // Replay move logic
+                    if(move && (move.flags.includes('c') || move.flags.includes('e'))) triggerKillAnim(move.to);
 
-                if(asSpectator) {
-                    myColor = 'spectator'; board.orientation('white');
-                    $('#player-top').text(`${data.blackName} (Schwarz)`); $('#player-bottom').text(`${data.whiteName} (Weiß)`);
-                    $('#game-status-text').text("Zuschauer").removeClass('bg-success').addClass('bg-warning');
-                } else {
-                    if(data.white === currentUser.uid) myColor = 'w'; else if (data.black === currentUser.uid) myColor = 'b';
-                    board.orientation(myColor==='w'?'white':'black');
-                    $('#player-top').text(myColor==='w'? data.blackName : data.whiteName);
-                    $('#player-bottom').text(`Du (${myColor==='w'?'Weiß':'Schwarz'})`);
+                    game.load(data.fen); board.position(data.fen); removeHighlights();
+                    if(data.lastMoveSan) addLog(data.lastMoveSan);
                 }
-
-                if(data.fen && data.fen !== game.fen()) { game.load(data.fen); board.position(data.fen); removeHighlights(); if(data.lastMoveSan) addLog(data.lastMoveSan); }
                 if(data.status === 'aborted') showEndScreen('aborted');
                 if(data.result) showEndScreen(data.result);
             });
         }
 
-        // --- CLICK & MOVE ---
+        // --- CLICK SYSTEM & REWARDS ---
         function handleSquareClick() {
-            if(gameMode === 'bot' && game.turn() === 'b') return;
-            if(gameMode === 'online' && game.turn() !== myColor) return;
-            if(game.game_over()) return;
+            if(game.game_over() || (gameMode==='online' && game.turn()!==myColor)) return;
             const sq = $(this).attr('data-square');
             if(selectedSquare) {
                 const move = game.move({from:selectedSquare, to:sq, promotion:'q'});
                 if(move) {
                     selectedSquare = null; removeHighlights();
+                    
+                    // REWARD FOR CAPTURE
+                    if(move.captured) {
+                        triggerKillAnim(move.to);
+                        if(gameMode === 'online') db.collection('users').doc(currentUser.uid).update({coins: firebase.firestore.FieldValue.increment(10)});
+                    }
+
                     if(gameMode === 'online') updateGameOnline(move);
                     else { board.position(game.fen()); setTimeout(botMove, 500); }
                 } else {
@@ -548,42 +485,45 @@
                 }
             } else { if(game.get(sq) && game.get(sq).color === (gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); } }
         }
-        function highlight(sq) { removeHighlights(); $(`.square-${sq}`).addClass('highlight-square'); game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
-        function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
+
         function updateGameOnline(move) {
             let res = null;
-            if(game.game_over()) { if(game.in_checkmate()) { res = game.turn()==='w'?'b':'w'; db.collection('users').doc(currentUser.uid).update({wins: firebase.firestore.FieldValue.increment(1)}); } else res = 'draw'; }
+            if(game.game_over()) {
+                if(game.in_checkmate()) { 
+                    res = game.turn()==='w'?'b':'w'; 
+                    // WIN REWARD
+                    if(res === myColor) db.collection('users').doc(currentUser.uid).update({wins: firebase.firestore.FieldValue.increment(1), coins: firebase.firestore.FieldValue.increment(50)});
+                } else res = 'draw';
+            }
             db.collection('games').doc(currentGameId).update({fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: res}); board.position(game.fen()); addLog(move.san);
         }
 
-        // --- BOT ---
-        function startBotGame() {
-            gameMode = 'bot'; showScreen('game-screen');
-            game = new Chess(); board = Chessboard('board', {position:'start', draggable:false, pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'});
-            $('#board').off('click').on('click', '.square-55d63', handleSquareClick); $('#player-top').text("Bot"); $('#player-bottom').text("Du");
-        }
-        function botMove() { if(game.game_over())return; const moves = game.moves(); game.move(moves[Math.floor(Math.random()*moves.length)]); board.position(game.fen()); }
-
-        // --- COMMON ---
         function showEndScreen(res) {
             $('#end-screen-overlay').removeClass('hidden');
-            let txt = "SIEG!", color = "text-success";
-            if(res === 'aborted') { txt = "GEGNER WEG"; color = "text-danger"; } else if(res === 'draw') { txt = "REMIS"; color = "text-warning"; } else if(res !== myColor && myColor !== 'spectator') { txt = "VERLOREN"; color = "text-danger"; }
+            let txt = "SIEG!", color = "text-success", reward="";
+            if(res === 'aborted') { txt = "GEGNER WEG"; color = "text-danger"; } 
+            else if(res === 'draw') { txt = "REMIS"; color = "text-warning"; }
+            else if(res !== myColor) { txt = "VERLOREN"; color = "text-danger"; }
+            else { reward = "+50 Coins!"; }
+
             $('#end-title').text(txt).removeClass().addClass('win-title '+color);
-            if(myColor !== 'spectator') db.collection('users').doc(currentUser.uid).update({activeGameId: null});
+            $('#end-reward').text(reward);
+            db.collection('users').doc(currentUser.uid).update({activeGameId: null});
         }
-        function backToLobby() { if(gameListener) gameListener(); $('#end-screen-overlay').addClass('hidden'); db.collection('users').doc(currentUser.uid).update({activeGameId: null}); showScreen('lobby-screen'); }
-        function leaveGame() { if(confirm("Verlassen?")) { if(gameMode === 'online' && myColor !== 'spectator') db.collection('games').doc(currentGameId).update({status: 'aborted'}); backToLobby(); } }
-        function registerUserWithId() {
-            const email=$('#email-input').val(), pass=$('#password-input').val(), name=$('#username-input').val();
-            const cRef = db.collection('config').doc('userCounter');
-            auth.createUserWithEmailAndPassword(email, pass).then(cred => {
-                db.runTransaction(async (t) => {
-                    const d = await t.get(cRef); let n = d.exists?d.data().count+1:1; t.set(cRef, {count:n});
-                    t.set(db.collection('users').doc(cred.user.uid), {username:name, displayId:n, uid:cred.user.uid, wins:0, friends:[]});
-                });
-            });
-        }
+
+        // --- HELPERS (Standard) ---
+        function highlight(sq) { removeHighlights(); $(`.square-${sq}`).addClass('highlight-square'); game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
+        function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
+        function startBotGame() { gameMode = 'bot'; showScreen('game-screen'); applySkinToBoard(); game = new Chess(); board = Chessboard('board', {position:'start', draggable:false, pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'}); $('#board').off('click').on('click', '.square-55d63', handleSquareClick); $('#player-top').text("Bot"); $('#player-bottom').text("Du"); }
+        function botMove() { if(game.game_over())return; const moves = game.moves({verbose:true}); const move = moves[Math.floor(Math.random()*moves.length)]; game.move(move.san); board.position(game.fen()); if(move.captured) triggerKillAnim(move.to); }
+        function showPrivateMenu() { $('#private-menu-modal').removeClass('hidden'); }
+        function openPrivateCreate() { closeModal('private-menu-modal'); const code=Math.random().toString(36).substring(2,7).toUpperCase(); db.collection('games').doc(code).set({white:currentUser.uid, whiteName:userData.username, whiteId:userData.displayId, status:'waiting_private', fen:'start', turn:'w', createdAt:firebase.firestore.FieldValue.serverTimestamp()}); $('#host-code-display').text(code); $('#private-create-modal').removeClass('hidden'); hostListener=db.collection('games').doc(code).onSnapshot(d=>{if(d.exists&&d.data().status==='active'){hostListener();closeModal('private-create-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:code});loadOnlineGame(code);}}); currentGameId=code; }
+        function cancelPrivateHost() { if(hostListener)hostListener(); if(currentGameId)db.collection('games').doc(currentGameId).delete(); closeModal('private-create-modal'); }
+        function openPrivateJoin() { closeModal('private-menu-modal'); $('#private-join-input').val(''); $('#private-join-modal').removeClass('hidden'); }
+        function submitPrivateJoin() { const c=$('#private-join-input').val().trim().toUpperCase(); db.collection('games').doc(c).get().then(d=>{if(d.exists&&d.data().status==='waiting_private'){db.collection('games').doc(c).update({black:currentUser.uid, blackName:userData.username, blackId:userData.displayId, status:'active'}).then(()=>{closeModal('private-join-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);});}else alert("Fehler");}); }
+        function backToLobby() { if(gameListener)gameListener(); $('#end-screen-overlay').addClass('hidden'); db.collection('users').doc(currentUser.uid).update({activeGameId:null}); showScreen('lobby-screen'); }
+        function leaveGame() { if(confirm("Verlassen?")) { if(gameMode==='online') db.collection('games').doc(currentGameId).update({status:'aborted'}); backToLobby(); } }
+        function registerUserWithId() { const e=$('#email-input').val(), p=$('#password-input').val(), n=$('#username-input').val(); const c=db.collection('config').doc('userCounter'); auth.createUserWithEmailAndPassword(e,p).then(cr=>{ db.runTransaction(async t=>{ const d=await t.get(c); let i=d.exists?d.data().count+1:1; t.set(c,{count:i}); t.set(db.collection('users').doc(cr.user.uid),{username:n,displayId:i,uid:cr.user.uid,wins:0,coins:0,inventory:['default'],equippedSkin:'default',friends:[]}); }); }); }
         function loginUser() { auth.signInWithEmailAndPassword($('#email-input').val(), $('#password-input').val()); }
         function logout() { auth.signOut(); location.reload(); }
         function showScreen(id) { $('.hidden').removeClass('hidden').addClass('hidden'); $('#auth-screen, #lobby-screen, #game-screen').addClass('hidden'); $(`#${id}`).removeClass('hidden'); }
@@ -591,6 +531,14 @@
         function openNotifModal() { $('#notif-modal').removeClass('hidden'); }
         function openSettings() { $('#settings-modal').removeClass('hidden'); }
         function addLog(s) { $('#move-history').append(`<div>${s}</div>`).scrollTop(999); }
+        // Friend & Notif Functions
+        function sendFriendRequest() { const i=$('#friend-id-input').val(); if(!i)return; db.collection('users').where('displayId','==',parseInt(i)).get().then(s=>{if(s.empty)return alert("User nicht gefunden."); const t=s.docs[0]; if(t.id===currentUser.uid)return alert("Du selbst."); if(userData.friends&&userData.friends.includes(t.id))return alert("Schon Freund."); db.collection('users').doc(t.id).collection('notifications').add({type:'friend_request',fromUid:currentUser.uid,title:'Freundschaft',message:`${userData.username} will Freund sein.`,timestamp:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>alert("Gesendet!"));}); }
+        async function loadFriends() { const l=$('#friends-list'); if(!userData.friends||userData.friends.length===0){l.html('<div class="text-center small mt-3">Keine Freunde</div>');return;} const p=userData.friends.map(u=>db.collection('users').doc(u).get()); const d=await Promise.all(p); l.empty(); d.forEach(o=>{if(!o.exists)return;const f=o.data();const id=o.id; if(!f.friends.includes(currentUser.uid))db.collection('users').doc(id).update({friends:firebase.firestore.FieldValue.arrayUnion(currentUser.uid)}); const b=userData.bestFriends&&userData.bestFriends.includes(id); const e=$(`<div class="friend-item" onclick="openProfile('${id}')"><div><i class="fas fa-star ${b?'best-friend':'text-muted'} me-2" onclick="toggleBest(event,'${id}')"></i><b>${f.username}</b> <small>#${f.displayId}</small></div>${f.activeGameId?'<span class="badge bg-danger">Spiel</span>':'<i class="fas fa-circle text-success"></i>'}</div>`); if(b)l.prepend(e);else l.append(e);}); }
+        function toggleBest(e,u){ e.stopPropagation(); let o=userData.bestFriends&&userData.bestFriends.includes(u)?'arrayRemove':'arrayUnion'; db.collection('users').doc(currentUser.uid).update({bestFriends:firebase.firestore.FieldValue[o](u)}); }
+        function listenNotifications(){ if(notifListener)notifListener(); notifListener=db.collection('users').doc(currentUser.uid).collection('notifications').orderBy('timestamp','desc').onSnapshot(s=>{ $('#bell-badge').text(s.size).toggleClass('hidden',s.size===0); let h=s.size===0?'<div class="text-center small p-3">Leer</div>':''; s.forEach(d=>{const n=d.data(); h+=`<div class="notif-item"><b>${n.title}</b><div class="small mb-2">${n.message}</div><div class="d-flex gap-2"><button onclick="handleNotif('${d.id}','${n.type}',true,'${n.fromUid}','${n.payload}')" class="btn btn-sm btn-success flex-grow-1">Ja</button><button onclick="handleNotif('${d.id}','${n.type}',false)" class="btn btn-sm btn-secondary">Nein</button></div></div>`;}); $('#notif-list').html(h); }); }
+        function handleNotif(id,t,a,f,p){ const r=db.collection('users').doc(currentUser.uid).collection('notifications').doc(id); if(!a){r.delete();return;} if(t==='friend_request'){const b=db.batch(); b.update(db.collection('users').doc(currentUser.uid),{friends:firebase.firestore.FieldValue.arrayUnion(f)}); b.update(db.collection('users').doc(f),{friends:firebase.firestore.FieldValue.arrayUnion(currentUser.uid)}); b.delete(r); b.commit().then(()=>{closeModal('notif-modal');alert("Freund!");}); } else if(t==='game_invite'){ db.collection('games').doc(p).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,status:'active'}).then(()=>{r.delete();closeModal('notif-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:p});loadOnlineGame(p);}); } }
+        function openProfile(u){ db.collection('users').doc(u).get().then(d=>{const f=d.data();$('#profile-name').text(f.username);$('#profile-id').text(`#${f.displayId}`);$('#profile-wins').text(f.wins||0);let b=`<button onclick="inviteFriend('${u}','${f.username}')" class="btn btn-primary w-100">Herausfordern</button>`;$('#profile-actions').html(b);$('#profile-modal').removeClass('hidden');});}
+        function inviteFriend(u,n){ const g=db.collection('games').doc(); g.set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,black:u,blackName:n,blackId:'?',fen:'start',turn:'w',status:'waiting_friend',createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{ db.collection('users').doc(u).collection('notifications').add({type:'game_invite',fromUid:currentUser.uid,title:'Herausforderung',message:`${userData.username} fordert dich.`,payload:g.id,timestamp:firebase.firestore.FieldValue.serverTimestamp()}); closeModal('profile-modal'); db.collection('users').doc(currentUser.uid).update({activeGameId:g.id}); loadOnlineGame(g.id); }); }
     </script>
 </body>
 </html>
