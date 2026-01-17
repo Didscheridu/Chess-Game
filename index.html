@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters: Ultimate Social</title>
+    <title>Chess Masters: Smooth & FX</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -19,7 +19,8 @@
         .btn-primary-custom:hover { background-color: #1A73E8; color: white; }
         
         .hidden { display: none !important; }
-        
+        .id-badge { background: #3a3b3c; color: #b0b3b8; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 5px; }
+
         #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; user-select: none; position: relative; z-index: 20; }
         .board-wrapper { position: relative; max-width: 550px; margin: 0 auto; }
         
@@ -38,12 +39,6 @@
         .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; cursor: pointer; }
         .best-friend { color: #f1c40f; text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); } 
         
-        /* Leaderboard */
-        .leaderboard-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #333; }
-        .rank-1 { color: #f1c40f; font-weight: bold; }
-        .rank-2 { color: #bdc3c7; font-weight: bold; }
-        .rank-3 { color: #cd7f32; font-weight: bold; }
-
         /* Click System */
         .highlight-dot { background-color: rgba(45, 136, 255, 0.8); width: 25%; height: 25%; border-radius: 50%; position: absolute; top: 37.5%; left: 37.5%; pointer-events: none; z-index: 50; }
         .highlight-square { box-shadow: inset 0 0 3px 3px rgba(255, 255, 0, 0.5); }
@@ -55,14 +50,24 @@
         .skin-card.active { border-color: #2D88FF; box-shadow: 0 0 15px #2D88FF; }
         .skin-preview { width: 30px; height: 30px; display: inline-block; margin: 2px; border-radius: 4px; }
         
-        /* FX */
-        .kill-effect {
-            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 4rem; pointer-events: none; z-index: 100;
-            animation: pop-fade 1s forwards; text-shadow: 0 0 20px black; font-weight: bold;
+        /* --- FX SYSTEM --- */
+        #fx-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1000; overflow: visible;
         }
-        @keyframes pop-fade { 0% { transform: scale(0.5); opacity: 0; } 20% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+
+        .kill-effect {
+            position: absolute; 
+            display: flex; justify-content: center; align-items: center;
+            font-size: 4.5rem; pointer-events: none; 
+            animation: pop-fade 0.8s forwards; text-shadow: 0 0 15px black; font-weight: bold;
+            transform-origin: center;
+        }
+        @keyframes pop-fade { 
+            0% { transform: scale(0.5); opacity: 0; } 
+            40% { transform: scale(1.3); opacity: 1; } 
+            100% { transform: scale(1.5); opacity: 0; } 
+        }
         
         /* Global Win FX */
         #global-win-fx { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; display: none; }
@@ -229,7 +234,7 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // --- DATA ---
+        // --- SKINS ---
         const SKINS = {
             'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', anim: '⚔️', winBg: '' },
             'water': { name: 'Atlantis', price: 50, colorW: '#a8d0e6', colorB: '#374785', filter: 'hue-rotate(180deg) brightness(1.2)', anim: '🌊', winBg: 'bg-win-water' },
@@ -245,8 +250,6 @@
         let gameListener = null, queueListener = null, notifListener = null, hostListener = null, challengeListener = null;
         let selectedSquare = null, queueInterval = null, queueTime = 0;
         let currentWhiteSkin = 'default', currentBlackSkin = 'default';
-        
-        // Challenge Tracking
         let currentChallengeGameId = null, currentChallengeNotifId = null, currentChallengeTargetUid = null;
 
         auth.onAuthStateChanged(user => {
@@ -322,13 +325,15 @@
             css += `img[src*="/b"] { filter: ${sB.filter} !important; transition: all 0.3s; } `;
             document.getElementById('dynamic-skin-styles').innerHTML = css;
         }
+        
         function playKillAnim(square, skinKey) {
             const anim = (SKINS[skinKey] || SKINS['default']).anim;
             if(!anim) return;
+            // Get position
             const $sq = $(`.square-${square}`);
             if($sq.length === 0) return;
             const pos = $sq.position();
-            const $el = $(`<div class="fx-kill-anim" style="top:${pos.top}px; left:${pos.left}px; width:${$sq.width()}px; height:${$sq.height()}px;">${anim}</div>`);
+            const $el = $(`<div class="kill-effect" style="top:${pos.top}px; left:${pos.left}px; width:${$sq.width()}px; height:${$sq.height()}px;">${anim}</div>`);
             $('#fx-overlay').append($el);
             setTimeout(() => $el.remove(), 1000);
         }
@@ -338,7 +343,8 @@
             currentGameId = id; gameMode = 'online';
             showScreen('game-screen');
             game = new Chess(); $('#move-history').empty(); selectedSquare = null;
-            board = Chessboard('board', {position:'start', draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'});
+            // ENABLE SMOOTH MOVE: moveSpeed: 200
+            board = Chessboard('board', {position:'start', moveSpeed: 200, draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'});
             $('#board').off('click').on('click', '.square-55d63', function() { if(!asSpectator) handleSquareClick.call(this); });
 
             if(gameListener) gameListener();
@@ -362,7 +368,10 @@
                         const killerSkin = (m.color === 'w') ? currentWhiteSkin : currentBlackSkin;
                         playKillAnim(m.to, killerSkin);
                     }
-                    game.load(data.fen); board.position(data.fen); removeHighlights();
+                    game.load(data.fen); 
+                    // USE TRUE FOR ANIMATION
+                    board.position(data.fen, true); 
+                    removeHighlights();
                     if(data.lastMoveSan) addLog(data.lastMoveSan);
                 }
                 
@@ -376,7 +385,7 @@
             });
         }
 
-        // --- CLICK SYSTEM ---
+        // --- CLICK & MOVE ---
         function handleSquareClick() {
             if(game.game_over() || (gameMode==='online' && game.turn()!==myColor)) return;
             const sq = $(this).attr('data-square');
@@ -390,7 +399,11 @@
                         if(gameMode==='online') db.collection('users').doc(currentUser.uid).update({coins: firebase.firestore.FieldValue.increment(10)});
                     }
                     if(gameMode==='online') updateGameOnline(move);
-                    else { board.position(game.fen()); setTimeout(botMove, 500); }
+                    else { 
+                        // Local update with Animation
+                        board.position(game.fen(), true); 
+                        setTimeout(botMove, 500); 
+                    }
                 } else {
                     selectedSquare = null; removeHighlights();
                     if(game.get(sq) && game.get(sq).color === (gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); }
@@ -407,59 +420,35 @@
                 } else res = 'draw';
             }
             db.collection('games').doc(currentGameId).update({fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: res});
-            board.position(game.fen()); addLog(move.san);
+            // Update board locally with animation
+            board.position(game.fen(), true); 
+            addLog(move.san);
         }
 
-        // --- CHALLENGE WAIT LOGIC ---
         function inviteFriend(uid, name) {
             const gameRef = db.collection('games').doc();
             const gameId = gameRef.id;
-            
-            // 1. Spiel erstellen
             gameRef.set({
                 white: currentUser.uid, whiteName: userData.username, whiteId: userData.displayId, whiteSkin: userData.equippedSkin,
-                black: uid, blackName: name, blackId: '?', // wird beim Joinen geupdated
-                fen: 'start', turn: 'w', status: 'waiting_friend', 
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                black: uid, blackName: name, blackId: '?', fen: 'start', turn: 'w', status: 'waiting_friend', createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                // 2. Notification senden
                 db.collection('users').doc(uid).collection('notifications').add({
                     type: 'game_invite', fromUid: currentUser.uid, title: 'Herausforderung!',
                     message: `${userData.username} fordert dich heraus.`, payload: gameId, timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 }).then(notifRef => {
-                    // 3. IDs speichern für Abbruch
-                    currentChallengeGameId = gameId;
-                    currentChallengeNotifId = notifRef.id;
-                    currentChallengeTargetUid = uid;
-
-                    // 4. Warte-Modal anzeigen
-                    $('#challenge-target-name').text(name);
-                    $('#challenge-wait-modal').removeClass('hidden');
-                    closeModal('profile-modal');
-
-                    // 5. Auf Annahme hören
+                    currentChallengeGameId = gameId; currentChallengeNotifId = notifRef.id; currentChallengeTargetUid = uid;
+                    $('#challenge-target-name').text(name); $('#challenge-wait-modal').removeClass('hidden'); closeModal('profile-modal');
                     if(challengeListener) challengeListener();
                     challengeListener = gameRef.onSnapshot(doc => {
                         if(doc.exists && doc.data().status === 'active') {
-                            // Angenommen!
-                            if(challengeListener) challengeListener();
-                            $('#challenge-wait-modal').addClass('hidden');
-                            db.collection('users').doc(currentUser.uid).update({activeGameId: gameId});
-                            loadOnlineGame(gameId);
+                            if(challengeListener) challengeListener(); $('#challenge-wait-modal').addClass('hidden');
+                            db.collection('users').doc(currentUser.uid).update({activeGameId: gameId}); loadOnlineGame(gameId);
                         }
                     });
                 });
             });
         }
-
-        function cancelChallenge() {
-            if(challengeListener) challengeListener();
-            // Spiel löschen
-            db.collection('games').doc(currentChallengeGameId).delete();
-            // Notifikation löschen
-            db.collection('users').doc(currentChallengeTargetUid).collection('notifications').doc(currentChallengeNotifId).delete();
-            $('#challenge-wait-modal').addClass('hidden');
-        }
+        function cancelChallenge() { if(challengeListener) challengeListener(); db.collection('games').doc(currentChallengeGameId).delete(); db.collection('users').doc(currentChallengeTargetUid).collection('notifications').doc(currentChallengeNotifId).delete(); $('#challenge-wait-modal').addClass('hidden'); }
 
         // --- HELPERS ---
         function showEndScreen(res, winnerSkin) {
@@ -473,8 +462,8 @@
         function highlight(sq) { removeHighlights(); $(`.square-${sq}`).addClass('highlight-square'); game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
         function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
         function leaveGame() { if(confirm("Verlassen?")) { if(gameMode==='online' && myColor!=='spectator') db.collection('games').doc(currentGameId).update({status:'aborted'}); backToLobby(); } }
-        function startBotGame() { gameMode='bot'; myColor='w'; currentWhiteSkin=userData.equippedSkin; currentBlackSkin='default'; showScreen('game-screen'); updateBoardVisuals(); game=new Chess(); board=Chessboard('board', {position:'start', draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'}); $('#board').off('click').on('click', '.square-55d63', handleSquareClick); $('#player-top').text("Bot"); $('#player-bottom').text("Du"); }
-        function botMove() { if(game.game_over())return; const m=game.moves({verbose:true}); const move=m[Math.floor(Math.random()*m.length)]; game.move(move.san); board.position(game.fen()); if(move.captured) playKillAnim(move.to, 'default'); }
+        function startBotGame() { gameMode='bot'; myColor='w'; currentWhiteSkin=userData.equippedSkin; currentBlackSkin='default'; showScreen('game-screen'); updateBoardVisuals(); game=new Chess(); board=Chessboard('board', {position:'start', moveSpeed:200, draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'}); $('#board').off('click').on('click', '.square-55d63', handleSquareClick); $('#player-top').text("Bot"); $('#player-bottom').text("Du"); }
+        function botMove() { if(game.game_over())return; const m=game.moves({verbose:true}); const move=m[Math.floor(Math.random()*m.length)]; game.move(move.san); board.position(game.fen(), true); if(move.captured) playKillAnim(move.to, 'default'); }
         function joinRankedQueue() { $('#queue-overlay').removeClass('hidden'); queueTime=0; if(queueInterval)clearInterval(queueInterval); queueInterval=setInterval(()=>{queueTime++;$('#queue-timer').text(`Zeit: ${queueTime}s`);checkMatchmaking();},2000); db.collection('queue').doc(currentUser.uid).set({uid:currentUser.uid,username:userData.username,displayId:userData.displayId,joinedAt:firebase.firestore.FieldValue.serverTimestamp(),gameId:null,skin:userData.equippedSkin}); if(queueListener)queueListener(); queueListener=db.collection('queue').doc(currentUser.uid).onSnapshot(d=>{if(d.exists&&d.data().gameId){leaveQueue(false);db.collection('queue').doc(currentUser.uid).delete();db.collection('users').doc(currentUser.uid).update({activeGameId:d.data().gameId});loadOnlineGame(d.data().gameId);}}); }
         async function checkMatchmaking(){ const s=await db.collection('queue').orderBy('joinedAt','asc').limit(2).get(); if(s.size>=2){const p1=s.docs[0].data(),p2=s.docs[1].data(); if(p1.uid===currentUser.uid){const g=db.collection('games').doc(); await g.set({white:p1.uid,whiteName:p1.username,whiteId:p1.displayId,whiteSkin:p1.skin,black:p2.uid,blackName:p2.username,blackId:p2.displayId,blackSkin:p2.skin,fen:'start',turn:'w',status:'active',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); const b=db.batch(); b.update(db.collection('queue').doc(p1.uid),{gameId:g.id}); b.update(db.collection('queue').doc(p2.uid),{gameId:g.id}); await b.commit();}}}
         function leaveQueue(d=true){ $('#queue-overlay').addClass('hidden'); if(queueInterval)clearInterval(queueInterval); if(queueListener)queueListener(); if(d)db.collection('queue').doc(currentUser.uid).delete(); }
@@ -495,10 +484,6 @@
         function listenNotifications(){ if(notifListener)notifListener(); notifListener=db.collection('users').doc(currentUser.uid).collection('notifications').orderBy('timestamp','desc').onSnapshot(s=>{ $('#bell-badge').text(s.size).toggleClass('hidden',s.size===0); let h=s.size===0?'<div class="text-center small p-3">Leer</div>':''; s.forEach(d=>{const n=d.data(); h+=`<div class="notif-item"><b>${n.title}</b><div class="small mb-2">${n.message}</div><div class="d-flex gap-2"><button onclick="handleNotif('${d.id}','${n.type}',true,'${n.fromUid}','${n.payload}')" class="btn btn-sm btn-success flex-grow-1">Ja</button><button onclick="handleNotif('${d.id}','${n.type}',false)" class="btn btn-sm btn-secondary">Nein</button></div></div>`;}); $('#notif-list').html(h); }); }
         function handleNotif(id,t,a,f,p){ const r=db.collection('users').doc(currentUser.uid).collection('notifications').doc(id); if(!a){r.delete();return;} if(t==='friend_request'){const b=db.batch(); b.update(db.collection('users').doc(currentUser.uid),{friends:firebase.firestore.FieldValue.arrayUnion(f)}); b.update(db.collection('users').doc(f),{friends:firebase.firestore.FieldValue.arrayUnion(currentUser.uid)}); b.delete(r); b.commit().then(()=>{closeModal('notif-modal');alert("Freund!");}); } else if(t==='game_invite'){ db.collection('games').doc(p).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{r.delete();closeModal('notif-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:p});loadOnlineGame(p);}); } }
         function openProfile(u){ db.collection('users').doc(u).get().then(d=>{const f=d.data();$('#profile-name').text(f.username);$('#profile-id').text(`#${f.displayId}`);$('#profile-wins').text(f.wins||0);let b=`<button onclick="inviteFriend('${u}','${f.username}')" class="btn btn-primary w-100">Herausfordern</button>`;$('#profile-actions').html(b);$('#profile-modal').removeClass('hidden');});}
-        function cancelPrivateHost(){ if(hostListener)hostListener(); if(currentGameId)db.collection('games').doc(currentGameId).delete(); closeModal('private-create-modal'); }
-        function openPrivateCreate() { closeModal('private-menu-modal'); const c=Math.random().toString(36).substring(2,7).toUpperCase(); db.collection('games').doc(c).set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,status:'waiting_private',fen:'start',turn:'w',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); $('#host-code-display').text(c); $('#private-create-modal').removeClass('hidden'); hostListener=db.collection('games').doc(c).onSnapshot(d=>{if(d.exists&&d.data().status==='active'){hostListener();closeModal('private-create-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);}}); currentGameId=c; }
-        function openPrivateJoin(){ closeModal('private-menu-modal'); $('#private-join-input').val(''); $('#private-join-modal').removeClass('hidden'); }
-        function submitPrivateJoin(){ const c=$('#private-join-input').val().trim().toUpperCase(); db.collection('games').doc(c).get().then(d=>{if(d.exists&&d.data().status==='waiting_private'){db.collection('games').doc(c).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{closeModal('private-join-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);});}else alert("Fehler");}); }
         function spectateGame(id) { closeModal('profile-modal'); loadOnlineGame(id, true); }
         function showPrivateMenu() { $('#private-menu-modal').removeClass('hidden'); }
     </script>
