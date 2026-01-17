@@ -2,35 +2,104 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Mein Online Schach</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schach Community (Login)</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <style>
-        body { font-family: sans-serif; background-color: #222; color: #eee; display: flex; flex-direction: column; align-items: center; }
-        h1 { margin-bottom: 10px; }
-        #board { width: 400px; margin-bottom: 10px; }
-        .info { margin-top: 10px; color: #aaa; font-size: 0.9em; text-align: center;}
-        #status { font-weight: bold; color: #ffcc00; }
+        body { background-color: #212529; color: white; font-family: sans-serif; }
+        .container { max-width: 600px; margin-top: 30px; text-align: center; }
+        .hidden { display: none !important; }
+        #board { width: 100%; max-width: 450px; margin: 0 auto; }
+        .status-box { background: #343a40; padding: 10px; border-radius: 5px; margin-top: 15px; }
+        .user-tag { font-weight: bold; color: #0d6efd; }
+        .error-msg { color: #ff6b6b; margin-top: 10px; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
-    <h1>♟️ Schach: Du gegen die Welt</h1>
-    <div id="board"></div>
-    <div>Status: <span id="status">Verbinde...</span></div>
-    <div class="info">
-        Schick den Link einem Freund. <br>
-        Wenn einer zieht, sieht es der andere sofort!
+    <div class="container">
+        <h1>♟️ Firebase Schach</h1>
+
+        <div id="auth-screen">
+            <div class="card bg-dark text-white p-4">
+                <h3>Anmelden / Registrieren</h3>
+                
+                <div class="mb-3 text-start">
+                    <label>E-Mail Adresse</label>
+                    <input type="email" id="email-input" class="form-control" placeholder="name@beispiel.de">
+                </div>
+                
+                <div class="mb-3 text-start">
+                    <label>Passwort</label>
+                    <input type="password" id="password-input" class="form-control" placeholder="Dein Passwort">
+                </div>
+
+                <div class="mb-3 text-start">
+                    <label>Benutzername (Nur bei Registrierung)</label>
+                    <input type="text" id="username-input" class="form-control" placeholder="Wie willst du heißen?">
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button onclick="loginUser()" class="btn btn-primary">Einloggen</button>
+                    <button onclick="registerUser()" class="btn btn-outline-light">Neu registrieren</button>
+                </div>
+                <div id="auth-error" class="error-msg"></div>
+            </div>
+        </div>
+
+        <div id="lobby-screen" class="hidden">
+            <div class="status-box mb-4">
+                Hallo, <span id="display-username" class="user-tag">Spieler</span>!<br>
+                <button onclick="logout()" class="btn btn-sm btn-outline-secondary mt-2">Ausloggen</button>
+            </div>
+
+            <div class="row g-2">
+                <div class="col-12">
+                    <button onclick="createGame()" class="btn btn-success w-100 py-3">
+                        ➕ Neues Spiel erstellen (Du bist Weiß)
+                    </button>
+                </div>
+                <div class="col-12 mt-3">
+                    <hr>
+                    <h5>Freund herausfordern</h5>
+                    <div class="input-group">
+                        <input type="text" id="join-game-id" class="form-control" placeholder="Spiel-ID eingeben">
+                        <button onclick="joinGame()" class="btn btn-outline-light">Beitreten</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="game-screen" class="hidden">
+            <div class="d-flex justify-content-between mb-2">
+                <span id="player-white">⚪ Weiß: ?</span>
+                <span id="player-black">⚫ Schwarz: ?</span>
+            </div>
+            
+            <div id="board"></div>
+            
+            <div class="status-box">
+                <div id="game-status">Status: Warte auf Gegner...</div>
+                <div id="current-turn-info" class="mt-1"></div>
+                <div class="mt-2 text-warning small">Spiel-ID zum Teilen: <span id="current-game-id-display" style="user-select: all; font-size: 1.2em; font-weight: bold;"></span></div>
+            </div>
+            <button onclick="leaveGame()" class="btn btn-danger btn-sm mt-3">Zurück zur Lobby</button>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
-
+    
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <script>
-        // --- DEINE KONFIGURATION (Habe ich bereits eingefügt) ---
+        // --- DEINE FIREBASE DATEN ---
         const firebaseConfig = {
             apiKey: "AIzaSyBqCKRhB87r_r-IgbOd9ESm9MQLKTGwSU0",
             authDomain: "chess-dff93.firebaseapp.com",
@@ -41,99 +110,260 @@
             measurementId: "G-SK8BMR8YKF"
         };
 
-        // Firebase starten
         firebase.initializeApp(firebaseConfig);
-        
-        // Datenbank starten
         const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Globale Variablen
+        let currentUser = null;
+        let currentUsername = "Unbekannt";
+        let currentGameId = null;
+        let myColor = null; 
+        let game = new Chess();
+        let board = null;
+        let gameListener = null;
+
+        // ----------------------------------------------------
+        // AUTHENTICATION LOGIK
+        // ----------------------------------------------------
+
+        // Prüfen ob User schon eingeloggt ist (beim Neuladen der Seite)
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                // Username aus Datenbank holen
+                db.collection("users").doc(user.uid).get().then((doc) => {
+                    if(doc.exists) {
+                        currentUsername = doc.data().username;
+                        document.getElementById('display-username').innerText = currentUsername;
+                        showScreen('lobby-screen');
+                    }
+                });
+            } else {
+                showScreen('auth-screen');
+            }
+        });
+
+        function registerUser() {
+            const email = document.getElementById('email-input').value;
+            const password = document.getElementById('password-input').value;
+            const username = document.getElementById('username-input').value;
+            const errorDiv = document.getElementById('auth-error');
+
+            if (!email || !password || !username) {
+                errorDiv.innerText = "Bitte alle Felder ausfüllen!";
+                return;
+            }
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Erfolgreich registriert -> Username speichern
+                    const user = userCredential.user;
+                    db.collection("users").doc(user.uid).set({
+                        username: username,
+                        email: email,
+                        uid: user.uid
+                    }).then(() => {
+                        errorDiv.innerText = "";
+                        // onAuthStateChanged übernimmt den Rest
+                    });
+                })
+                .catch((error) => {
+                    errorDiv.innerText = "Fehler: " + error.message;
+                });
+        }
+
+        function loginUser() {
+            const email = document.getElementById('email-input').value;
+            const password = document.getElementById('password-input').value;
+            const errorDiv = document.getElementById('auth-error');
+
+            if (!email || !password) {
+                errorDiv.innerText = "Bitte E-Mail und Passwort eingeben.";
+                return;
+            }
+
+            auth.signInWithEmailAndPassword(email, password)
+                .catch((error) => {
+                    errorDiv.innerText = "Login fehlgeschlagen: " + error.message;
+                });
+        }
+
+        function logout() {
+            auth.signOut();
+            location.reload();
+        }
+
+        // ----------------------------------------------------
+        // MATCHMAKING & LOBBY
+        // ----------------------------------------------------
         
-        // Wir speichern das Spiel im Ordner "spiele", Dokument "livegame"
-        const gameDocRef = db.collection("spiele").doc("livegame");
+        function createGame() {
+            const gameId = Math.random().toString(36).substring(2, 8); // Kurze ID
+            
+            db.collection("games").doc(gameId).set({
+                creatorId: currentUser.uid,
+                creatorName: currentUsername,
+                white: currentUser.uid,
+                black: null,
+                fen: "start",
+                turn: "w",
+                status: "waiting"
+            }).then(() => {
+                enterGame(gameId, 'w');
+            });
+        }
 
-        // --- SCHACH LOGIK ---
-        var game = new Chess();
-        var board = null;
-        var $status = $('#status');
+        function joinGame() {
+            const gameId = document.getElementById('join-game-id').value.trim();
+            if (!gameId) return alert("Bitte ID eingeben!");
 
-        function onDragStart (source, piece) {
+            const gameRef = db.collection("games").doc(gameId);
+
+            gameRef.get().then((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    
+                    // Szenario 1: Spiel ist offen -> Ich werde Schwarz
+                    if (data.status === "waiting" && data.white !== currentUser.uid) {
+                        gameRef.update({
+                            black: currentUser.uid,
+                            joinerName: currentUsername,
+                            status: "active"
+                        }).then(() => enterGame(gameId, 'b'));
+                    } 
+                    // Szenario 2: Ich bin schon in diesem Spiel (Reconnect)
+                    else if (data.white === currentUser.uid) {
+                        enterGame(gameId, 'w');
+                    } else if (data.black === currentUser.uid) {
+                        enterGame(gameId, 'b');
+                    } else {
+                        alert("Dieses Spiel ist voll!");
+                    }
+                } else {
+                    alert("Spiel ID nicht gefunden.");
+                }
+            });
+        }
+
+        function enterGame(gameId, color) {
+            currentGameId = gameId;
+            myColor = color;
+            document.getElementById('current-game-id-display').innerText = gameId;
+            showScreen('game-screen');
+            
+            // Brett initialisieren
+            initBoard();
+            // Datenbank Updates abonnieren
+            listenToGame();
+        }
+
+        function leaveGame() {
+            if (gameListener) gameListener(); // Listener beenden
+            showScreen('lobby-screen');
+            currentGameId = null;
+            myColor = null;
+        }
+
+        // ----------------------------------------------------
+        // SCHACH LOGIK
+        // ----------------------------------------------------
+        function initBoard() {
+            game = new Chess(); // Reset Logik
+            var config = {
+                draggable: true,
+                position: 'start',
+                onDragStart: onDragStart,
+                onDrop: onDrop,
+                onSnapEnd: onSnapEnd,
+                orientation: (myColor === 'w') ? 'white' : 'black'
+            };
+            board = Chessboard('board', config);
+            updateStatusDisplay();
+        }
+
+        function listenToGame() {
+            gameListener = db.collection("games").doc(currentGameId).onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    
+                    // Namen aktualisieren
+                    document.getElementById('player-white').innerText = "⚪ " + (data.creatorName || "...");
+                    document.getElementById('player-black').innerText = "⚫ " + (data.joinerName || "Warte...");
+
+                    // Wenn neuer Zug kam (FEN String ist anders)
+                    if (data.fen && data.fen !== game.fen()) {
+                        game.load(data.fen);
+                        board.position(data.fen);
+                        updateStatusDisplay();
+                    }
+                }
+            });
+        }
+
+        function onDragStart(source, piece) {
+            // Spiel vorbei?
             if (game.game_over()) return false;
-            // Nur erlauben, wenn man für die Farbe zieht, die dran ist
+
+            // Ist es mein Zug?
+            if (game.turn() !== myColor) return false;
+
+            // Greife ich meine eigene Figur?
             if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
                 (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
                 return false;
             }
         }
 
-        function onDrop (source, target) {
+        function onDrop(source, target) {
+            // Lokale Prüfung
             var move = game.move({
                 from: source,
                 to: target,
-                promotion: 'q' 
+                promotion: 'q'
             });
 
             if (move === null) return 'snapback';
 
-            // WICHTIG: Zug an Firebase senden!
-            saveGameToFirebase();
-            updateStatus();
+            // Zug an Firebase senden
+            db.collection("games").doc(currentGameId).update({
+                fen: game.fen(),
+                turn: game.turn()
+            });
+            updateStatusDisplay();
         }
 
-        function onSnapEnd () {
+        function onSnapEnd() {
             board.position(game.fen());
         }
 
-        function updateStatus () {
-            var status = '';
-            var moveColor = (game.turn() === 'w') ? 'Weiß' : 'Schwarz';
+        function updateStatusDisplay() {
+            let status = "";
+            let moveColor = (game.turn() === 'w') ? 'Weiß' : 'Schwarz';
 
             if (game.in_checkmate()) {
-                status = 'Matt! ' + moveColor + ' hat verloren.';
+                status = "Matt! " + moveColor + " verliert.";
             } else if (game.in_draw()) {
-                status = 'Remis!';
+                status = "Remis.";
             } else {
-                status = moveColor + ' ist am Zug';
-                if (game.in_check()) status += ' (Schach!)';
+                status = moveColor + " ist dran.";
+                if (game.in_check()) status += " SCHACH!";
             }
-            $status.html(status);
+
+            const myTurn = (game.turn() === myColor);
+            const infoText = myTurn ? "🟢 DU BIST DRAN!" : "🔴 Warten auf Gegner...";
+            
+            document.getElementById('game-status').innerText = status;
+            document.getElementById('current-turn-info').innerText = infoText;
         }
 
-        var config = {
-            draggable: true,
-            position: 'start',
-            onDragStart: onDragStart,
-            onDrop: onDrop,
-            onSnapEnd: onSnapEnd
-        };
-        board = Chessboard('board', config);
-
-        // --- FIREBASE SYNC (Das Herzstück) ---
-
-        // 1. Senden
-        function saveGameToFirebase() {
-            gameDocRef.set({
-                fen: game.fen(),
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch((error) => {
-                console.error("Fehler:", error);
-                alert("Fehler beim Speichern. Hast du die Datenbank erstellt?");
-            });
+        function showScreen(screenId) {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('lobby-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById(screenId).classList.remove('hidden');
         }
 
-        // 2. Empfangen (Live!)
-        gameDocRef.onSnapshot((doc) => {
-            if (doc.exists) {
-                const data = doc.data();
-                // Wenn der Server einen neuen Stand hat, übernehmen wir ihn
-                if (game.fen() !== data.fen) {
-                    console.log("Neuer Zug vom Gegner!");
-                    game.load(data.fen);
-                    board.position(data.fen);
-                    updateStatus();
-                }
-            }
-        });
-
-        updateStatus();
     </script>
 </body>
 </html>
