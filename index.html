@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters: Elemental Wars</title>
+    <title>Chess Masters: FX Update</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,87 +12,90 @@
     
     <style>
         body { background-color: #18191a; color: #e4e6eb; font-family: 'Roboto', sans-serif; overflow-x: hidden; }
-        .app-container { max-width: 1200px; margin: 0 auto; padding: 20px; position: relative; z-index: 10; }
+        .app-container { max-width: 1200px; margin: 0 auto; padding: 20px; position: relative; z-index: 50; }
         
-        .card-dark { background-color: #242526; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); margin-bottom: 20px; border: 1px solid #333; }
+        /* UI Components */
+        .card-dark { background-color: #242526; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); margin-bottom: 20px; border: 1px solid #333; position: relative; z-index: 60; }
         .btn-primary-custom { background-color: #2D88FF; color: white; font-weight: bold; border: none; }
         .btn-primary-custom:hover { background-color: #1A73E8; color: white; }
-        
         .hidden { display: none !important; }
-        .id-badge { background: #3a3b3c; color: #b0b3b8; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 5px; }
-
-        #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; user-select: none; position: relative; z-index: 20; }
-        .board-wrapper { position: relative; max-width: 550px; margin: 0 auto; }
         
-        /* Overlays */
+        /* Board Area */
+        .board-wrapper { position: relative; max-width: 550px; margin: 0 auto; }
+        #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; position: relative; z-index: 10; }
+        
+        /* --- NEUES FX SYSTEM --- */
+        /* Diese Ebene liegt ÜBER dem Brett und fängt die Animationen auf */
+        #fx-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; /* Klicks gehen durch */
+            z-index: 100; /* Über den Figuren */
+            overflow: hidden;
+        }
+
+        /* Kill Animation Element */
+        .fx-kill-anim {
+            position: absolute;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 3.5rem; font-weight: bold;
+            text-shadow: 0 0 15px black;
+            animation: fx-pop 1s forwards;
+        }
+        @keyframes fx-pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            30% { transform: scale(1.5); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+
+        /* GLOBAL WIN EFFECTS (Backgrounds) */
+        #global-win-fx { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; display: none; }
+        
+        .bg-win-fire { background: radial-gradient(circle, rgba(255, 69, 0, 0.4) 0%, transparent 70%); animation: bg-pulse-red 1s infinite; }
+        .bg-win-water { background: radial-gradient(circle, rgba(0, 191, 255, 0.4) 0%, transparent 70%); animation: bg-pulse-blue 2s infinite; }
+        .bg-win-forest { background: radial-gradient(circle, rgba(50, 205, 50, 0.4) 0%, transparent 70%); animation: bg-pulse-green 3s infinite; }
+        .bg-win-gold { background: radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, transparent 70%); animation: bg-pulse-gold 1s infinite; }
+        .bg-win-dark { background: rgba(0, 0, 0, 0.8); }
+
+        @keyframes bg-pulse-red { 0% {opacity: 0.5;} 50% {opacity: 1;} 100% {opacity: 0.5;} }
+        @keyframes bg-pulse-blue { 0% {transform: scale(1);} 50% {transform: scale(1.1);} 100% {transform: scale(1);} }
+
+        /* Overlays & Modals */
         #queue-overlay, #end-screen-overlay, .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 3000;
+            background: rgba(0,0,0,0.9); z-index: 5000;
             display: flex; justify-content: center; align-items: center; flex-direction: column;
         }
-        .modal-content-custom { background: #242526; width: 500px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; position: relative; max-height: 90vh; overflow-y: auto; z-index: 3001; }
+        .modal-content-custom { background: #242526; width: 500px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; position: relative; z-index: 5001; }
 
-        /* UI Elements */
-        .notification-bell { position: relative; cursor: pointer; font-size: 1.2rem; margin-right: 15px; }
-        .notification-badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; justify-content: center; align-items: center; }
-        .notif-item { background: #3a3b3c; padding: 10px; border-radius: 5px; margin-bottom: 5px; font-size: 0.9em; text-align: left; }
-        .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; cursor: pointer; }
-        .friend-item:hover { background: #3a3b3c; }
-        .best-friend { color: #f1c40f; text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); } 
-        
         /* Click System */
-        .highlight-dot { background-color: rgba(45, 136, 255, 0.8); width: 25%; height: 25%; border-radius: 50%; position: absolute; top: 37.5%; left: 37.5%; pointer-events: none; z-index: 50; }
+        .highlight-dot { background-color: rgba(45, 136, 255, 0.8); width: 25%; height: 25%; border-radius: 50%; position: absolute; top: 37.5%; left: 37.5%; pointer-events: none; z-index: 15; }
         .highlight-square { box-shadow: inset 0 0 3px 3px rgba(255, 255, 0, 0.5); }
         .square-55d63 { cursor: pointer; }
 
-        /* Shop */
+        /* Shop Styles */
         .coin-display { background: #f1c40f; color: #000; padding: 5px 12px; border-radius: 20px; font-weight: bold; margin-right: 15px; box-shadow: 0 0 10px rgba(241, 196, 15, 0.5); cursor: pointer; }
         .skin-card { background: #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: center; border: 2px solid transparent; transition: 0.2s; }
         .skin-card:hover { transform: translateY(-2px); }
         .skin-card.owned { border-color: #2ecc71; }
-        .skin-card.active { border-color: #2D88FF; box-shadow: 0 0 15px rgba(45, 136, 255, 0.4); }
+        .skin-card.active { border-color: #2D88FF; box-shadow: 0 0 15px #2D88FF; }
         .skin-preview { width: 30px; height: 30px; display: inline-block; margin: 2px; border-radius: 4px; }
-        
-        /* KILL ANIMATIONS */
-        .kill-effect {
-            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 4rem; pointer-events: none; z-index: 100;
-            animation: pop-fade 1s forwards; text-shadow: 0 0 20px black; font-weight: bold;
-        }
-        @keyframes pop-fade { 0% { transform: scale(0.5); opacity: 0; } 20% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
-        
-        /* WIN EFFECTS (Backgrounds) */
-        #win-effect-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2500; pointer-events: none; display: none; }
-        
-        /* Fire Win */
-        .win-fire { background: radial-gradient(circle, rgba(255,50,0,0.2) 0%, transparent 70%); animation: flicker 0.5s infinite; }
-        @keyframes flicker { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
-        
-        /* Water Win */
-        .win-water { background: linear-gradient(180deg, rgba(0,0,255,0.1), rgba(0,255,255,0.1)); animation: flow 2s infinite linear; }
-        @keyframes flow { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
 
-        /* Forest Win */
-        .win-forest { background-color: rgba(0, 100, 0, 0.2); }
-        
-        /* Gold Win */
-        .win-gold { background-color: rgba(255, 215, 0, 0.1); animation: sparkle 1s infinite; }
-        @keyframes sparkle { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-
-        /* Dark Win */
-        .win-dark { background-color: rgba(0,0,0,0.7); box-shadow: inset 0 0 100px black; }
-
+        /* Misc */
+        .notification-bell { position: relative; cursor: pointer; font-size: 1.2rem; margin-right: 15px; }
+        .notification-badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; justify-content: center; align-items: center; }
+        .notif-item { background: #3a3b3c; padding: 10px; border-radius: 5px; margin-bottom: 5px; text-align: left; }
+        .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; cursor: pointer; }
+        .best-friend { color: #f1c40f; text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); }
         .win-title { font-size: 4rem; font-weight: 900; text-shadow: 0 0 20px black; }
-        .pulse { animation: pulse-animation 2s infinite; }
-        @keyframes pulse-animation { 0% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.7; } }
+        .pulse { animation: pulse-anim 2s infinite; }
+        @keyframes pulse-anim { 0% { opacity: 0.7; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1); } 100% { opacity: 0.7; transform: scale(0.95); } }
     </style>
 </head>
 <body>
 
     <style id="dynamic-skin-styles"></style>
 
-    <div id="win-effect-layer"></div>
+    <div id="global-win-fx"></div>
 
     <div id="shop-modal" class="modal-overlay hidden">
         <div class="modal-content-custom">
@@ -116,18 +119,14 @@
     </div>
 
     <div id="notif-modal" class="modal-overlay hidden">
-        <div class="modal-content-custom">
-            <h4>Benachrichtigungen</h4><div id="notif-list" style="max-height: 300px; overflow-y: auto;"></div>
-            <button onclick="closeModal('notif-modal')" class="btn btn-secondary w-100 mt-3">Schließen</button>
-        </div>
+        <div class="modal-content-custom"><h4>Benachrichtigungen</h4><div id="notif-list" style="max-height: 300px; overflow-y: auto;"></div><button onclick="closeModal('notif-modal')" class="btn btn-secondary w-100 mt-3">Schließen</button></div>
     </div>
 
     <div id="profile-modal" class="modal-overlay hidden">
-        <div class="modal-content-custom">
+        <div class="modal-content-custom text-center">
             <div style="width:80px;height:80px;background:#2D88FF;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:2rem;"><i class="fas fa-user"></i></div>
             <h3 id="profile-name">User</h3><p class="text-muted" id="profile-id">#0</p>
-            <div class="d-flex justify-content-center gap-3"><div><h4 id="profile-wins" class="text-warning m-0">0</h4><small>Wins</small></div><div><h4 id="profile-status" class="text-success m-0">Online</h4><small>Status</small></div></div><hr><div id="profile-actions" class="d-grid gap-2"></div>
-            <button onclick="closeModal('profile-modal')" class="btn btn-outline-secondary mt-3 w-100">Schließen</button>
+            <div class="d-flex justify-content-center gap-3"><div><h4 id="profile-wins" class="text-warning m-0">0</h4><small>Wins</small></div><div><h4 id="profile-status" class="text-success m-0">Online</h4><small>Status</small></div></div><hr><div id="profile-actions" class="d-grid gap-2"></div><button onclick="closeModal('profile-modal')" class="btn btn-outline-secondary mt-3 w-100">Schließen</button>
         </div>
     </div>
 
@@ -141,14 +140,17 @@
         <div class="modal-content-custom"><h4>Code</h4><input id="private-join-input" class="form-control text-center mb-3 fs-4" style="text-transform:uppercase"><button onclick="submitPrivateJoin()" class="btn btn-success w-100">Beitreten</button><button onclick="closeModal('private-join-modal')" class="btn btn-secondary w-100 mt-2">Abbrechen</button></div>
     </div>
 
-    <div id="end-screen-overlay" class="hidden">
-        <div class="modal-content-custom">
-            <div id="end-title" class="win-title">SIEG!</div><div id="end-reward" class="fs-4 text-warning my-2 fw-bold"></div><p id="end-reason" class="text-muted">...</p><button onclick="backToLobby()" class="btn btn-light btn-lg w-100 fw-bold">Zurück zur Lobby</button>
-        </div>
-    </div>
-
     <div id="settings-modal" class="modal-overlay hidden">
         <div class="modal-content-custom"><h4>Einstellungen</h4><input type="text" id="settings-username" class="form-control mb-3" placeholder="Neuer Name"><input type="password" id="settings-password" class="form-control mb-3" placeholder="Neues Passwort"><div class="d-flex justify-content-end gap-2"><button onclick="closeModal('settings-modal')" class="btn btn-secondary">Abbrechen</button><button onclick="saveSettings()" class="btn btn-success">Speichern</button></div></div>
+    </div>
+
+    <div id="end-screen-overlay" class="hidden">
+        <div class="modal-content-custom text-center">
+            <div id="end-title" class="win-title">SIEG!</div>
+            <div id="end-reward" class="fs-4 text-warning my-2 fw-bold"></div>
+            <p id="end-reason" class="text-muted">...</p>
+            <button onclick="backToLobby()" class="btn btn-light btn-lg w-100 fw-bold">Zurück zur Lobby</button>
+        </div>
     </div>
 
     <div class="app-container">
@@ -165,7 +167,12 @@
 
         <div id="auth-screen">
             <div class="card-dark text-center" style="max-width: 400px; margin: 50px auto;">
-                <h3>Login</h3><input id="email-input" class="form-control mb-2" placeholder="E-Mail"><input id="password-input" type="password" class="form-control mb-3" placeholder="Passwort"><input id="username-input" class="form-control mb-3" placeholder="Username (Registrierung)"><button onclick="loginUser()" class="btn btn-primary-custom w-100 mb-2">Login</button><button onclick="registerUserWithId()" class="btn btn-outline-light w-100">Konto erstellen</button>
+                <h3>Login</h3>
+                <input id="email-input" class="form-control mb-2" placeholder="E-Mail">
+                <input id="password-input" type="password" class="form-control mb-3" placeholder="Passwort">
+                <input id="username-input" class="form-control mb-3" placeholder="Username (Registrierung)">
+                <button onclick="loginUser()" class="btn btn-primary-custom w-100 mb-2">Login</button>
+                <button onclick="registerUserWithId()" class="btn btn-outline-light w-100">Konto erstellen</button>
             </div>
         </div>
 
@@ -175,12 +182,19 @@
                     <div class="card-dark text-center" style="padding: 40px 20px; min-height: 400px;">
                         <h2 class="fw-bold mb-4">Bereit?</h2>
                         <button onclick="joinRankedQueue()" class="btn btn-primary-custom btn-lg w-100 p-4 mb-3"><i class="fas fa-globe"></i> RANKED MATCH</button>
-                        <div class="row g-2 mb-3"><div class="col-6"><button onclick="startBotGame()" class="btn btn-warning w-100 p-3 fw-bold"><i class="fas fa-robot"></i> VS BOT</button></div><div class="col-6"><button onclick="showPrivateMenu()" class="btn btn-info w-100 p-3 fw-bold"><i class="fas fa-user-secret"></i> PRIVAT</button></div></div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6"><button onclick="startBotGame()" class="btn btn-warning w-100 p-3 fw-bold"><i class="fas fa-robot"></i> VS BOT</button></div>
+                            <div class="col-6"><button onclick="showPrivateMenu()" class="btn btn-info w-100 p-3 fw-bold"><i class="fas fa-user-secret"></i> PRIVAT</button></div>
+                        </div>
                         <button onclick="openShop()" class="btn btn-outline-warning w-100"><i class="fas fa-store"></i> SKIN SHOP</button>
                     </div>
                 </div>
                 <div class="col-md-5">
-                    <div class="card-dark"><h5>Freunde</h5><div class="input-group mb-3"><input type="number" id="friend-id-input" class="form-control" placeholder="ID"><button onclick="sendFriendRequest()" class="btn btn-outline-info">Add</button></div><div id="friends-list" style="max-height: 300px; overflow-y: auto;"></div></div>
+                    <div class="card-dark">
+                        <h5>Freunde</h5>
+                        <div class="input-group mb-3"><input type="number" id="friend-id-input" class="form-control" placeholder="ID"><button onclick="sendFriendRequest()" class="btn btn-outline-info">Add</button></div>
+                        <div id="friends-list" style="max-height: 300px; overflow-y: auto;"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -189,7 +203,10 @@
             <div class="row">
                 <div class="col-lg-7">
                     <div class="d-flex justify-content-between mb-2"><span id="player-top">Gegner</span><span id="game-status-text" class="badge bg-success">Spiel läuft</span></div>
-                    <div class="board-wrapper"><div id="board"></div></div>
+                    <div class="board-wrapper">
+                        <div id="board"></div>
+                        <div id="fx-overlay"></div> 
+                    </div>
                     <div class="mt-2"><span id="player-bottom">Du</span></div>
                 </div>
                 <div class="col-lg-5 mt-3">
@@ -219,14 +236,14 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // --- SKINS & WIN EFFECTS ---
+        // --- SKINS CONFIG ---
         const SKINS = {
-            'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', anim: '', winClass: '' },
-            'water': { name: 'Atlantis', price: 50, colorW: '#a8d0e6', colorB: '#374785', filter: 'hue-rotate(180deg) brightness(1.2)', anim: '🌊', winClass: 'win-water' },
-            'fire': { name: 'Inferno', price: 100, colorW: '#f6c7b6', colorB: '#a31621', filter: 'sepia(1) saturate(5) hue-rotate(-50deg)', anim: '💥', winClass: 'win-fire' },
-            'forest': { name: 'Smaragd', price: 200, colorW: '#c8e6c9', colorB: '#2e7d32', filter: 'sepia(1) hue-rotate(80deg)', anim: '🍃', winClass: 'win-forest' },
-            'dark': { name: 'Shadow', price: 500, colorW: '#95a5a6', colorB: '#2c3e50', filter: 'grayscale(100%) contrast(1.5)', anim: '💀', winClass: 'win-dark' },
-            'gold': { name: 'Midas', price: 1000, colorW: '#f9e79f', colorB: '#b7950b', filter: 'sepia(1) saturate(3) hue-rotate(10deg)', anim: '✨', winClass: 'win-gold' }
+            'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', anim: '⚔️', winBg: '' },
+            'water': { name: 'Atlantis', price: 50, colorW: '#a8d0e6', colorB: '#374785', filter: 'hue-rotate(180deg) brightness(1.2)', anim: '🌊', winBg: 'bg-win-water' },
+            'fire': { name: 'Inferno', price: 100, colorW: '#f6c7b6', colorB: '#a31621', filter: 'sepia(1) saturate(5) hue-rotate(-50deg)', anim: '💥', winBg: 'bg-win-fire' },
+            'forest': { name: 'Smaragd', price: 200, colorW: '#c8e6c9', colorB: '#2e7d32', filter: 'sepia(1) hue-rotate(80deg) saturate(2)', anim: '🍃', winBg: 'bg-win-forest' },
+            'dark': { name: 'Shadow', price: 500, colorW: '#95a5a6', colorB: '#2c3e50', filter: 'grayscale(100%) contrast(1.5)', anim: '💀', winBg: 'bg-win-dark' },
+            'gold': { name: 'Midas', price: 1000, colorW: '#f9e79f', colorB: '#b7950b', filter: 'sepia(1) saturate(3) hue-rotate(10deg)', anim: '✨', winBg: 'bg-win-gold' }
         };
 
         let currentUser = null, userData = null;
@@ -276,25 +293,40 @@
         function buySkin(key) { if(userData.coins >= SKINS[key].price) db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(-SKINS[key].price), inventory: firebase.firestore.FieldValue.arrayUnion(key) }); else alert("Zu wenig Coins!"); }
         function equipSkin(key) { db.collection('users').doc(currentUser.uid).update({ equippedSkin: key }); }
 
-        // --- SPLIT BOARD & FX ---
+        // --- VISUALS: SPLIT BOARD & FX ---
         function updateBoardVisuals() {
             const sW = SKINS[currentWhiteSkin] || SKINS['default'];
             const sB = SKINS[currentBlackSkin] || SKINS['default'];
             const cols = ['a','b','c','d','e','f','g','h'];
             let css = "";
+            
+            // Rows 1-4: White Skin
             for(let r=1; r<=4; r++) { cols.forEach((c, idx) => { const isBlack = (r + idx) % 2 !== 0; css += `.square-${c}${r} { background-color: ${isBlack ? sW.colorB : sW.colorW} !important; } `; }); }
+            // Rows 5-8: Black Skin
             for(let r=5; r<=8; r++) { cols.forEach((c, idx) => { const isBlack = (r + idx) % 2 !== 0; css += `.square-${c}${r} { background-color: ${isBlack ? sB.colorB : sB.colorW} !important; } `; }); }
+            
             css += `img[src*="/w"] { filter: ${sW.filter} !important; transition: all 0.3s; } `;
             css += `img[src*="/b"] { filter: ${sB.filter} !important; transition: all 0.3s; } `;
             document.getElementById('dynamic-skin-styles').innerHTML = css;
         }
-        
-        function triggerKillAnim(sq, skinKey) {
+
+        // NEUES KILL FX SYSTEM MIT OVERLAY
+        function playKillAnim(square, skinKey) {
             const anim = (SKINS[skinKey] || SKINS['default']).anim;
-            if(!anim) return;
-            const el = $(`<div class="kill-effect">${anim}</div>`);
-            $(`.square-${sq}`).append(el);
-            setTimeout(() => el.remove(), 1200);
+            // Bestimme Position des Feldes
+            const $sq = $(`.square-${square}`);
+            if($sq.length === 0) return;
+            
+            const pos = $sq.position();
+            const width = $sq.width();
+            const height = $sq.height();
+
+            // Erstelle Element im FX Overlay
+            const $el = $(`<div class="fx-kill-anim">${anim}</div>`);
+            $el.css({ top: pos.top, left: pos.left, width: width, height: height });
+            
+            $('#fx-overlay').append($el);
+            setTimeout(() => $el.remove(), 1000);
         }
 
         // --- GAME LOGIC ---
@@ -302,14 +334,18 @@
             currentGameId = id; gameMode = 'online';
             showScreen('game-screen');
             game = new Chess(); $('#move-history').empty(); selectedSquare = null;
-            board = Chessboard('board', {position:'start', draggable:false, pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'});
+            // Brett Init
+            board = Chessboard('board', {position:'start', draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'});
             $('#board').off('click').on('click', '.square-55d63', function() { if(!asSpectator) handleSquareClick.call(this); });
 
             if(gameListener) gameListener();
             gameListener = db.collection('games').doc(id).onSnapshot(doc => {
                 if(!doc.exists) { db.collection('users').doc(currentUser.uid).update({activeGameId: null}); backToLobby(); return; }
                 const data = doc.data();
-                currentWhiteSkin = data.whiteSkin || 'default'; currentBlackSkin = data.blackSkin || 'default';
+                
+                // Skins laden & Visuals updaten
+                currentWhiteSkin = data.whiteSkin || 'default';
+                currentBlackSkin = data.blackSkin || 'default';
                 updateBoardVisuals();
 
                 if(asSpectator) { myColor='spectator'; board.orientation('white'); $('#player-top').text(data.blackName); $('#player-bottom').text(data.whiteName); }
@@ -320,21 +356,31 @@
                 }
 
                 if(data.fen && data.fen !== game.fen()) {
+                    // Check Capture
                     const temp = new Chess(game.fen());
                     const m = temp.move(data.lastMoveSan);
-                    // Kill Animation: Always check based on who MOVED
-                    if(m && (m.flags.includes('c')||m.flags.includes('e'))) {
-                        const attSkin = (m.color==='w') ? currentWhiteSkin : currentBlackSkin;
-                        triggerKillAnim(m.to, attSkin);
+                    if(m && (m.flags.includes('c') || m.flags.includes('e'))) {
+                        // Animation spielen für den, der gezogen hat (die Farbe der Figur im Zug)
+                        const killerSkin = (m.color === 'w') ? currentWhiteSkin : currentBlackSkin;
+                        playKillAnim(m.to, killerSkin);
                     }
+                    
                     game.load(data.fen); board.position(data.fen); removeHighlights();
                     if(data.lastMoveSan) addLog(data.lastMoveSan);
                 }
+                
                 if(data.status === 'aborted') showEndScreen('aborted');
-                if(data.result) showEndScreen(data.result, data.result === 'w' ? currentWhiteSkin : currentBlackSkin);
+                if(data.result) {
+                    // Bestimme Skin des Gewinners für Effekt
+                    let winnerSkin = null;
+                    if(data.result === 'w') winnerSkin = currentWhiteSkin;
+                    if(data.result === 'b') winnerSkin = currentBlackSkin;
+                    showEndScreen(data.result, winnerSkin);
+                }
             });
         }
 
+        // --- CLICK & MOVE ---
         function handleSquareClick() {
             if(game.game_over() || (gameMode==='online' && game.turn()!==myColor)) return;
             const sq = $(this).attr('data-square');
@@ -342,12 +388,14 @@
                 const move = game.move({from:selectedSquare, to:sq, promotion:'q'});
                 if(move) {
                     selectedSquare = null; removeHighlights();
-                    // Instant Local Feedback
+                    
+                    // Lokaler Kill Effekt (sofort)
                     if(move.captured) {
                         const mySkin = (myColor==='w') ? currentWhiteSkin : currentBlackSkin;
-                        triggerKillAnim(move.to, mySkin);
+                        playKillAnim(move.to, mySkin);
                         if(gameMode==='online') db.collection('users').doc(currentUser.uid).update({coins: firebase.firestore.FieldValue.increment(10)});
                     }
+
                     if(gameMode==='online') updateGameOnline(move);
                     else { board.position(game.fen()); setTimeout(botMove, 500); }
                 } else {
@@ -369,45 +417,45 @@
             board.position(game.fen()); addLog(move.san);
         }
 
-        // --- END SCREEN WITH WIN EFFECTS ---
-        function showEndScreen(res, winnerSkinKey) {
+        // --- WIN FX & END SCREEN ---
+        function showEndScreen(res, winnerSkin) {
             $('#end-screen-overlay').removeClass('hidden');
-            // Remove old effects
-            $('#win-effect-layer').removeClass().hide();
-            
+            $('#global-win-fx').hide().removeClass(); // Reset FX
+
             let txt="SIEG!", c="text-success", r="";
             if(res==='aborted'){txt="GEGNER WEG";c="text-danger";}
             else if(res==='draw'){txt="REMIS";c="text-warning";}
             else if(res!==myColor && myColor!=='spectator'){txt="VERLOREN";c="text-danger";}
-            else { 
-                r="+50 Coins!"; 
-                // Apply WIN EFFECT
-                if(winnerSkinKey) {
-                    const effectClass = (SKINS[winnerSkinKey] || SKINS['default']).winClass;
-                    if(effectClass) {
-                        $('#win-effect-layer').addClass(effectClass).show();
-                    }
-                }
-            }
+            else r="+50 Coins!";
+            
             $('#end-title').text(txt).removeClass().addClass('win-title '+c); 
             $('#end-reward').text(r);
-            db.collection('users').doc(currentUser.uid).update({activeGameId: null});
+            
+            // Trigger Win Effect
+            if(winnerSkin) {
+                const bgClass = SKINS[winnerSkin].winBg;
+                if(bgClass) {
+                    $('#global-win-fx').addClass(bgClass).fadeIn(500);
+                }
+            }
+
+            if(myColor!=='spectator') db.collection('users').doc(currentUser.uid).update({activeGameId: null});
         }
 
         function backToLobby() { 
             if(gameListener) gameListener(); 
             $('#end-screen-overlay').addClass('hidden'); 
-            $('#win-effect-layer').hide(); // Stop effect
+            $('#global-win-fx').fadeOut(200); // FX ausblenden
             db.collection('users').doc(currentUser.uid).update({activeGameId: null}); 
             showScreen('lobby-screen'); 
         }
 
-        // --- REST STANDARD ---
+        // --- STANDARD HELPERS ---
         function highlight(sq) { removeHighlights(); $(`.square-${sq}`).addClass('highlight-square'); game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
         function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
-        function leaveGame() { if(confirm("Verlassen?")) { if(gameMode==='online') db.collection('games').doc(currentGameId).update({status:'aborted'}); backToLobby(); } }
+        function leaveGame() { if(confirm("Verlassen?")) { if(gameMode==='online' && myColor!=='spectator') db.collection('games').doc(currentGameId).update({status:'aborted'}); backToLobby(); } }
         function startBotGame() { gameMode='bot'; myColor='w'; currentWhiteSkin=userData.equippedSkin; currentBlackSkin='default'; showScreen('game-screen'); updateBoardVisuals(); game=new Chess(); board=Chessboard('board', {position:'start', draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'}); $('#board').off('click').on('click', '.square-55d63', handleSquareClick); $('#player-top').text("Bot"); $('#player-bottom').text("Du"); }
-        function botMove() { if(game.game_over())return; const m=game.moves({verbose:true}); const move=m[Math.floor(Math.random()*m.length)]; game.move(move.san); board.position(game.fen()); if(move.captured) triggerKillAnim(move.to, 'default'); }
+        function botMove() { if(game.game_over())return; const m=game.moves({verbose:true}); const move=m[Math.floor(Math.random()*m.length)]; game.move(move.san); board.position(game.fen()); if(move.captured) playKillAnim(move.to, 'default'); }
         function joinRankedQueue() { $('#queue-overlay').removeClass('hidden'); queueTime=0; if(queueInterval)clearInterval(queueInterval); queueInterval=setInterval(()=>{queueTime++;$('#queue-timer').text(`Zeit: ${queueTime}s`);checkMatchmaking();},2000); db.collection('queue').doc(currentUser.uid).set({uid:currentUser.uid,username:userData.username,displayId:userData.displayId,joinedAt:firebase.firestore.FieldValue.serverTimestamp(),gameId:null,skin:userData.equippedSkin}); if(queueListener)queueListener(); queueListener=db.collection('queue').doc(currentUser.uid).onSnapshot(d=>{if(d.exists&&d.data().gameId){leaveQueue(false);db.collection('queue').doc(currentUser.uid).delete();db.collection('users').doc(currentUser.uid).update({activeGameId:d.data().gameId});loadOnlineGame(d.data().gameId);}}); }
         async function checkMatchmaking(){ const s=await db.collection('queue').orderBy('joinedAt','asc').limit(2).get(); if(s.size>=2){const p1=s.docs[0].data(),p2=s.docs[1].data(); if(p1.uid===currentUser.uid){const g=db.collection('games').doc(); await g.set({white:p1.uid,whiteName:p1.username,whiteId:p1.displayId,whiteSkin:p1.skin,black:p2.uid,blackName:p2.username,blackId:p2.displayId,blackSkin:p2.skin,fen:'start',turn:'w',status:'active',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); const b=db.batch(); b.update(db.collection('queue').doc(p1.uid),{gameId:g.id}); b.update(db.collection('queue').doc(p2.uid),{gameId:g.id}); await b.commit();}}}
         function leaveQueue(d=true){ $('#queue-overlay').addClass('hidden'); if(queueInterval)clearInterval(queueInterval); if(queueListener)queueListener(); if(d)db.collection('queue').doc(currentUser.uid).delete(); }
@@ -429,11 +477,11 @@
         function handleNotif(id,t,a,f,p){ const r=db.collection('users').doc(currentUser.uid).collection('notifications').doc(id); if(!a){r.delete();return;} if(t==='friend_request'){const b=db.batch(); b.update(db.collection('users').doc(currentUser.uid),{friends:firebase.firestore.FieldValue.arrayUnion(f)}); b.update(db.collection('users').doc(f),{friends:firebase.firestore.FieldValue.arrayUnion(currentUser.uid)}); b.delete(r); b.commit().then(()=>{closeModal('notif-modal');alert("Freund!");}); } else if(t==='game_invite'){ db.collection('games').doc(p).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{r.delete();closeModal('notif-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:p});loadOnlineGame(p);}); } }
         function openProfile(u){ db.collection('users').doc(u).get().then(d=>{const f=d.data();$('#profile-name').text(f.username);$('#profile-id').text(`#${f.displayId}`);$('#profile-wins').text(f.wins||0);let b=`<button onclick="inviteFriend('${u}','${f.username}')" class="btn btn-primary w-100">Herausfordern</button>`;$('#profile-actions').html(b);$('#profile-modal').removeClass('hidden');});}
         function inviteFriend(u,n){ const g=db.collection('games').doc(); g.set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,black:u,blackName:n,blackId:'?',fen:'start',turn:'w',status:'waiting_friend',createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{ db.collection('users').doc(u).collection('notifications').add({type:'game_invite',fromUid:currentUser.uid,title:'Herausforderung',message:`${userData.username} fordert dich.`,payload:g.id,timestamp:firebase.firestore.FieldValue.serverTimestamp()}); closeModal('profile-modal'); db.collection('users').doc(currentUser.uid).update({activeGameId:g.id}); loadOnlineGame(g.id); }); }
-        function spectateGame(id) { closeModal('profile-modal'); loadOnlineGame(id, true); }
         function showPrivateMenu() { $('#private-menu-modal').removeClass('hidden'); }
         function openPrivateCreate() { closeModal('private-menu-modal'); const c=Math.random().toString(36).substring(2,7).toUpperCase(); db.collection('games').doc(c).set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,status:'waiting_private',fen:'start',turn:'w',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); $('#host-code-display').text(c); $('#private-create-modal').removeClass('hidden'); hostListener=db.collection('games').doc(c).onSnapshot(d=>{if(d.exists&&d.data().status==='active'){hostListener();closeModal('private-create-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);}}); currentGameId=c; }
         function openPrivateJoin() { closeModal('private-menu-modal'); $('#private-join-input').val(''); $('#private-join-modal').removeClass('hidden'); }
         function submitPrivateJoin() { const c=$('#private-join-input').val().trim().toUpperCase(); db.collection('games').doc(c).get().then(d=>{if(d.exists&&d.data().status==='waiting_private'){db.collection('games').doc(c).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{closeModal('private-join-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);});}else alert("Fehler");}); }
+        function spectateGame(id) { closeModal('profile-modal'); loadOnlineGame(id, true); }
     </script>
 </body>
 </html>
