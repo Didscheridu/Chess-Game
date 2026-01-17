@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters: Admin & Skins</title>
+    <title>Chess Masters: Wings & Glitches</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -18,7 +18,6 @@
         .btn-primary-custom { background-color: #2D88FF; color: white; font-weight: bold; border: none; }
         .btn-primary-custom:hover { background-color: #1A73E8; color: white; }
         .btn-admin { background: #e74c3c; color: white; font-weight: bold; box-shadow: 0 0 10px #e74c3c; border: none; }
-        .btn-admin:hover { background: #c0392b; color: white; }
         
         .hidden { display: none !important; }
         .id-badge { background: #3a3b3c; color: #b0b3b8; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 5px; }
@@ -27,7 +26,7 @@
         .board-wrapper { position: relative; max-width: 550px; margin: 0 auto; }
         
         /* SMOOTH PHYSICS */
-        .piece-417db { transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important; }
+        .piece-417db { transition: top 0.2s ease-out, left 0.2s ease-out !important; z-index: 50; position: relative; }
 
         /* Overlays */
         #queue-overlay, #end-screen-overlay, .modal-overlay {
@@ -44,38 +43,35 @@
         .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; cursor: pointer; }
         .best-friend { color: #f1c40f; text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); } 
         
-        /* Shop Styles */
-        .coin-display { background: #f1c40f; color: #000; padding: 5px 12px; border-radius: 20px; font-weight: bold; margin-right: 15px; box-shadow: 0 0 10px rgba(241, 196, 15, 0.5); cursor: pointer; }
-        .skin-card { background: #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: center; border: 2px solid transparent; transition: 0.2s; }
-        .skin-card:hover { transform: translateY(-2px); }
-        .skin-card.owned { border-color: #2ecc71; }
-        .skin-card.active { border-color: #2D88FF; box-shadow: 0 0 15px rgba(45, 136, 255, 0.4); }
-        .skin-preview { width: 30px; height: 30px; display: inline-block; margin: 2px; border-radius: 4px; }
-        
-        /* FX SYSTEM */
-        #fx-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; overflow: visible; }
-        .kill-effect { position: absolute; display: flex; justify-content: center; align-items: center; font-size: 4.5rem; pointer-events: none; animation: pop-fade 0.8s forwards; text-shadow: 0 0 15px black; font-weight: bold; transform-origin: center; }
-        @keyframes pop-fade { 0% { transform: scale(0.5); opacity: 0; } 40% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
-        
         /* Click System */
-        .highlight-dot { background-color: rgba(45, 136, 255, 0.8); width: 25%; height: 25%; border-radius: 50%; position: absolute; top: 37.5%; left: 37.5%; pointer-events: none; z-index: 50; }
+        .highlight-dot { background-color: rgba(45, 136, 255, 0.8); width: 25%; height: 25%; border-radius: 50%; position: absolute; top: 37.5%; left: 37.5%; pointer-events: none; z-index: 55; }
         .highlight-square { box-shadow: inset 0 0 3px 3px rgba(255, 255, 0, 0.5); }
         .square-55d63 { cursor: pointer; }
 
-        /* Win FX */
+        /* Shop Styles */
+        .coin-display { background: #f1c40f; color: #000; padding: 5px 12px; border-radius: 20px; font-weight: bold; margin-right: 15px; box-shadow: 0 0 10px rgba(241, 196, 15, 0.5); cursor: pointer; }
+        .skin-card { background: #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: center; border: 2px solid transparent; transition: 0.2s; }
+        .skin-card.active { border-color: #2D88FF; box-shadow: 0 0 15px #2D88FF; }
+        .skin-preview { width: 30px; height: 30px; display: inline-block; margin: 2px; border-radius: 4px; }
+        
+        /* FX SYSTEM */
+        #fx-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; overflow: visible; }
+        .kill-effect { position: absolute; display: flex; justify-content: center; align-items: center; font-size: 4.5rem; pointer-events: none; animation: pop-fade 0.8s forwards; text-shadow: 0 0 15px black; font-weight: bold; transform-origin: center; }
+        @keyframes pop-fade { 0% { transform: scale(0.5); opacity: 0; } 40% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+        
+        /* Global Win FX */
         #global-win-fx { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; display: none; }
         .bg-win-fire { background: radial-gradient(circle, rgba(255, 69, 0, 0.4) 0%, transparent 70%); animation: bg-pulse-red 1s infinite; }
         .bg-win-water { background: radial-gradient(circle, rgba(0, 191, 255, 0.4) 0%, transparent 70%); animation: bg-pulse-blue 2s infinite; }
         .bg-win-forest { background: radial-gradient(circle, rgba(50, 205, 50, 0.4) 0%, transparent 70%); animation: bg-pulse-green 3s infinite; }
         .bg-win-gold { background: radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, transparent 70%); animation: bg-pulse-gold 1s infinite; }
         .bg-win-dark { background: rgba(0, 0, 0, 0.8); }
-        .bg-win-hacker { background: rgba(0, 20, 0, 0.9); animation: bg-pulse-hacker 0.2s infinite; }
-        .bg-win-angel { background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(200,200,255,0.2) 70%); animation: bg-pulse-angel 3s infinite; }
+        .bg-win-hacker { background: #000; background-image: linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px); background-size: 20px 20px; }
+        .bg-win-angel { background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(200, 230, 255, 0.5) 100%); animation: bg-pulse-angel 3s infinite; }
 
         @keyframes bg-pulse-red { 0% {opacity: 0.5;} 50% {opacity: 1;} 100% {opacity: 0.5;} }
         @keyframes bg-pulse-blue { 0% {transform: scale(1);} 50% {transform: scale(1.1);} 100% {transform: scale(1);} }
-        @keyframes bg-pulse-hacker { 0% {opacity:0.9;} 10% {opacity:1;} 20% {opacity:0.9;} 100% {opacity:0.95;} }
-        @keyframes bg-pulse-angel { 0% {opacity: 0.5;} 50% {opacity: 1;} 100% {opacity: 0.5;} }
+        @keyframes bg-pulse-angel { 0% {opacity: 0.6;} 50% {opacity: 1;} 100% {opacity: 0.6;} }
 
         .win-title { font-size: 4rem; font-weight: 900; text-shadow: 0 0 20px black; }
         .pulse { animation: pulse-anim 2s infinite; }
@@ -84,10 +80,51 @@
         .admin-row { border-bottom: 1px solid #444; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
         .god-mode-active { border: 4px solid #e74c3c !important; box-shadow: 0 0 20px #e74c3c; }
         
-        /* SPECIAL SKIN ANIMATIONS (Keyframes) */
-        @keyframes anim-gold-shine { 0% { filter: sepia(1) saturate(5) brightness(1); } 50% { filter: sepia(1) saturate(5) brightness(1.8) drop-shadow(0 0 10px gold); } 100% { filter: sepia(1) saturate(5) brightness(1); } }
-        @keyframes anim-hacker-glitch { 0% { transform: skew(0deg); } 20% { transform: skew(-5deg); filter: hue-rotate(90deg) contrast(2); } 40% { transform: skew(5deg); } 100% { transform: skew(0deg); filter: hue-rotate(0deg) contrast(1.5); } }
-        @keyframes anim-angel-float { 0% { transform: translateY(0); filter: brightness(1.5) drop-shadow(0 0 5px white); } 50% { transform: translateY(-5px); filter: brightness(2) drop-shadow(0 0 15px white); } 100% { transform: translateY(0); filter: brightness(1.5) drop-shadow(0 0 5px white); } }
+        /* --- SPECIAL SKIN ANIMATIONS --- */
+        
+        /* 1. HACKER GLITCH */
+        @keyframes hacker-glitch-anim {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); clip-path: inset(10% 0 80% 0); }
+            40% { transform: translate(2px, -2px); clip-path: inset(80% 0 10% 0); }
+            60% { transform: translate(-2px, 0); clip-path: inset(40% 0 40% 0); }
+            80% { transform: translate(2px, 2px); }
+            100% { transform: translate(0); clip-path: inset(0 0 0 0); }
+        }
+
+        /* 2. ANGEL FLOAT */
+        @keyframes angel-float-anim {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* 3. GOLD SHINE */
+        @keyframes gold-shine-anim {
+            0% { filter: brightness(1) sepia(1) saturate(5) hue-rotate(10deg); }
+            50% { filter: brightness(1.5) sepia(1) saturate(5) hue-rotate(10deg) drop-shadow(0 0 10px gold); }
+            100% { filter: brightness(1) sepia(1) saturate(5) hue-rotate(10deg); }
+        }
+
+        /* ANGEL WINGS ELEMENT */
+        .wing-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 40; /* Hinter der Figur (50), vor dem Brett (20) */
+            display: flex; justify-content: center; align-items: center;
+        }
+        .wing-left, .wing-right {
+            font-size: 2rem; color: rgba(255,255,255,0.7); text-shadow: 0 0 5px white;
+            position: absolute; top: 10px;
+            animation: wing-flap 0.5s infinite alternate ease-in-out;
+        }
+        .wing-left { left: -10px; transform: scaleX(-1); }
+        .wing-right { right: -10px; }
+        
+        @keyframes wing-flap { from { transform: rotate(0deg); } to { transform: rotate(15deg); } }
+        /* Fix für gespiegelten Flügel links */
+        .wing-left { animation: wing-flap-left 0.5s infinite alternate ease-in-out; }
+        @keyframes wing-flap-left { from { transform: scaleX(-1) rotate(0deg); } to { transform: scaleX(-1) rotate(15deg); } }
+
     </style>
 </head>
 <body>
@@ -113,13 +150,13 @@
                         <div class="col-6"><label>Münzen:</label><div class="input-group"><input type="number" id="adm-coins" class="form-control"><button class="btn btn-success" onclick="adminSetVal('coins')">Set</button></div></div>
                         <div class="col-6"><label>Wins:</label><div class="input-group"><input type="number" id="adm-wins" class="form-control"><button class="btn btn-success" onclick="adminSetVal('wins')">Set</button></div></div>
                     </div>
-                    <label>Skin geben (Key eingeben, z.B. 'admin_gold'):</label>
+                    <label>Skin geben (Key: admin_gold, admin_hacker, admin_angel):</label>
                     <div class="input-group mb-3">
                         <input type="text" id="adm-skin-input" class="form-control" placeholder="Skin Key">
                         <button class="btn btn-warning" onclick="adminGiveSkin()">Skin geben</button>
                     </div>
                     <div class="d-flex gap-2">
-                        <button onclick="adminKick()" class="btn btn-outline-warning flex-grow-1">Kick aus Match</button>
+                        <button onclick="adminKick()" class="btn btn-outline-warning flex-grow-1">Kick</button>
                         <button onclick="adminBan()" class="btn btn-danger flex-grow-1">BANNEN</button>
                     </div>
                 </div>
@@ -217,19 +254,18 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // --- SKINS (NORMAL & ADMIN) ---
         const SKINS = {
-            'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', anim: '⚔️', winBg: '' },
+            'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', anim: '⚔️', winBg: '', animCss: '' },
             'water': { name: 'Atlantis', price: 50, colorW: '#a8d0e6', colorB: '#374785', filter: 'hue-rotate(180deg) brightness(1.2)', anim: '🌊', winBg: 'bg-win-water' },
             'fire': { name: 'Inferno', price: 100, colorW: '#f6c7b6', colorB: '#a31621', filter: 'sepia(1) saturate(5) hue-rotate(-50deg)', anim: '💥', winBg: 'bg-win-fire' },
             'forest': { name: 'Smaragd', price: 200, colorW: '#c8e6c9', colorB: '#2e7d32', filter: 'sepia(1) hue-rotate(80deg) saturate(2)', anim: '🍃', winBg: 'bg-win-forest' },
             'dark': { name: 'Shadow', price: 500, colorW: '#95a5a6', colorB: '#2c3e50', filter: 'grayscale(100%) contrast(1.5)', anim: '💀', winBg: 'bg-win-dark' },
             'gold': { name: 'Midas', price: 1000, colorW: '#f9e79f', colorB: '#b7950b', filter: 'sepia(1) saturate(3) hue-rotate(10deg)', anim: '✨', winBg: 'bg-win-gold' },
             
-            // ADMIN SKINS (Visible only if owned)
-            'admin_gold': { name: 'KING GOLD', price: 99999, adminOnly: true, colorW: '#ffd700', colorB: '#b8860b', filter: 'none', cssClass: 'anim-gold-shine', anim: '👑', winBg: 'bg-win-gold' },
-            'admin_hacker': { name: 'HACKER', price: 99999, adminOnly: true, colorW: '#0f0', colorB: '#000', filter: 'contrast(1.5) grayscale(1)', cssClass: 'anim-hacker-glitch', anim: '💻', winBg: 'bg-win-hacker' },
-            'admin_angel': { name: 'ARCHANGEL', price: 99999, adminOnly: true, colorW: '#fff', colorB: '#87ceeb', filter: 'brightness(1.5) drop-shadow(0 0 5px white)', cssClass: 'anim-angel-float', anim: '👼', winBg: 'bg-win-angel' }
+            // ADMIN SKINS
+            'admin_gold': { name: 'KING GOLD', price: 99999, adminOnly: true, colorW: '#ffd700', colorB: '#b8860b', filter: 'none', animCss: 'gold-shine-anim', anim: '👑', winBg: 'bg-win-gold' },
+            'admin_hacker': { name: 'HACKER', price: 99999, adminOnly: true, colorW: '#0f0', colorB: '#000', filter: 'contrast(1.5) grayscale(1)', animCss: 'hacker-glitch-anim', anim: '💻', winBg: 'bg-win-hacker' },
+            'admin_angel': { name: 'ARCHANGEL', price: 99999, adminOnly: true, colorW: '#fff', colorB: '#87ceeb', filter: 'brightness(1.5) drop-shadow(0 0 5px white)', animCss: 'angel-float-anim', anim: '👼', winBg: 'bg-win-angel', hasWings: true }
         };
 
         let currentUser = null, userData = null;
@@ -240,9 +276,8 @@
         let currentWhiteSkin = 'default', currentBlackSkin = 'default';
         let currentChallengeGameId = null, currentChallengeNotifId = null, currentChallengeTargetUid = null;
         
-        let isAdmin = false;
-        let godMode = false;
-        let adminLoadedUserUid = null;
+        let isAdmin = false, godMode = false, adminLoadedUserUid = null;
+        let wingsInterval = null;
 
         auth.onAuthStateChanged(user => {
             if(user) {
@@ -250,13 +285,9 @@
                 db.collection('users').doc(user.uid).onSnapshot(doc => {
                     if(doc.exists) {
                         userData = doc.data();
-                        
                         if(userData.banned && userData.displayId > 2) { alert("DU BIST GEBANNT!"); auth.signOut(); location.reload(); return; }
-
-                        // ONLY ID 2 IS ADMIN
                         isAdmin = (userData.displayId === 2);
                         if(isAdmin) $('#admin-btn').removeClass('hidden');
-
                         if(!userData.coins) userData.coins = 0;
                         if(!userData.inventory) userData.inventory = ['default'];
                         if(!userData.equippedSkin) userData.equippedSkin = 'default';
@@ -276,71 +307,7 @@
             } else showScreen('auth-screen');
         });
 
-        // --- ADMIN SYSTEM ---
-        function openAdminPanel() { $('#admin-modal').removeClass('hidden'); }
-        function showAdminTab(tab) { $('#admin-tab-eco, #admin-tab-bans').addClass('hidden'); $(`#admin-tab-${tab}`).removeClass('hidden'); if(tab==='bans')loadBanList(); }
-        function adminLoadUser() {
-            const id = parseInt($('#admin-target-id').val());
-            db.collection('users').where('displayId', '==', id).get().then(s => {
-                if(s.empty) return alert("User nicht gefunden");
-                const d = s.docs[0].data(); adminLoadedUserUid = s.docs[0].id;
-                $('#adm-u-name').text(d.username); $('#adm-u-id').text(d.displayId);
-                $('#adm-coins').val(d.coins||0); $('#adm-wins').val(d.wins||0);
-                $('#admin-user-info').removeClass('hidden');
-            });
-        }
-        function adminSetVal(field) { if(!adminLoadedUserUid) return; db.collection('users').doc(adminLoadedUserUid).update({[field]: parseInt($(`#adm-${field}`).val())}).then(()=>alert("Updated!")); }
-        function adminKick() { if(!adminLoadedUserUid) return; db.collection('users').doc(adminLoadedUserUid).get().then(d => { if(d.data().activeGameId) db.collection('games').doc(d.data().activeGameId).update({status: 'aborted'}).then(()=>alert("Gekickt!")); }); }
-        function adminBan() { if(!adminLoadedUserUid) return; if(parseInt($('#adm-u-id').text()) === 2) return alert("Admin immun!"); db.collection('users').doc(adminLoadedUserUid).update({banned: true}).then(()=>{ alert("GEBANNT!"); adminLoadUser(); }); }
-        function loadBanList() { db.collection('users').where('banned', '==', true).get().then(s => { let h = ''; s.forEach(d => { h += `<div class="admin-row"><span>${d.data().username} (#${d.data().displayId})</span><button class="btn btn-sm btn-success" onclick="adminUnban('${d.id}')">Entbannen</button></div>`; }); $('#admin-ban-list').html(h || "Keine Bans."); }); }
-        function adminUnban(uid) { db.collection('users').doc(uid).update({banned: false}).then(()=>loadBanList()); }
-        function adminGiveSkin() { 
-            const sk = $('#adm-skin-input').val(); 
-            if(!SKINS[sk]) return alert("Skin existiert nicht!");
-            if(!adminLoadedUserUid) return;
-            db.collection('users').doc(adminLoadedUserUid).update({inventory: firebase.firestore.FieldValue.arrayUnion(sk)}).then(()=>alert("Skin gegeben!"));
-        }
-        
-        function toggleGodMode() {
-            godMode = !godMode;
-            if(godMode) { 
-                $('#god-mode-btn').addClass('god-mode-active').html('<i class="fas fa-bolt"></i> GOD ON');
-                board = Chessboard('board', { position: game.fen(), draggable: true, onDrop: onGodDrop, pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png' });
-                updateBoardVisuals();
-            } else {
-                $('#god-mode-btn').removeClass('god-mode-active').html('<i class="fas fa-bolt"></i> GOD MODE');
-                board = Chessboard('board', { position: game.fen(), draggable: false, pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png' });
-                $('#board').off('click').on('click', '.square-55d63', handleSquareClick);
-                updateBoardVisuals();
-            }
-        }
-        function onGodDrop(source, target, piece, newPos) {
-            if(!isAdmin || !godMode) return 'snapback';
-            const newFen = Chessboard.objToFen(newPos) + " " + game.turn() + " - - 0 1"; 
-            db.collection('games').doc(currentGameId).update({ fen: newFen, lastMoveSan: "GOD MODE" });
-            game.load(newFen); 
-        }
-
-        // --- SHOP (With Admin Skins Logic) ---
-        function openShop() { renderShopUI(); $('#shop-modal').removeClass('hidden'); }
-        function renderShopUI() {
-            $('#shop-coins').text(userData.coins);
-            const list = $('#skin-list'); list.empty();
-            for (const [key, skin] of Object.entries(SKINS)) {
-                // Hide admin skins unless owned
-                if(skin.adminOnly && !userData.inventory.includes(key)) continue;
-
-                const owned = userData.inventory.includes(key);
-                const active = userData.equippedSkin === key;
-                let btnHtml = active ? `<button class="btn btn-sm btn-success disabled w-100">Aktiv</button>` : owned ? `<button onclick="equipSkin('${key}')" class="btn btn-sm btn-outline-primary w-100">Wählen</button>` : `<button onclick="buySkin('${key}')" class="btn btn-sm btn-warning w-100">${skin.price} <i class="fas fa-coins"></i></button>`;
-                
-                list.append(`<div class="col-6 col-md-4"><div class="skin-card ${owned?'owned':''} ${active?'active':''}"><h5>${skin.name} ${skin.anim}</h5><div class="d-flex justify-content-center mb-2"><div class="skin-preview" style="background:${skin.colorW}"></div><div class="skin-preview" style="background:${skin.colorB}"></div></div>${btnHtml}</div></div>`);
-            }
-        }
-        function buySkin(key) { if(userData.coins >= SKINS[key].price) db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(-SKINS[key].price), inventory: firebase.firestore.FieldValue.arrayUnion(key) }); else alert("Zu wenig Coins!"); }
-        function equipSkin(key) { db.collection('users').doc(currentUser.uid).update({ equippedSkin: key }); }
-
-        // --- VISUALS & ANIMATIONS ---
+        // --- VISUALS & WINGS SYSTEM ---
         function updateBoardVisuals() {
             const sW = SKINS[currentWhiteSkin] || SKINS['default'];
             const sB = SKINS[currentBlackSkin] || SKINS['default'];
@@ -349,18 +316,47 @@
             for(let r=1; r<=4; r++) { cols.forEach((c, idx) => { const isBlack = (r + idx) % 2 !== 0; css += `.square-${c}${r} { background-color: ${isBlack ? sW.colorB : sW.colorW} !important; } `; }); }
             for(let r=5; r<=8; r++) { cols.forEach((c, idx) => { const isBlack = (r + idx) % 2 !== 0; css += `.square-${c}${r} { background-color: ${isBlack ? sB.colorB : sB.colorW} !important; } `; }); }
             
-            // PIECE FILTERS & ANIMATIONS
-            let filterW = sW.filter; let animW = sW.cssClass ? `animation: ${sW.cssClass} 2s infinite;` : '';
-            if(sW.cssClass === 'anim-gold-shine') animW = `animation: anim-gold-shine 2s infinite;`;
-            
-            let filterB = sB.filter; let animB = sB.cssClass ? `animation: ${sB.cssClass} 2s infinite;` : '';
-            if(sB.cssClass === 'anim-gold-shine') animB = `animation: anim-gold-shine 2s infinite;`;
+            // PIECE ANIMATIONS
+            let animW = sW.animCss ? `animation: ${sW.animCss} 2s infinite;` : '';
+            let animB = sB.animCss ? `animation: ${sB.animCss} 2s infinite;` : '';
 
-            css += `img[src*="/w"] { filter: ${filterW} !important; ${animW} } `;
-            css += `img[src*="/b"] { filter: ${filterB} !important; ${animB} } `;
+            css += `img[src*="/w"] { filter: ${sW.filter} !important; ${animW} } `;
+            css += `img[src*="/b"] { filter: ${sB.filter} !important; ${animB} } `;
             document.getElementById('dynamic-skin-styles').innerHTML = css;
+
+            // HANDLE WINGS INJECTION
+            if(wingsInterval) clearInterval(wingsInterval);
+            if(sW.hasWings || sB.hasWings) {
+                wingsInterval = setInterval(() => renderWings(sW.hasWings, sB.hasWings), 500);
+            }
         }
-        
+
+        function renderWings(whiteHas, blackHas) {
+            // Finde alle Felder, die noch keine Flügel haben, aber eine Engel-Figur enthalten
+            // White Pieces
+            if(whiteHas) {
+                $('img[src*="/w"]').each(function() {
+                    const parent = $(this).parent(); // The square div
+                    if(parent.find('.wing-container').length === 0) {
+                        parent.append(`<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>`);
+                    }
+                });
+            }
+            // Black Pieces
+            if(blackHas) {
+                $('img[src*="/b"]').each(function() {
+                    const parent = $(this).parent();
+                    if(parent.find('.wing-container').length === 0) {
+                        parent.append(`<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>`);
+                    }
+                });
+            }
+            // Cleanup wings from empty squares
+            $('.wing-container').each(function() {
+                if($(this).siblings('img').length === 0) $(this).remove();
+            });
+        }
+
         function playKillAnim(square, skinKey) {
             const anim = (SKINS[skinKey] || SKINS['default']).anim;
             if(!anim) return;
@@ -378,7 +374,7 @@
             showScreen('game-screen');
             if(isAdmin) $('#god-mode-btn').removeClass('hidden');
             game = new Chess(); $('#move-history').empty(); selectedSquare = null;
-            board = Chessboard('board', {position:'start', moveSpeed: 250, snapSpeed: 100, draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'});
+            board = Chessboard('board', {position:'start', moveSpeed: 200, snapSpeed: 100, draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'});
             $('#board').off('click').on('click', '.square-55d63', function() { if(!asSpectator && !godMode) handleSquareClick.call(this); });
 
             if(gameListener) gameListener();
@@ -411,14 +407,72 @@
             });
         }
 
-        // --- REST OF APP (Same as before) ---
+        // --- CLICK & MOVE ---
+        function handleSquareClick() {
+            if(game.game_over() || (gameMode==='online' && game.turn()!==myColor)) return;
+            const sq = $(this).attr('data-square');
+            if(selectedSquare) {
+                const move = game.move({from:selectedSquare, to:sq, promotion:'q'});
+                if(move) {
+                    selectedSquare = null; removeHighlights();
+                    if(move.captured) {
+                        const mySkin = (myColor==='w') ? currentWhiteSkin : currentBlackSkin;
+                        playKillAnim(move.to, mySkin);
+                        if(gameMode==='online') db.collection('users').doc(currentUser.uid).update({coins: firebase.firestore.FieldValue.increment(10)});
+                    }
+                    if(gameMode==='online') updateGameOnline(move);
+                    else { board.position(game.fen(), true); setTimeout(botMove, 500); }
+                } else {
+                    selectedSquare = null; removeHighlights();
+                    if(game.get(sq) && game.get(sq).color === (gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); }
+                }
+            } else { if(game.get(sq) && game.get(sq).color === (gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); } }
+        }
+        function updateGameOnline(move) {
+            let res = null;
+            if(game.game_over()) {
+                if(game.in_checkmate()) { 
+                    res = game.turn()==='w'?'b':'w'; 
+                    if(res === myColor) db.collection('users').doc(currentUser.uid).update({wins: firebase.firestore.FieldValue.increment(1), coins: firebase.firestore.FieldValue.increment(50)});
+                } else res = 'draw';
+            }
+            db.collection('games').doc(currentGameId).update({fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: res});
+            board.position(game.fen(), true); addLog(move.san);
+        }
+
+        // --- ADMIN ---
+        function openAdminPanel() { $('#admin-modal').removeClass('hidden'); }
+        function showAdminTab(tab) { $('#admin-tab-eco, #admin-tab-bans').addClass('hidden'); $(`#admin-tab-${tab}`).removeClass('hidden'); if(tab==='bans')loadBanList(); }
+        function adminLoadUser() {
+            const id = parseInt($('#admin-target-id').val());
+            db.collection('users').where('displayId', '==', id).get().then(s => {
+                if(s.empty) return alert("User nicht gefunden");
+                const d = s.docs[0].data(); adminLoadedUserUid = s.docs[0].id;
+                $('#adm-u-name').text(d.username); $('#adm-u-id').text(d.displayId);
+                $('#adm-coins').val(d.coins||0); $('#adm-wins').val(d.wins||0);
+                $('#admin-user-info').removeClass('hidden');
+            });
+        }
+        function adminSetVal(field) { if(!adminLoadedUserUid) return; db.collection('users').doc(adminLoadedUserUid).update({[field]: parseInt($(`#adm-${field}`).val())}).then(()=>alert("Updated!")); }
+        function adminKick() { if(!adminLoadedUserUid) return; db.collection('users').doc(adminLoadedUserUid).get().then(d => { if(d.data().activeGameId) db.collection('games').doc(d.data().activeGameId).update({status: 'aborted'}).then(()=>alert("Gekickt!")); }); }
+        function adminBan() { if(!adminLoadedUserUid) return; if(parseInt($('#adm-u-id').text()) === 2) return alert("Admin immun!"); db.collection('users').doc(adminLoadedUserUid).update({banned: true}).then(()=>{ alert("GEBANNT!"); adminLoadUser(); }); }
+        function loadBanList() { db.collection('users').where('banned', '==', true).get().then(s => { let h = ''; s.forEach(d => { h += `<div class="admin-row"><span>${d.data().username} (#${d.data().displayId})</span><button class="btn btn-sm btn-success" onclick="adminUnban('${d.id}')">Entbannen</button></div>`; }); $('#admin-ban-list').html(h || "Keine Bans."); }); }
+        function adminUnban(uid) { db.collection('users').doc(uid).update({banned: false}).then(()=>loadBanList()); }
+        function adminGiveSkin() { const sk=$('#adm-skin-input').val(); if(!SKINS[sk]) return alert("Skin 404"); if(!adminLoadedUserUid) return; db.collection('users').doc(adminLoadedUserUid).update({inventory: firebase.firestore.FieldValue.arrayUnion(sk)}).then(()=>alert("Skin gegeben!")); }
+        function toggleGodMode() { godMode = !godMode; if(godMode) { $('#god-mode-btn').addClass('god-mode-active').html('<i class="fas fa-bolt"></i> GOD ON'); board = Chessboard('board', { position: game.fen(), draggable: true, onDrop: onGodDrop, pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png' }); updateBoardVisuals(); } else { $('#god-mode-btn').removeClass('god-mode-active').html('<i class="fas fa-bolt"></i> GOD MODE'); board = Chessboard('board', { position: game.fen(), draggable: false, pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png' }); $('#board').off('click').on('click', '.square-55d63', handleSquareClick); updateBoardVisuals(); } }
+        function onGodDrop(source, target, piece, newPos) { if(!isAdmin || !godMode) return 'snapback'; const newFen = Chessboard.objToFen(newPos) + " " + game.turn() + " - - 0 1"; db.collection('games').doc(currentGameId).update({ fen: newFen, lastMoveSan: "GOD MODE" }); game.load(newFen); }
+
+        // --- REST STANDARD ---
         function updateHeader() { $('#nav-username').text(userData.username); $('#nav-userid').text(`#${userData.displayId}`); $('#nav-coins').text(userData.coins); $('#nav-wins').text(userData.wins || 0); $('#nav-user-area').removeClass('hidden'); }
-        function handleSquareClick() { if(game.game_over() || (gameMode==='online' && game.turn()!==myColor)) return; const sq = $(this).attr('data-square'); if(selectedSquare) { const move = game.move({from:selectedSquare, to:sq, promotion:'q'}); if(move) { selectedSquare = null; removeHighlights(); if(move.captured) { const mySkin = (myColor==='w') ? currentWhiteSkin : currentBlackSkin; playKillAnim(move.to, mySkin); if(gameMode==='online') db.collection('users').doc(currentUser.uid).update({coins: firebase.firestore.FieldValue.increment(10)}); } if(gameMode==='online') updateGameOnline(move); else { board.position(game.fen(), true); setTimeout(botMove, 500); } } else { selectedSquare = null; removeHighlights(); if(game.get(sq) && game.get(sq).color === (gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); } } } else { if(game.get(sq) && game.get(sq).color === (gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); } } }
-        function updateGameOnline(move) { let res = null; if(game.game_over()) { if(game.in_checkmate()) { res = game.turn()==='w'?'b':'w'; if(res === myColor) db.collection('users').doc(currentUser.uid).update({wins: firebase.firestore.FieldValue.increment(1), coins: firebase.firestore.FieldValue.increment(50)}); } else res = 'draw'; } db.collection('games').doc(currentGameId).update({fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: res}); board.position(game.fen(), true); addLog(move.san); }
+        function updateLeaderboard() { db.collection('users').orderBy('wins', 'desc').limit(10).onSnapshot(snap => { let h=''; let r=1; snap.forEach(doc => { const u = doc.data(); let rc = r===1?'rank-1':(r===2?'rank-2':(r===3?'rank-3':'')); h += `<div class="leaderboard-item"><span class="${rc}">#${r} ${u.username}</span><span class="text-warning fw-bold">${u.wins||0} 🏆</span></div>`; r++; }); $('#leaderboard-list').html(h); }); }
+        function openShop() { renderShopUI(); $('#shop-modal').removeClass('hidden'); }
+        function renderShopUI() { $('#shop-coins').text(userData.coins); const list = $('#skin-list'); list.empty(); for (const [key, skin] of Object.entries(SKINS)) { if(skin.adminOnly && !userData.inventory.includes(key)) continue; const owned = userData.inventory.includes(key); const active = userData.equippedSkin === key; let btnHtml = active ? `<button class="btn btn-sm btn-success disabled w-100">Aktiv</button>` : owned ? `<button onclick="equipSkin('${key}')" class="btn btn-sm btn-outline-primary w-100">Wählen</button>` : `<button onclick="buySkin('${key}')" class="btn btn-sm btn-warning w-100">${skin.price} <i class="fas fa-coins"></i></button>`; list.append(`<div class="col-6 col-md-4"><div class="skin-card ${owned?'owned':''} ${active?'active':''}"><h5>${skin.name} ${skin.anim}</h5><div class="d-flex justify-content-center mb-2"><div class="skin-preview" style="background:${skin.colorW}"></div><div class="skin-preview" style="background:${skin.colorB}"></div></div>${btnHtml}</div></div>`); } }
+        function buySkin(key) { if(userData.coins >= SKINS[key].price) db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(-SKINS[key].price), inventory: firebase.firestore.FieldValue.arrayUnion(key) }); else alert("Zu wenig Coins!"); }
+        function equipSkin(key) { db.collection('users').doc(currentUser.uid).update({ equippedSkin: key }); }
+        function showEndScreen(res, winnerSkin) { $('#end-screen-overlay').removeClass('hidden'); $('#global-win-fx').hide().removeClass(); let txt="SIEG!", c="text-success", r=""; if(res==='aborted'){txt="GEGNER WEG";c="text-danger";} else if(res==='draw'){txt="REMIS";c="text-warning";} else if(res!==myColor&&myColor!=='spectator'){txt="VERLOREN";c="text-danger";} else { r="+50 Coins!"; if(winnerSkin && SKINS[winnerSkin].winBg) $('#global-win-fx').addClass(SKINS[winnerSkin].winBg).fadeIn(500); } $('#end-title').text(txt).removeClass().addClass('win-title '+c); $('#end-reward').text(r); if(myColor!=='spectator') db.collection('users').doc(currentUser.uid).update({activeGameId: null}); }
+        function backToLobby() { if(gameListener) gameListener(); $('#end-screen-overlay').addClass('hidden'); $('#global-win-fx').fadeOut(200); if(wingsInterval) clearInterval(wingsInterval); db.collection('users').doc(currentUser.uid).update({activeGameId: null}); showScreen('lobby-screen'); }
         function highlight(sq) { removeHighlights(); $(`.square-${sq}`).addClass('highlight-square'); game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
         function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
-        function showEndScreen(res, winnerSkin) { $('#end-screen-overlay').removeClass('hidden'); $('#global-win-fx').hide().removeClass(); let txt="SIEG!", c="text-success", r=""; if(res==='aborted'){txt="GEGNER WEG";c="text-danger";} else if(res==='draw'){txt="REMIS";c="text-warning";} else if(res!==myColor&&myColor!=='spectator'){txt="VERLOREN";c="text-danger";} else { r="+50 Coins!"; if(winnerSkin && SKINS[winnerSkin].winBg) $('#global-win-fx').addClass(SKINS[winnerSkin].winBg).fadeIn(500); } $('#end-title').text(txt).removeClass().addClass('win-title '+c); $('#end-reward').text(r); if(myColor!=='spectator') db.collection('users').doc(currentUser.uid).update({activeGameId: null}); }
-        function backToLobby() { if(gameListener) gameListener(); $('#end-screen-overlay').addClass('hidden'); $('#global-win-fx').fadeOut(200); db.collection('users').doc(currentUser.uid).update({activeGameId: null}); showScreen('lobby-screen'); }
         function leaveGame() { if(confirm("Verlassen?")) { if(gameMode==='online' && myColor!=='spectator') db.collection('games').doc(currentGameId).update({status:'aborted'}); backToLobby(); } }
         function startBotGame() { gameMode='bot'; myColor='w'; currentWhiteSkin=userData.equippedSkin; currentBlackSkin='default'; showScreen('game-screen'); updateBoardVisuals(); game=new Chess(); board=Chessboard('board', {position:'start', moveSpeed:250, draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'}); $('#board').off('click').on('click', '.square-55d63', handleSquareClick); $('#player-top').text("Bot"); $('#player-bottom').text("Du"); }
         function botMove() { if(game.game_over())return; const m=game.moves({verbose:true}); const move=m[Math.floor(Math.random()*m.length)]; game.move(move.san); board.position(game.fen(), true); if(move.captured) playKillAnim(move.to, 'default'); }
@@ -427,8 +481,6 @@
         function leaveQueue(d=true){ $('#queue-overlay').addClass('hidden'); if(queueInterval)clearInterval(queueInterval); if(queueListener)queueListener(); if(d)db.collection('queue').doc(currentUser.uid).delete(); }
         function createPrivateGame(){ const c=Math.random().toString(36).substring(2,7).toUpperCase(); db.collection('games').doc(c).set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,status:'waiting_private',fen:'start',turn:'w',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); $('#host-code-display').text(c); $('#private-create-modal').removeClass('hidden'); hostListener=db.collection('games').doc(c).onSnapshot(d=>{if(d.exists&&d.data().status==='active'){hostListener();closeModal('private-create-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);}}); currentGameId=c; }
         function submitPrivateJoin(){ const c=$('#private-join-input').val().trim().toUpperCase(); db.collection('games').doc(c).get().then(d=>{if(d.exists&&d.data().status==='waiting_private'){db.collection('games').doc(c).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{closeModal('private-join-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);});}else alert("Fehler");}); }
-        function inviteFriend(u,n){ const g=db.collection('games').doc(); g.set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,black:u,blackName:n,blackId:'?',fen:'start',turn:'w',status:'waiting_friend',createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{ db.collection('users').doc(u).collection('notifications').add({type:'game_invite',fromUid:currentUser.uid,title:'Herausforderung',message:`${userData.username} fordert dich.`,payload:g.id,timestamp:firebase.firestore.FieldValue.serverTimestamp()}).then(n=>{currentChallengeGameId=g.id;currentChallengeNotifId=n.id;currentChallengeTargetUid=u;$('#challenge-target-name').text(n);$('#challenge-wait-modal').removeClass('hidden');closeModal('profile-modal');if(challengeListener)challengeListener();challengeListener=g.onSnapshot(d=>{if(d.exists&&d.data().status==='active'){if(challengeListener)challengeListener();$('#challenge-wait-modal').addClass('hidden');db.collection('users').doc(currentUser.uid).update({activeGameId:g.id});loadOnlineGame(g.id);}});});});}
-        function cancelChallenge(){ if(challengeListener)challengeListener(); db.collection('games').doc(currentChallengeGameId).delete(); db.collection('users').doc(currentChallengeTargetUid).collection('notifications').doc(currentChallengeNotifId).delete(); $('#challenge-wait-modal').addClass('hidden'); }
         function registerUserWithId(){ const e=$('#email-input').val(),p=$('#password-input').val(),n=$('#username-input').val(); const c=db.collection('config').doc('userCounter'); auth.createUserWithEmailAndPassword(e,p).then(cr=>{ db.runTransaction(async t=>{const d=await t.get(c); let i=d.exists?d.data().count+1:1; t.set(c,{count:i}); t.set(db.collection('users').doc(cr.user.uid),{username:n,displayId:i,uid:cr.user.uid,wins:0,coins:0,inventory:['default'],equippedSkin:'default',friends:[]});});}); }
         function loginUser(){ auth.signInWithEmailAndPassword($('#email-input').val(), $('#password-input').val()); }
         function logout(){ auth.signOut(); location.reload(); }
@@ -438,13 +490,14 @@
         function openSettings(){ $('#settings-modal').removeClass('hidden'); }
         function saveSettings(){ const n=$('#settings-username').val(); if(n)db.collection('users').doc(currentUser.uid).update({username:n}); closeModal('settings-modal'); }
         function addLog(s){ $('#move-history').append(`<div>${s}</div>`).scrollTop(999); }
-        function updateLeaderboard() { db.collection('users').orderBy('wins', 'desc').limit(10).onSnapshot(snap => { let h=''; let r=1; snap.forEach(doc => { const u = doc.data(); let rc = r===1?'rank-1':(r===2?'rank-2':(r===3?'rank-3':'')); h += `<div class="leaderboard-item"><span class="${rc}">#${r} ${u.username}</span><span class="text-warning fw-bold">${u.wins||0} 🏆</span></div>`; r++; }); $('#leaderboard-list').html(h); }); }
         function sendFriendRequest(){ const i=$('#friend-id-input').val();if(!i)return; db.collection('users').where('displayId','==',parseInt(i)).get().then(s=>{if(s.empty)return alert("404"); const t=s.docs[0]; db.collection('users').doc(t.id).collection('notifications').add({type:'friend_request',fromUid:currentUser.uid,title:'Anfrage',message:`${userData.username} will Freund sein.`,timestamp:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>alert("Gesendet"));}); }
         async function loadFriends(){ const l=$('#friends-list'); if(!userData.friends||userData.friends.length===0){l.html('<div class="text-center small mt-3">Keine Freunde</div>');return;} const d=await Promise.all(userData.friends.map(u=>db.collection('users').doc(u).get())); l.empty(); d.forEach(o=>{if(!o.exists)return;const f=o.data();if(!f.friends.includes(currentUser.uid))db.collection('users').doc(o.id).update({friends:firebase.firestore.FieldValue.arrayUnion(currentUser.uid)});const b=userData.bestFriends&&userData.bestFriends.includes(o.id); l.append(`<div class="friend-item" onclick="openProfile('${o.id}')"><div><i class="fas fa-star ${b?'best-friend':'text-muted'} me-2" onclick="toggleBest(event,'${o.id}')"></i><b>${f.username}</b> <small>#${f.displayId}</small></div>${f.activeGameId?'<span class="badge bg-danger">Spiel</span>':'<i class="fas fa-circle text-success"></i>'}</div>`); }); }
         function toggleBest(e,u){ e.stopPropagation(); let o=userData.bestFriends&&userData.bestFriends.includes(u)?'arrayRemove':'arrayUnion'; db.collection('users').doc(currentUser.uid).update({bestFriends:firebase.firestore.FieldValue[o](u)}); }
         function listenNotifications(){ if(notifListener)notifListener(); notifListener=db.collection('users').doc(currentUser.uid).collection('notifications').orderBy('timestamp','desc').onSnapshot(s=>{ $('#bell-badge').text(s.size).toggleClass('hidden',s.size===0); let h=s.size===0?'<div class="text-center small p-3">Leer</div>':''; s.forEach(d=>{const n=d.data(); h+=`<div class="notif-item"><b>${n.title}</b><div class="small mb-2">${n.message}</div><div class="d-flex gap-2"><button onclick="handleNotif('${d.id}','${n.type}',true,'${n.fromUid}','${n.payload}')" class="btn btn-sm btn-success flex-grow-1">Ja</button><button onclick="handleNotif('${d.id}','${n.type}',false)" class="btn btn-sm btn-secondary">Nein</button></div></div>`;}); $('#notif-list').html(h); }); }
         function handleNotif(id,t,a,f,p){ const r=db.collection('users').doc(currentUser.uid).collection('notifications').doc(id); if(!a){r.delete();return;} if(t==='friend_request'){const b=db.batch(); b.update(db.collection('users').doc(currentUser.uid),{friends:firebase.firestore.FieldValue.arrayUnion(f)}); b.update(db.collection('users').doc(f),{friends:firebase.firestore.FieldValue.arrayUnion(currentUser.uid)}); b.delete(r); b.commit().then(()=>{closeModal('notif-modal');alert("Freund!");}); } else if(t==='game_invite'){ db.collection('games').doc(p).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{r.delete();closeModal('notif-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:p});loadOnlineGame(p);}); } }
         function openProfile(u){ db.collection('users').doc(u).get().then(d=>{const f=d.data();$('#profile-name').text(f.username);$('#profile-id').text(`#${f.displayId}`);$('#profile-wins').text(f.wins||0);let b=`<button onclick="inviteFriend('${u}','${f.username}')" class="btn btn-primary w-100">Herausfordern</button>`;$('#profile-actions').html(b);$('#profile-modal').removeClass('hidden');});}
+        function inviteFriend(u,n){ const g=db.collection('games').doc(); g.set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,black:u,blackName:n,blackId:'?',fen:'start',turn:'w',status:'waiting_friend',createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{ db.collection('users').doc(u).collection('notifications').add({type:'game_invite',fromUid:currentUser.uid,title:'Herausforderung',message:`${userData.username} fordert dich.`,payload:g.id,timestamp:firebase.firestore.FieldValue.serverTimestamp()}).then(n=>{currentChallengeGameId=g.id;currentChallengeNotifId=n.id;currentChallengeTargetUid=u;$('#challenge-target-name').text(n);$('#challenge-wait-modal').removeClass('hidden');closeModal('profile-modal');if(challengeListener)challengeListener();challengeListener=g.onSnapshot(d=>{if(d.exists&&d.data().status==='active'){if(challengeListener)challengeListener();$('#challenge-wait-modal').addClass('hidden');db.collection('users').doc(currentUser.uid).update({activeGameId:g.id});loadOnlineGame(g.id);}});});});}
+        function cancelChallenge() { if(challengeListener) challengeListener(); db.collection('games').doc(currentChallengeGameId).delete(); db.collection('users').doc(currentChallengeTargetUid).collection('notifications').doc(currentChallengeNotifId).delete(); $('#challenge-wait-modal').addClass('hidden'); }
     </script>
 </body>
 </html>
