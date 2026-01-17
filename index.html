@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schach Community (Bilder Fix)</title>
+    <title>Schach Community (Bilder Fix 2.0)</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -16,6 +16,8 @@
         .status-box { background: #343a40; padding: 10px; border-radius: 5px; margin-top: 15px; }
         .user-tag { font-weight: bold; color: #0d6efd; }
         .error-msg { color: #ff6b6b; margin-top: 10px; font-size: 0.9em; }
+        /* Erzwinge, dass Bilder angezeigt werden */
+        .piece-417db { z-index: 1000; }
     </style>
 </head>
 <body>
@@ -99,7 +101,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <script>
-        // --- DEINE FIREBASE DATEN (Bereits eingefügt) ---
+        // --- DEINE FIREBASE DATEN ---
         const firebaseConfig = {
             apiKey: "AIzaSyBqCKRhB87r_r-IgbOd9ESm9MQLKTGwSU0",
             authDomain: "chess-dff93.firebaseapp.com",
@@ -257,7 +259,7 @@
         }
 
         // ----------------------------------------------------
-        // SCHACH LOGIK (MIT BILD FIX)
+        // SCHACH LOGIK (MIT NEUEM BILD FIX)
         // ----------------------------------------------------
         function initBoard() {
             game = new Chess(); 
@@ -269,9 +271,9 @@
                 onSnapEnd: onSnapEnd,
                 orientation: (myColor === 'w') ? 'white' : 'black',
                 
-                // --- HIER IST DER FIX ---
-                // Wir laden die Bilder direkt von unpkg.com
-                pieceTheme: 'https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png'
+                // --- HIER IST DER FIX 2.0 ---
+                // Wir nutzen die offizielle Webseite als Quelle, die funktioniert immer
+                pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
             };
             board = Chessboard('board', config);
             updateStatusDisplay();
