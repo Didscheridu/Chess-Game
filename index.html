@@ -42,9 +42,9 @@
         .notif-item { background: #3a3b3c; padding: 10px; border-radius: 5px; margin-bottom: 5px; font-size: 0.9em; }
 
         /* Friend List */
-        .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; }
+        .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; cursor: pointer; }
         .friend-item:hover { background: #3a3b3c; }
-        .best-friend { color: #f1c40f; } /* Gold Stern */
+        .best-friend { color: #f1c40f; } 
 
         /* Profile Card */
         .profile-avatar { width: 80px; height: 80px; background: #2D88FF; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; margin: 0 auto 10px auto; }
@@ -64,8 +64,7 @@
     <div id="notif-modal" class="modal-overlay hidden">
         <div class="modal-content-custom">
             <h4><i class="fas fa-bell"></i> Benachrichtigungen</h4>
-            <div id="notif-list" style="max-height: 300px; overflow-y: auto; margin-top: 15px;">
-                </div>
+            <div id="notif-list" style="max-height: 300px; overflow-y: auto; margin-top: 15px;"></div>
             <button onclick="closeModal('notif-modal')" class="btn btn-secondary w-100 mt-3">Schließen</button>
         </div>
     </div>
@@ -75,21 +74,12 @@
             <div class="profile-avatar"><i class="fas fa-user"></i></div>
             <h3 id="profile-name">Username</h3>
             <p class="text-muted" id="profile-id">#123</p>
-            
             <div class="d-flex justify-content-center">
-                <div class="stat-box">
-                    <h4 id="profile-wins" class="text-warning m-0">0</h4>
-                    <small>Wins</small>
-                </div>
-                <div class="stat-box">
-                    <h4 id="profile-status" class="text-success m-0">Online</h4>
-                    <small>Status</small>
-                </div>
+                <div class="stat-box"><h4 id="profile-wins" class="text-warning m-0">0</h4><small>Wins</small></div>
+                <div class="stat-box"><h4 id="profile-status" class="text-success m-0">Online</h4><small>Status</small></div>
             </div>
-            
             <hr>
-            <div id="profile-actions" class="d-grid gap-2">
-                </div>
+            <div id="profile-actions" class="d-grid gap-2"></div>
             <button onclick="closeModal('profile-modal')" class="btn btn-outline-secondary mt-3 w-100">Schließen</button>
         </div>
     </div>
@@ -119,12 +109,10 @@
         <div class="d-flex justify-content-between align-items-center mb-4 p-3 card-dark">
             <h3 class="m-0 fw-bold"><i class="fas fa-chess"></i> CHESS SOCIAL</h3>
             <div id="nav-user-area" class="hidden d-flex align-items-center">
-                
                 <div class="notification-bell" onclick="openNotifModal()">
                     <i class="fas fa-bell"></i>
                     <div id="bell-badge" class="notification-badge hidden">0</div>
                 </div>
-
                 <div class="me-3 text-end">
                     <div class="fw-bold text-white"><span id="nav-username">Gast</span></div>
                     <div class="small text-muted">ID: <span id="nav-userid">#?</span> | Wins: <span id="nav-wins" class="text-warning">0</span></div>
@@ -150,37 +138,30 @@
             <div class="row">
                 <div class="col-md-7">
                     <div class="card-dark text-center" style="padding: 40px 20px; position: relative; min-height: 400px;">
-                        
-                        <div id="queue-overlay" class="hidden" style="position: absolute; border-radius: 10px;">
+                        <div id="queue-overlay" class="hidden" style="position: absolute; border-radius: 10px; z-index: 10;">
                             <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
                             <h3 class="mt-3">Suche Gegner...</h3>
                             <button onclick="leaveQueue()" class="btn btn-outline-danger mt-3">Abbrechen</button>
                         </div>
-
                         <h2 class="fw-bold mb-4">Spielen</h2>
                         <button onclick="joinQueue()" class="btn btn-primary-custom btn-lg w-100 p-3 mb-3"><i class="fas fa-globe"></i> RANKED MATCH</button>
-                        
                         <div class="row g-2">
                             <div class="col-6"><button onclick="startBotGame()" class="btn btn-warning w-100 p-3 fw-bold"><i class="fas fa-robot"></i> VS BOT</button></div>
                             <div class="col-6"><button onclick="createPrivateGame()" class="btn btn-info w-100 p-3 fw-bold"><i class="fas fa-user-secret"></i> PRIVATE</button></div>
                         </div>
                     </div>
                 </div>
-                
                 <div class="col-md-5">
                     <div class="card-dark">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h5 class="m-0 text-info"><i class="fas fa-user-friends"></i> Freunde</h5>
                             <small class="text-muted">Klick für Profil</small>
                         </div>
-                        
                         <div class="input-group mb-3">
                             <input type="number" id="friend-id-input" class="form-control form-control-sm" placeholder="ID eingeben (z.B. 42)">
                             <button onclick="sendFriendRequest()" class="btn btn-sm btn-outline-info">Anfrage</button>
                         </div>
-
-                        <div id="friends-list" style="max-height: 300px; overflow-y: auto;">
-                            </div>
+                        <div id="friends-list" style="max-height: 300px; overflow-y: auto;"></div>
                     </div>
                 </div>
             </div>
@@ -197,7 +178,7 @@
                         <div id="board"></div>
                         <div id="wait-overlay" class="hidden" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100; display:flex; flex-direction:column; justify-content:center; align-items:center;">
                             <h3 class="text-white">Privater Raum</h3>
-                            <p class="text-muted">Code: <b class="text-warning user-select-all" id="private-code-display">...</b></p>
+                            <p class="text-muted">Warte auf Gegner...</p>
                             <button onclick="leaveGame()" class="btn btn-danger btn-sm">Verlassen</button>
                         </div>
                     </div>
@@ -243,7 +224,7 @@
         let gameListener = null, queueListener = null, notifListener = null;
         let selectedSquare = null;
 
-        // --- AUTH ---
+        // --- AUTH & RELOAD HANDLING ---
         auth.onAuthStateChanged(user => {
             if(user) {
                 currentUser = user;
@@ -253,13 +234,30 @@
                         updateHeader();
                         loadFriends();
                         listenNotifications();
-                        showScreen('lobby-screen');
                         
-                        // Check if in game or queue
-                        checkQueueStatus();
-                        if(userData.activeGameId) loadOnlineGame(userData.activeGameId);
+                        // RECONNECT CHECK:
+                        // Wenn der User eine aktive GameID hat, laden wir diese sofort.
+                        // Aber nur, wenn wir nicht eh schon auf dem Game-Screen sind.
+                        if(userData.activeGameId && $('#game-screen').hasClass('hidden')) {
+                            // Check ob Game existiert
+                            db.collection('games').doc(userData.activeGameId).get().then(g => {
+                                if(g.exists && g.data().status !== 'finished' && g.data().status !== 'aborted') {
+                                    loadOnlineGame(userData.activeGameId);
+                                } else {
+                                    // Game ist vorbei, ID löschen
+                                    db.collection('users').doc(currentUser.uid).update({activeGameId: null});
+                                    showScreen('lobby-screen');
+                                }
+                            });
+                        } else if (!userData.activeGameId) {
+                            showScreen('lobby-screen');
+                        }
                     }
                 });
+                // Online Status Heartbeat
+                setInterval(() => {
+                    if(currentUser) db.collection('users').doc(currentUser.uid).update({lastSeen: firebase.firestore.FieldValue.serverTimestamp()});
+                }, 60000);
             } else { showScreen('auth-screen'); }
         });
 
@@ -270,29 +268,19 @@
             $('#nav-user-area').removeClass('hidden');
         }
 
-        // --- NOTIFICATIONS SYSTEM ---
+        // --- NOTIFICATIONS & FRIEND LOGIC ---
         function listenNotifications() {
             if(notifListener) notifListener();
             notifListener = db.collection('users').doc(currentUser.uid).collection('notifications')
                 .orderBy('timestamp', 'desc').onSnapshot(snap => {
                     const count = snap.size;
                     $('#bell-badge').text(count).toggleClass('hidden', count === 0);
-                    
-                    let html = '';
-                    if(count === 0) html = '<div class="text-center text-muted p-3">Keine Benachrichtigungen</div>';
-                    
+                    let html = count === 0 ? '<div class="text-center text-muted p-3">Keine Benachrichtigungen</div>' : '';
                     snap.forEach(doc => {
                         const n = doc.data();
-                        html += `
-                            <div class="notif-item">
-                                <div class="fw-bold">${n.title}</div>
-                                <div class="small text-muted mb-2">${n.message}</div>
-                                <div class="d-flex gap-2">
-                                    <button onclick="handleNotif('${doc.id}', '${n.type}', true, '${n.fromUid}', '${n.payload}')" class="btn btn-sm btn-success flex-grow-1">Annehmen</button>
-                                    <button onclick="handleNotif('${doc.id}', '${n.type}', false)" class="btn btn-sm btn-outline-secondary">Ablehnen</button>
-                                </div>
-                            </div>
-                        `;
+                        html += `<div class="notif-item"><div class="fw-bold">${n.title}</div><div class="small text-muted mb-2">${n.message}</div>
+                        <div class="d-flex gap-2"><button onclick="handleNotif('${doc.id}','${n.type}',true,'${n.fromUid}','${n.payload}')" class="btn btn-sm btn-success flex-grow-1">Annehmen</button>
+                        <button onclick="handleNotif('${doc.id}','${n.type}',false)" class="btn btn-sm btn-outline-secondary">Ablehnen</button></div></div>`;
                     });
                     $('#notif-list').html(html);
                 });
@@ -300,306 +288,155 @@
 
         function handleNotif(notifId, type, accepted, fromUid, payload) {
             const notifRef = db.collection('users').doc(currentUser.uid).collection('notifications').doc(notifId);
-            
-            if(!accepted) {
-                notifRef.delete();
-                return;
-            }
+            if(!accepted) { notifRef.delete(); return; }
 
             if(type === 'friend_request') {
-                // Freunde verknüpfen (Beide Seiten)
                 const batch = db.batch();
+                // BEIDSEITIG Freunde hinzufügen
                 batch.update(db.collection('users').doc(currentUser.uid), { friends: firebase.firestore.FieldValue.arrayUnion(fromUid) });
                 batch.update(db.collection('users').doc(fromUid), { friends: firebase.firestore.FieldValue.arrayUnion(currentUser.uid) });
                 batch.delete(notifRef);
-                batch.commit().then(() => { closeModal('notif-modal'); alert("Freundschaft angenommen!"); });
+                batch.commit().then(() => { closeModal('notif-modal'); alert("Freund hinzugefügt!"); loadFriends(); });
             } 
             else if (type === 'game_invite') {
-                // Spiel beitreten
-                notifRef.delete();
-                closeModal('notif-modal');
-                joinGameByDirectId(payload);
+                // Game beitreten
+                db.collection('games').doc(payload).update({
+                    black: currentUser.uid, blackName: userData.username, blackId: userData.displayId, status: 'active'
+                }).then(() => {
+                    notifRef.delete();
+                    closeModal('notif-modal');
+                    // WICHTIG: Setze Active Game ID auch hier
+                    db.collection('users').doc(currentUser.uid).update({activeGameId: payload});
+                    loadOnlineGame(payload);
+                });
             }
         }
 
-        function openNotifModal() { $('#notif-modal').removeClass('hidden'); }
-
-        // --- FRIEND SYSTEM ---
         function sendFriendRequest() {
-            const idInput = $('#friend-id-input').val();
-            if(!idInput) return;
+            const idInput = $('#friend-id-input').val(); if(!idInput) return;
             const targetId = parseInt(idInput);
-
             db.collection('users').where('displayId', '==', targetId).get().then(snap => {
                 if(snap.empty) return alert("User nicht gefunden.");
                 const targetUser = snap.docs[0];
                 if(targetUser.id === currentUser.uid) return alert("Das bist du.");
-
-                // Check ob schon Freunde
-                if(userData.friends && userData.friends.includes(targetUser.id)) return alert("Ihr seid schon Freunde.");
-
-                // Benachrichtigung senden
+                if(userData.friends && userData.friends.includes(targetUser.id)) return alert("Schon befreundet.");
+                
                 db.collection('users').doc(targetUser.id).collection('notifications').add({
-                    type: 'friend_request',
-                    fromUid: currentUser.uid,
-                    title: 'Freundschaftsanfrage',
-                    message: `${userData.username} möchte dein Freund sein.`,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    payload: null
-                }).then(() => {
-                    alert("Anfrage gesendet!");
-                    $('#friend-id-input').val('');
-                });
+                    type: 'friend_request', fromUid: currentUser.uid, title: 'Freundschaftsanfrage',
+                    message: `${userData.username} möchte dein Freund sein.`, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => { alert("Anfrage gesendet!"); $('#friend-id-input').val(''); });
             });
         }
 
         function loadFriends() {
             if(!userData.friends || userData.friends.length === 0) {
-                $('#friends-list').html('<div class="text-center text-muted small mt-3">Noch keine Freunde.<br>Gib eine ID ein!</div>');
-                return;
+                $('#friends-list').html('<div class="text-center text-muted small mt-3">Noch keine Freunde.</div>'); return;
             }
-
-            // Freunde laden
-            // Hinweis: Firestore "in" Query ist limitiert auf 10, daher holen wir Docs einzeln bei Klick oder rendern simple Liste.
-            // Besser: Wir holen die Daten dynamisch.
-            const friendsList = $('#friends-list');
-            friendsList.empty();
-
+            const list = $('#friends-list'); list.empty();
             userData.friends.forEach(fUid => {
                 db.collection('users').doc(fUid).get().then(doc => {
                     if(!doc.exists) return;
                     const f = doc.data();
                     const isBest = (userData.bestFriends && userData.bestFriends.includes(fUid));
                     const isPlaying = !!f.activeGameId;
-                    const starClass = isBest ? 'best-friend' : 'text-muted';
-                    const icon = isPlaying ? '<i class="fas fa-eye text-danger"></i>' : '<i class="fas fa-circle text-success small"></i>';
-                    
-                    const el = $(`
-                        <div class="friend-item" onclick="openProfile('${fUid}')">
-                            <div>
-                                <i class="fas fa-star ${starClass} me-2" onclick="toggleBestFriend(event, '${fUid}')"></i>
-                                <b>${f.username}</b> <small class="text-muted">#${f.displayId}</small>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                ${isPlaying ? '<span class="badge bg-danger small">Im Spiel</span>' : ''}
-                                ${icon}
-                            </div>
-                        </div>
-                    `);
-                    
-                    // Sortierung: Beste Freunde oben
-                    if(isBest) friendsList.prepend(el); else friendsList.append(el);
+                    const star = isBest ? 'best-friend' : 'text-muted';
+                    const el = $(`<div class="friend-item" onclick="openProfile('${fUid}')"><div><i class="fas fa-star ${star} me-2" onclick="toggleBest(event,'${fUid}')"></i><b>${f.username}</b> <small class="text-muted">#${f.displayId}</small></div>
+                    ${isPlaying ? '<span class="badge bg-danger small">Im Spiel</span>' : '<i class="fas fa-circle text-success small"></i>'}</div>`);
+                    if(isBest) list.prepend(el); else list.append(el);
                 });
             });
         }
+        function toggleBest(e, uid) { e.stopPropagation(); let op = userData.bestFriends && userData.bestFriends.includes(uid) ? 'arrayRemove':'arrayUnion'; db.collection('users').doc(currentUser.uid).update({bestFriends: firebase.firestore.FieldValue[op](uid)}).then(loadFriends); }
 
-        function toggleBestFriend(e, uid) {
-            e.stopPropagation(); // Nicht Profil öffnen
-            let op = userData.bestFriends && userData.bestFriends.includes(uid) ? 'arrayRemove' : 'arrayUnion';
-            db.collection('users').doc(currentUser.uid).update({
-                bestFriends: firebase.firestore.FieldValue[op](uid)
-            });
-        }
-
-        // --- PROFILE & ACTIONS ---
         function openProfile(uid) {
             db.collection('users').doc(uid).get().then(doc => {
                 const f = doc.data();
-                $('#profile-name').text(f.username);
-                $('#profile-id').text(`#${f.displayId}`);
-                $('#profile-wins').text(f.wins || 0);
-                
+                $('#profile-name').text(f.username); $('#profile-id').text(`#${f.displayId}`); $('#profile-wins').text(f.wins||0);
                 const isPlaying = !!f.activeGameId;
-                $('#profile-status').text(isPlaying ? "Spielt gerade" : "Online")
-                    .removeClass().addClass(isPlaying ? "text-danger" : "text-success");
-                
-                let btns = `<button onclick="inviteFriend('${uid}', '${f.username}')" class="btn btn-primary"><i class="fas fa-swords"></i> Herausfordern</button>`;
-                
-                if(isPlaying) {
-                    btns += `<button onclick="spectateGame('${f.activeGameId}')" class="btn btn-warning mt-2"><i class="fas fa-eye"></i> Zuschauen</button>`;
-                }
-
-                $('#profile-actions').html(btns);
-                $('#profile-modal').removeClass('hidden');
+                $('#profile-status').text(isPlaying?"Spielt gerade":"Online").attr('class', isPlaying?"text-danger":"text-success");
+                let btns = `<button onclick="inviteFriend('${uid}','${f.username}')" class="btn btn-primary w-100">Herausfordern</button>`;
+                if(isPlaying) btns += `<button onclick="spectateGame('${f.activeGameId}')" class="btn btn-warning w-100 mt-2">Zuschauen</button>`;
+                $('#profile-actions').html(btns); $('#profile-modal').removeClass('hidden');
             });
         }
 
         function inviteFriend(uid, name) {
             if(!confirm(`Möchtest du ${name} herausfordern?`)) return;
-            
-            // Spiel erstellen
             const gameRef = db.collection('games').doc();
+            // Game erstellen
             gameRef.set({
                 white: currentUser.uid, whiteName: userData.username, whiteId: userData.displayId,
-                black: uid, blackName: name, blackId: '?', // Wird geupdated wenn er joint
-                fen: 'start', turn: 'w', status: 'active',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                black: uid, blackName: name, blackId: '?', // Platzhalter
+                fen: 'start', turn: 'w', status: 'active', createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 // Einladung senden
                 db.collection('users').doc(uid).collection('notifications').add({
                     type: 'game_invite', fromUid: currentUser.uid, title: 'Herausforderung!',
-                    message: `${userData.username} fordert dich heraus.`,
-                    payload: gameRef.id, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    message: `${userData.username} fordert dich heraus.`, payload: gameRef.id, timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 closeModal('profile-modal');
+                // Ich (Host) trete sofort bei und speichere ID
+                db.collection('users').doc(currentUser.uid).update({activeGameId: gameRef.id});
                 loadOnlineGame(gameRef.id);
             });
         }
 
-        function spectateGame(gameId) {
-            closeModal('profile-modal');
-            loadOnlineGame(gameId, true); // true = spectator
-        }
+        function spectateGame(id) { closeModal('profile-modal'); loadOnlineGame(id, true); }
 
-        // --- GAME ENGINE ---
+        // --- GAME LOGIC ---
         function loadOnlineGame(id, asSpectator = false) {
-            currentGameId = id;
-            gameMode = 'online';
-            showScreen('game-screen');
-            $('#wait-overlay').addClass('hidden');
+            currentGameId = id; gameMode = 'online';
+            showScreen('game-screen'); $('#wait-overlay').addClass('hidden'); $('#end-screen-overlay').addClass('hidden');
             
-            // Setze active Game ID für User
-            if(!asSpectator) db.collection('users').doc(currentUser.uid).update({ activeGameId: id });
-
-            game = new Chess();
-            $('#move-history').empty();
-            
-            // Board setup: Spectator kann nicht ziehen
-            board = Chessboard('board', {
-                position: 'start', draggable: false,
-                pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
-            });
-
-            // Click Handler
-            $('#board').off('click').on('click', '.square-55d63', function() {
-                if(asSpectator) return; // Zuschauer dürfen nicht klicken
-                handleSquareClick.call(this);
-            });
+            game = new Chess(); $('#move-history').empty(); selectedSquare = null;
+            board = Chessboard('board', {position:'start', draggable:false, pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'});
+            $('#board').off('click').on('click', '.square-55d63', function() { if(!asSpectator) handleSquareClick.call(this); });
 
             if(gameListener) gameListener();
             gameListener = db.collection('games').doc(id).onSnapshot(doc => {
-                if(!doc.exists) return;
+                if(!doc.exists) { db.collection('users').doc(currentUser.uid).update({activeGameId: null}); backToLobby(); return; }
                 const data = doc.data();
 
-                // Farben & Namen
-                let topName = "Gegner", bottomName = "Du";
-                
+                // Farben
                 if(asSpectator) {
-                    myColor = 'spectator';
-                    topName = `${data.blackName} (Schwarz)`;
-                    bottomName = `${data.whiteName} (Weiß)`;
-                    board.orientation('white');
-                    $('#game-status-text').text("Zuschauer Modus").removeClass('bg-success').addClass('bg-warning');
+                    myColor = 'spectator'; board.orientation('white');
+                    $('#player-top').text(`${data.blackName} (Schwarz)`); $('#player-bottom').text(`${data.whiteName} (Weiß)`);
+                    $('#game-status-text').text("Zuschauer").removeClass('bg-success').addClass('bg-warning');
                 } else {
-                    if (data.white === currentUser.uid) myColor = 'w';
-                    else if (data.black === currentUser.uid) myColor = 'b';
-                    
-                    bottomName = "Du (" + (myColor==='w'?'Weiß':'Schwarz') + ")";
-                    topName = (myColor==='w' ? data.blackName : data.whiteName) + " (" + (myColor==='w'?'Schwarz':'Weiß') + ")";
-                    board.orientation(myColor === 'w' ? 'white' : 'black');
-                }
-                
-                $('#player-top').text(topName);
-                $('#player-bottom').text(bottomName);
-
-                // Moves
-                if(data.fen && data.fen !== game.fen()) {
-                    game.load(data.fen);
-                    board.position(data.fen);
-                    removeHighlights();
-                    if(data.lastMoveSan) addLog(data.lastMoveSan);
+                    if(data.white === currentUser.uid) myColor = 'w'; else if (data.black === currentUser.uid) myColor = 'b';
+                    board.orientation(myColor==='w'?'white':'black');
+                    $('#player-top').text(myColor==='w'? data.blackName : data.whiteName);
+                    $('#player-bottom').text(`Du (${myColor==='w'?'Weiß':'Schwarz'})`);
                 }
 
-                // Ende
-                if(data.result) showEndScreen(data.result);
+                if(data.fen && data.fen !== game.fen()) { game.load(data.fen); board.position(data.fen); removeHighlights(); if(data.lastMoveSan) addLog(data.lastMoveSan); }
                 if(data.status === 'aborted') showEndScreen('aborted');
+                if(data.result) showEndScreen(data.result);
             });
         }
 
-        // --- QUEUE & PRIVATE ---
-        function joinQueue() {
-            gameMode = 'online';
-            $('#queue-overlay').removeClass('hidden');
-            const ref = db.collection('queue').doc(currentUser.uid);
-            ref.set({
-                uid: currentUser.uid, username: userData.username, displayId: userData.displayId,
-                joinedAt: firebase.firestore.FieldValue.serverTimestamp(), gameId: null
-            });
-            // Simple Matchmaker Logic Client-Side (Wie vorher)
-            listenQueue(ref);
-        }
-        function listenQueue(ref) {
-            queueListener = ref.onSnapshot(doc => {
-                if(doc.exists && doc.data().gameId) {
-                    ref.delete();
-                    loadOnlineGame(doc.data().gameId);
-                    $('#queue-overlay').addClass('hidden');
-                } else {
-                    // Try match
-                     db.collection('queue').orderBy('joinedAt').limit(2).get().then(snap => {
-                        if(snap.size >= 2) {
-                            const p1 = snap.docs[0].data(), p2 = snap.docs[1].data();
-                            // Nur einer triggered
-                            if(p1.uid === currentUser.uid) {
-                                const gid = db.collection('games').doc().id;
-                                db.collection('games').doc(gid).set({
-                                    white: p1.uid, whiteName: p1.username, whiteId: p1.displayId,
-                                    black: p2.uid, blackName: p2.username, blackId: p2.displayId,
-                                    fen: 'start', turn: 'w', status: 'active'
-                                });
-                                db.collection('queue').doc(p1.uid).update({gameId: gid});
-                                db.collection('queue').doc(p2.uid).update({gameId: gid});
-                            }
-                        }
-                    });
-                }
-            });
-        }
-        function leaveQueue() { db.collection('queue').doc(currentUser.uid).delete(); $('#queue-overlay').addClass('hidden'); }
-
-        function createPrivateGame() {
-            const gid = Math.random().toString(36).substring(2,7).toUpperCase();
-            db.collection('games').doc(gid).set({
-                white: currentUser.uid, whiteName: userData.username, whiteId: userData.displayId,
-                status: 'waiting_private', fen: 'start', turn: 'w'
-            });
-            loadOnlineGame(gid);
-            $('#wait-overlay').removeClass('hidden');
-            $('#private-code-display').text(gid);
-        }
-
-        function joinGameByDirectId(id) { loadOnlineGame(id); } // Für Invites
-
-        // --- LOGIC: CLICK & MOVE ---
+        // --- CLICK SYSTEM ---
         function handleSquareClick() {
             if(gameMode === 'bot' && game.turn() === 'b') return;
             if(gameMode === 'online' && game.turn() !== myColor) return;
             if(game.game_over()) return;
 
-            const square = $(this).attr('data-square');
+            const sq = $(this).attr('data-square');
             if(selectedSquare) {
-                const move = game.move({ from: selectedSquare, to: square, promotion: 'q' });
+                const move = game.move({from:selectedSquare, to:sq, promotion:'q'});
                 if(move) {
                     selectedSquare = null; removeHighlights();
                     if(gameMode === 'online') updateGameOnline(move);
                     else { board.position(game.fen()); setTimeout(botMove, 500); }
                 } else {
                     selectedSquare = null; removeHighlights();
-                    if(game.get(square) && game.get(square).color === (gameMode==='bot'?'w':myColor)) {
-                        selectedSquare = square; highlight(square);
-                    }
+                    if(game.get(sq) && game.get(sq).color === (gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); }
                 }
             } else {
-                if(game.get(square) && game.get(square).color === (gameMode==='bot'?'w':myColor)) {
-                    selectedSquare = square; highlight(square);
-                }
+                if(game.get(sq) && game.get(sq).color === (gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); }
             }
         }
-        function highlight(sq) {
-            removeHighlights();
-            $(`.square-${sq}`).addClass('highlight-square');
-            game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>'));
-        }
+        function highlight(sq) { removeHighlights(); $(`.square-${sq}`).addClass('highlight-square'); game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
         function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
         
         function updateGameOnline(move) {
@@ -608,9 +445,10 @@
                 if(game.in_checkmate()) { res = game.turn()==='w'?'b':'w'; db.collection('users').doc(currentUser.uid).update({wins: firebase.firestore.FieldValue.increment(1)}); }
                 else res = 'draw';
             }
-            db.collection('games').doc(currentGameId).update({ fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: res });
+            db.collection('games').doc(currentGameId).update({fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: res});
+            board.position(game.fen()); addLog(move.san);
         }
-        
+
         // --- BOT ---
         function startBotGame() {
             gameMode = 'bot'; showScreen('game-screen'); $('#wait-overlay').addClass('hidden');
@@ -620,33 +458,52 @@
         }
         function botMove() {
             if(game.game_over()) return;
-            const moves = game.moves();
-            const move = moves[Math.floor(Math.random()*moves.length)];
-            game.move(move); board.position(game.fen());
+            const moves = game.moves(); game.move(moves[Math.floor(Math.random()*moves.length)]); board.position(game.fen());
         }
 
+        // --- QUEUE ---
+        function joinQueue() {
+            $('#queue-overlay').removeClass('hidden'); const ref = db.collection('queue').doc(currentUser.uid);
+            ref.set({uid:currentUser.uid, username:userData.username, displayId:userData.displayId, joinedAt:firebase.firestore.FieldValue.serverTimestamp(), gameId:null});
+            queueListener = ref.onSnapshot(doc => {
+                if(doc.exists && doc.data().gameId) { ref.delete(); db.collection('users').doc(currentUser.uid).update({activeGameId: doc.data().gameId}); loadOnlineGame(doc.data().gameId); $('#queue-overlay').addClass('hidden'); }
+                else { db.collection('queue').orderBy('joinedAt').limit(2).get().then(snap => {
+                    if(snap.size >= 2 && snap.docs[0].data().uid === currentUser.uid) {
+                        const gid = db.collection('games').doc().id; const p2 = snap.docs[1].data();
+                        db.collection('games').doc(gid).set({white:currentUser.uid, whiteName:userData.username, whiteId:userData.displayId, black:p2.uid, blackName:p2.username, blackId:p2.displayId, fen:'start', turn:'w', status:'active'});
+                        ref.update({gameId:gid}); db.collection('queue').doc(p2.uid).update({gameId:gid});
+                    }
+                }); }
+            });
+        }
+        function leaveQueue() { if(queueListener) queueListener(); db.collection('queue').doc(currentUser.uid).delete(); $('#queue-overlay').addClass('hidden'); }
+
         // --- HELPERS ---
+        function createPrivateGame() {
+            const gid = Math.random().toString(36).substring(2,7).toUpperCase();
+            db.collection('games').doc(gid).set({white:currentUser.uid, whiteName:userData.username, whiteId:userData.displayId, status:'waiting_private', fen:'start', turn:'w'});
+            db.collection('users').doc(currentUser.uid).update({activeGameId: gid});
+            loadOnlineGame(gid); $('#wait-overlay').removeClass('hidden'); $('#private-code-display').text(gid);
+        }
         function showEndScreen(res) {
             $('#end-screen-overlay').removeClass('hidden');
             let txt = "SIEG!", color = "text-success";
-            if(res === 'aborted') txt = "GEGNER WEG";
+            if(res === 'aborted') { txt = "GEGNER WEG"; color = "text-danger"; }
             else if(res === 'draw') { txt = "REMIS"; color = "text-warning"; }
             else if(res !== myColor && myColor !== 'spectator') { txt = "VERLOREN"; color = "text-danger"; }
             $('#end-title').text(txt).removeClass().addClass('win-title '+color);
+            // Wenn Spiel vorbei, Game ID aus User entfernen
+            if(myColor !== 'spectator') db.collection('users').doc(currentUser.uid).update({activeGameId: null});
         }
         function backToLobby() { 
             if(gameListener) gameListener(); 
-            if(currentGameId) db.collection('users').doc(currentUser.uid).update({activeGameId: null});
-            $('#end-screen-overlay').addClass('hidden'); showScreen('lobby-screen'); 
+            $('#end-screen-overlay').addClass('hidden'); 
+            db.collection('users').doc(currentUser.uid).update({activeGameId: null});
+            showScreen('lobby-screen'); 
         }
-        function leaveGame() {
-            if(confirm("Verlassen?")) {
-                if(gameMode === 'online' && myColor !== 'spectator') db.collection('games').doc(currentGameId).update({status: 'aborted'});
-                backToLobby();
-            }
-        }
+        function leaveGame() { if(confirm("Verlassen?")) { if(gameMode === 'online' && myColor !== 'spectator') db.collection('games').doc(currentGameId).update({status: 'aborted'}); backToLobby(); } }
         function registerUserWithId() {
-            const email = $('#email-input').val(), pass = $('#password-input').val(), name = $('#username-input').val();
+            const email=$('#email-input').val(), pass=$('#password-input').val(), name=$('#username-input').val();
             const cRef = db.collection('config').doc('userCounter');
             auth.createUserWithEmailAndPassword(email, pass).then(cred => {
                 db.runTransaction(async (t) => {
@@ -660,6 +517,7 @@
         function logout() { auth.signOut(); location.reload(); }
         function showScreen(id) { $('.hidden').removeClass('hidden').addClass('hidden'); $('#auth-screen, #lobby-screen, #game-screen').addClass('hidden'); $(`#${id}`).removeClass('hidden'); }
         function closeModal(id) { $(`#${id}`).addClass('hidden'); }
+        function openNotifModal() { $('#notif-modal').removeClass('hidden'); }
         function openSettings() { $('#settings-modal').removeClass('hidden'); }
         function addLog(s) { $('#move-history').append(`<div>${s}</div>`).scrollTop(999); }
     </script>
