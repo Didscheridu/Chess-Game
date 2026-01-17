@@ -3,115 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schach Masters Pro</title>
+    <title>Ultimate Chess Platform</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        body { background-color: #1e1e2e; color: #cdd6f4; font-family: 'Montserrat', sans-serif; }
-        .app-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
-        .card-custom { background-color: #313244; border-radius: 12px; border: none; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .hidden { display: none !important; }
+        body { background-color: #18191a; color: #e4e6eb; font-family: 'Roboto', sans-serif; }
+        .app-container { max-width: 1100px; margin: 0 auto; padding: 20px; }
         
-        /* Schachbrett */
-        #board { width: 100%; border: 5px solid #45475a; border-radius: 4px; }
+        .card-dark { background-color: #242526; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); margin-bottom: 20px; }
+        .btn-primary-custom { background-color: #2D88FF; color: white; font-weight: bold; border: none; }
+        .btn-primary-custom:hover { background-color: #1A73E8; color: white; }
+        
+        .hidden { display: none !important; }
+        .id-badge { background: #3a3b3c; color: #b0b3b8; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 5px; }
+
+        #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; }
+        .board-wrapper { position: relative; max-width: 550px; margin: 0 auto; }
         .board-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 100;
+            background: rgba(0,0,0,0.8); z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        .board-wrapper { position: relative; max-width: 500px; margin: 0 auto; }
 
-        /* Online User Liste */
-        .online-user-item {
-            background: #45475a; padding: 10px; margin-bottom: 8px; border-radius: 8px;
-            display: flex; justify-content: space-between; align-items: center; transition: 0.2s;
-        }
-        .online-user-item:hover { background: #585b70; }
-        .status-dot { height: 10px; width: 10px; background-color: #a6e3a1; border-radius: 50%; display: inline-block; margin-right: 5px; box-shadow: 0 0 5px #a6e3a1; }
-
-        /* Move History & Analyse Badges (Chess.com Style) */
-        .move-log { max-height: 300px; overflow-y: auto; background: #252635; padding: 10px; border-radius: 8px; }
-        .move-row { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid #333; font-size: 0.9em; }
-        
-        .badge-brilliant { background-color: #1b9aaa; color: white; font-weight: 900; } /* Blau !! */
-        .badge-great { background-color: #72c36f; color: white; font-weight: bold; } /* Grün ! */
-        .badge-best { background-color: #9c9c9c; color: white; } /* Grau Stern */
-        .badge-normal { background-color: transparent; color: #aaa; }
-
-        /* Challenge Modal Overlay */
-        #challenge-modal {
+        /* Settings Modal */
+        .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 2000; display: flex;
-            justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.8); z-index: 3000;
+            display: flex; justify-content: center; align-items: center;
         }
-        .challenge-card { background: #11111b; border: 2px solid #f9e2af; padding: 30px; border-radius: 15px; text-align: center; width: 300px; animation: pulse 1.5s infinite; }
-        
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .modal-content-custom { background: #242526; width: 400px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; }
+
+        .move-log { height: 250px; overflow-y: auto; background: #18191a; padding: 10px; border-radius: 6px; border: 1px solid #3a3b3c; }
+        .move-row { padding: 4px; border-bottom: 1px solid #242526; display: flex; justify-content: space-between; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
-    <div id="challenge-modal" class="hidden">
-        <div class="challenge-card">
-            <h3 class="text-warning"><i class="fas fa-trophy"></i> HERAUSFORDERUNG!</h3>
-            <p id="challenge-text" class="my-3">Spieler XYZ will spielen.</p>
-            <div class="d-grid gap-2">
-                <button onclick="acceptChallenge()" class="btn btn-success fw-bold">ANNEHMEN</button>
-                <button onclick="rejectChallenge()" class="btn btn-outline-danger">Ablehnen</button>
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-content-custom">
+            <h4><i class="fas fa-cog"></i> Einstellungen</h4>
+            <hr style="border-color: #444;">
+            
+            <label class="small text-muted">Benutzernamen ändern</label>
+            <input type="text" id="settings-username" class="form-control mb-3" placeholder="Neuer Name">
+            
+            <label class="small text-muted">Neues Passwort</label>
+            <input type="password" id="settings-password" class="form-control mb-3" placeholder="Mind. 6 Zeichen">
+
+            <hr style="border-color: #444;">
+            <p class="small text-warning">Admin Zone:</p>
+            <button onclick="adminFixUserIds()" class="btn btn-warning btn-sm w-100 mb-3">
+                ⚠️ DB Reparieren (IDs vergeben)
+            </button>
+
+            <div class="d-flex justify-content-end gap-2">
+                <button onclick="closeSettings()" class="btn btn-secondary">Abbrechen</button>
+                <button onclick="saveSettings()" class="btn btn-success">Speichern</button>
             </div>
+            <div id="settings-msg" class="mt-2 small"></div>
         </div>
     </div>
 
     <div class="app-container">
         
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-black"><i class="fas fa-chess"></i> CHESS MASTERS</h2>
-            <div id="user-info-header" class="hidden">
-                <span class="me-2 text-info" id="header-username">...</span>
-                <button onclick="logout()" class="btn btn-sm btn-outline-secondary">Logout</button>
+        <div class="d-flex justify-content-between align-items-center mb-4 p-3 card-dark">
+            <h3 class="m-0 fw-bold"><i class="fas fa-chess-king"></i> CHESS PRO</h3>
+            <div id="nav-user-area" class="hidden d-flex align-items-center gap-3">
+                <div>
+                    <span id="nav-username" class="fw-bold text-white">Gast</span>
+                    <span id="nav-userid" class="id-badge">#?</span>
+                </div>
+                <button onclick="openSettings()" class="btn btn-sm btn-outline-light"><i class="fas fa-cog"></i></button>
+                <button onclick="logout()" class="btn btn-sm btn-outline-danger">Logout</button>
             </div>
         </div>
 
         <div id="auth-screen">
-            <div class="card-custom text-center" style="max-width: 400px; margin: 50px auto;">
-                <h3>Login</h3>
+            <div class="card-dark text-center" style="max-width: 400px; margin: 50px auto;">
+                <h3>Willkommen</h3>
+                <p class="text-muted small">Bitte einloggen oder registrieren</p>
                 <input type="email" id="email-input" class="form-control mb-2" placeholder="E-Mail">
                 <input type="password" id="password-input" class="form-control mb-3" placeholder="Passwort">
-                <input type="text" id="username-input" class="form-control mb-3" placeholder="Username (nur für Registrierung)">
-                <button onclick="loginUser()" class="btn btn-primary w-100 mb-2">Login</button>
-                <button onclick="registerUser()" class="btn btn-outline-light w-100">Konto erstellen</button>
-                <div id="auth-error" class="text-danger mt-2"></div>
+                <input type="text" id="username-input" class="form-control mb-3" placeholder="Username (nur Registrierung)">
+                
+                <button onclick="loginUser()" class="btn btn-primary-custom w-100 mb-2">Login</button>
+                <button onclick="registerUserWithId()" class="btn btn-outline-light w-100">Konto erstellen</button>
+                <div id="auth-error" class="text-danger mt-2 small"></div>
             </div>
         </div>
 
         <div id="lobby-screen" class="hidden">
             <div class="row">
-                <div class="col-md-7">
-                    <div class="card-custom">
-                        <h4>Spielen</h4>
-                        <button onclick="startGlobalMatchmaking()" class="btn btn-success w-100 py-3 mb-3 fw-bold">
-                            <i class="fas fa-globe"></i> RANDOM MATCH (Schnell)
+                <div class="col-md-8">
+                    <div class="card-dark text-center" style="padding: 50px 20px;">
+                        <h1 class="display-4 fw-bold mb-4">Bereit zum Spiel?</h1>
+                        <button onclick="findMatch()" id="btn-matchmaking" class="btn btn-primary-custom btn-lg w-100 py-3 mb-4" style="font-size: 1.5em; box-shadow: 0 0 15px rgba(45, 136, 255, 0.5);">
+                            <i class="fas fa-play"></i> SPIEL SUCHEN
                         </button>
-                        <hr>
-                        <p class="small text-muted">Privates Spiel (für Freunde):</p>
-                        <div class="d-flex gap-2">
-                            <button onclick="createPrivateGame()" class="btn btn-outline-primary flex-grow-1">Spiel erstellen</button>
-                            <input type="text" id="join-game-id" class="form-control" placeholder="Code eingeben" style="width: 120px;">
-                            <button onclick="joinGameById()" class="btn btn-secondary">Beitreten</button>
+                        <div class="d-flex justify-content-center gap-2">
+                            <input type="text" id="join-id-input" class="form-control" style="max-width: 150px;" placeholder="Code...">
+                            <button onclick="joinGameByCode()" class="btn btn-secondary">Code beitreten</button>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-md-5">
-                    <div class="card-custom">
-                        <h4><i class="fas fa-users"></i> Online Spieler</h4>
-                        <div id="online-list-container" style="max-height: 400px; overflow-y: auto; margin-top: 15px;">
-                            <p class="text-muted small">Lade Spieler...</p>
-                        </div>
+                <div class="col-md-4">
+                    <div class="card-dark">
+                        <h5>Online Spieler</h5>
+                        <div id="online-list" style="max-height: 300px; overflow-y: auto;"></div>
                     </div>
                 </div>
             </div>
@@ -119,37 +121,30 @@
 
         <div id="game-screen" class="hidden">
             <div class="row">
-                <div class="col-md-7">
+                <div class="col-lg-7">
                     <div class="d-flex justify-content-between mb-2">
-                        <span id="player-black"><i class="fas fa-user"></i> Schwarz</span>
-                        <span id="status-badge" class="badge bg-warning">Warte...</span>
+                        <span id="player-top"><i class="fas fa-user"></i> Gegner</span>
+                        <span id="game-status-text" class="badge bg-warning">Warte auf Gegner...</span>
                     </div>
-                    
                     <div class="board-wrapper">
                         <div id="board"></div>
                         <div id="wait-overlay" class="board-overlay">
-                            <h3 class="text-white"><i class="fas fa-circle-notch fa-spin"></i></h3>
-                            <div class="text-white mt-2">Warte auf Gegner...</div>
-                            <div class="mt-3 text-warning small">Spiel ID: <span id="game-id-display" class="user-select-all fw-bold"></span></div>
+                            <div class="spinner-border text-primary mb-3" role="status"></div>
+                            <h4 class="text-white">Suche Gegner...</h4>
+                            <p class="text-muted">Teile diesen Code: <span id="game-id-display" class="text-white fw-bold user-select-all"></span></p>
+                            <button onclick="leaveGame()" class="btn btn-outline-danger btn-sm mt-3">Abbrechen</button>
                         </div>
                     </div>
-
                     <div class="mt-2">
-                        <span id="player-white"><i class="fas fa-user"></i> Weiß</span>
+                        <span id="player-bottom"><i class="fas fa-user"></i> Du</span>
                     </div>
                 </div>
-
-                <div class="col-md-5 mt-3 mt-md-0">
-                    <div class="card-custom h-100 d-flex flex-column">
-                        <h5><i class="fas fa-list-ol"></i> Züge & Analyse</h5>
-                        <div id="move-history" class="move-log flex-grow-1 mb-3">
-                            </div>
-                        
-                        <div id="analysis-box" class="alert alert-dark text-center" style="min-height: 60px;">
-                            <span class="text-muted">Mache einen Zug...</span>
-                        </div>
-
-                        <button onclick="leaveGame()" class="btn btn-danger w-100 mt-auto">Aufgeben / Verlassen</button>
+                <div class="col-lg-5 mt-3 mt-lg-0">
+                    <div class="card-dark h-100 d-flex flex-column">
+                        <h5>Partieverlauf</h5>
+                        <div id="move-history" class="move-log flex-grow-1 mb-3"></div>
+                        <div id="analysis-display" class="alert alert-dark text-center p-2 mb-2"><small class="text-muted">Analyse Bereich</small></div>
+                        <button onclick="leaveGame()" class="btn btn-danger w-100">Spiel verlassen</button>
                     </div>
                 </div>
             </div>
@@ -157,7 +152,7 @@
 
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
     
@@ -166,7 +161,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <script>
-        // --- 1. CONFIG ---
+        // --- 1. FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyBqCKRhB87r_r-IgbOd9ESm9MQLKTGwSU0",
             authDomain: "chess-dff93.firebaseapp.com",
@@ -181,30 +176,27 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // Globals
         let currentUser = null;
-        let currentUsername = "Gast";
-        let currentGameId = null;
-        let myColor = 'w';
+        let userData = null;
         let game = new Chess();
         let board = null;
-        let gameUnsub = null;
-        let challengeUnsub = null;
-        let pendingChallenge = null;
+        let currentGameId = null;
+        let myColor = 'w';
+        let gameListener = null;
 
-        // --- 2. AUTH & PRESENCE ---
+        // --- 2. AUTH ---
         auth.onAuthStateChanged(user => {
             if(user) {
                 currentUser = user;
-                db.collection('users').doc(user.uid).get().then(doc => {
+                db.collection('users').doc(user.uid).onSnapshot(doc => {
                     if(doc.exists) {
-                        currentUsername = doc.data().username;
-                        $('#header-username').text(currentUsername);
-                        $('#user-info-header').removeClass('hidden');
+                        userData = doc.data();
+                        updateNavUI();
                         showScreen('lobby-screen');
-                        startHeartbeat(); // Start Online Status
-                        listenForChallenges(); // Start Challenge Listener
-                        loadOnlineUsers(); // Start Liste laden
+                        updateOnlineStatus();
+                    } else {
+                        // Falls User Auth hat, aber kein DB Doc (sollte nicht passieren, aber zur Sicherheit)
+                        $('#auth-error').text("Benutzerdaten fehlen. Bitte neu registrieren oder Admin kontaktieren.");
                     }
                 });
             } else {
@@ -212,290 +204,258 @@
             }
         });
 
-        // Alle 60 Sekunden "Ich bin da" senden
-        function startHeartbeat() {
-            const updateStatus = () => {
-                if(!currentUser) return;
-                db.collection('users').doc(currentUser.uid).update({
-                    status: 'online',
-                    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+        // REGISTRIERUNG MIT ID (Transaktion)
+        function registerUserWithId() {
+            const email = $('#email-input').val();
+            const password = $('#password-input').val();
+            const username = $('#username-input').val();
+            if(!username) return $('#auth-error').text("Bitte Name eingeben.");
+
+            const counterRef = db.collection('config').doc('userCounter');
+
+            // Erst Auth, dann DB
+            auth.createUserWithEmailAndPassword(email, password).then(cred => {
+                const uid = cred.user.uid;
+                
+                db.runTransaction(async (t) => {
+                    const cDoc = await t.get(counterRef);
+                    let nextId = 1;
+                    if(cDoc.exists) nextId = cDoc.data().count + 1;
+                    
+                    t.set(counterRef, { count: nextId });
+                    t.set(db.collection('users').doc(uid), {
+                        username: username,
+                        displayId: nextId,
+                        uid: uid,
+                        email: email,
+                        wins: 0,
+                        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }).then(() => {
+                    // Success handled by onAuthStateChanged
                 });
-            };
-            updateStatus();
-            setInterval(updateStatus, 60000);
+            }).catch(e => $('#auth-error').text(e.message));
         }
 
         function loginUser() {
             auth.signInWithEmailAndPassword($('#email-input').val(), $('#password-input').val())
                 .catch(e => $('#auth-error').text(e.message));
         }
-        function registerUser() {
-            const uName = $('#username-input').val();
-            if(!uName) return alert("Name fehlt!");
-            auth.createUserWithEmailAndPassword($('#email-input').val(), $('#password-input').val())
-                .then(cred => {
-                    db.collection('users').doc(cred.user.uid).set({
-                        username: uName,
-                        uid: cred.user.uid,
-                        status: 'online',
-                        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }).catch(e => $('#auth-error').text(e.message));
-        }
         function logout() { auth.signOut(); location.reload(); }
 
-        // --- 3. ONLINE LISTE & HERAUSFORDERUNGEN ---
-        function loadOnlineUsers() {
-            // Zeige User, die in den letzten Minuten aktiv waren (sortiert nach Zeit)
-            db.collection('users')
-              .where('status', '==', 'online')
-              .orderBy('lastSeen', 'desc')
-              .limit(20)
-              .onSnapshot(snapshot => {
-                  const list = $('#online-list-container');
-                  list.empty();
-                  
-                  snapshot.forEach(doc => {
-                      const data = doc.data();
-                      if(data.uid === currentUser.uid) return; // Nicht mich selbst anzeigen
-
-                      const el = $(`
-                        <div class="online-user-item">
-                            <div><span class="status-dot"></span> <span class="fw-bold">${data.username}</span></div>
-                            <button class="btn btn-sm btn-outline-warning" style="font-size:0.7em;">Herausfordern</button>
-                        </div>
-                      `);
-                      
-                      // Klick Event für Herausforderung
-                      el.find('button').click(() => sendChallenge(data));
-                      list.append(el);
-                  });
-              });
-        }
-
-        function sendChallenge(targetUser) {
-            if(!confirm(`Möchtest du ${targetUser.username} herausfordern?`)) return;
-
-            // 1. Spiel erstellen
-            const gameId = Math.random().toString(36).substring(2, 8);
-            db.collection('games').doc(gameId).set({
-                creatorId: currentUser.uid,
-                creatorName: currentUsername,
-                white: currentUser.uid,
-                black: targetUser.uid, // Direkt zuweisen
-                joinerName: targetUser.username,
-                fen: 'start',
-                turn: 'w',
-                status: 'active', // Sofort aktiv, aber wir warten auf Akzeptanz
-                isChallenge: true
-            });
-
-            // 2. Einladung in den "Posteingang" des Gegners legen
-            db.collection('users').doc(targetUser.uid).collection('invites').add({
-                fromName: currentUsername,
-                gameId: gameId,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            // 3. Selbst beitreten
-            enterGame(gameId, 'w');
-        }
-
-        function listenForChallenges() {
-            // Höre auf meinen "invites" Ordner
-            challengeUnsub = db.collection('users').doc(currentUser.uid).collection('invites')
-                .orderBy('timestamp', 'desc').limit(1)
-                .onSnapshot(snapshot => {
-                    if(!snapshot.empty) {
-                        const invite = snapshot.docs[0].data();
-                        const inviteId = snapshot.docs[0].id;
-                        
-                        // Prüfen ob Einladung frisch ist (< 30 sekunden)
-                        const now = new Date();
-                        const inviteTime = invite.timestamp ? invite.timestamp.toDate() : now;
-                        if((now - inviteTime) < 30000) {
-                            pendingChallenge = { ...invite, id: inviteId };
-                            $('#challenge-text').text(`${invite.fromName} fordert dich heraus!`);
-                            $('#challenge-modal').removeClass('hidden');
-                        }
-                    }
-                });
-        }
-
-        function acceptChallenge() {
-            if(pendingChallenge) {
-                // Einladung löschen
-                db.collection('users').doc(currentUser.uid).collection('invites').doc(pendingChallenge.id).delete();
-                $('#challenge-modal').addClass('hidden');
-                // Spiel beitreten
-                enterGame(pendingChallenge.gameId, 'b');
+        function updateNavUI() {
+            if(userData) {
+                $('#nav-username').text(userData.username);
+                $('#nav-userid').text('#' + (userData.displayId || 'NEW'));
+                $('#nav-user-area').removeClass('hidden');
             }
         }
 
-        function rejectChallenge() {
-             db.collection('users').doc(currentUser.uid).collection('invites').doc(pendingChallenge.id).delete();
-             $('#challenge-modal').addClass('hidden');
-        }
-
-
-        // --- 4. SPIEL LOGIK & BRILLIANT MOVE SYSTEM ---
-        function enterGame(id, color) {
-            currentGameId = id;
-            myColor = color;
-            $('#game-id-display').text(id);
-            $('#move-history').empty(); // Reset Log
-            showScreen('game-screen');
-            initBoard();
-            
-            if(gameUnsub) gameUnsub();
-            gameUnsub = db.collection('games').doc(id).onSnapshot(doc => {
-                if(!doc.exists) return;
-                const data = doc.data();
-
-                $('#player-white').html(`<i class="fas fa-user"></i> Weiß: ${data.creatorName}`);
-                $('#player-black').html(`<i class="fas fa-user"></i> Schwarz: ${data.joinerName || '...'}`);
-
-                if(data.black && data.white) {
-                    $('#wait-overlay').addClass('hidden');
-                    $('#status-badge').removeClass('bg-warning').addClass('bg-success').text('Läuft');
-                }
-
-                // Neuen Zug empfangen
-                if(data.fen && data.fen !== game.fen()) {
-                    // Wir müssen den letzten Zug herausfinden für die Analyse
-                    // Einfacher Trick: Wir laden den State, aber berechnen den Zug
-                    const oldFen = game.fen();
-                    game.load(data.fen);
-                    board.position(data.fen);
-                    
-                    // Analyse auslösen (nur Visualisierung)
-                    if(data.lastMove) {
-                        addMoveToLog(data.lastMove, data.turn === 'w' ? 'b' : 'w'); // Achtung: turn ist wer JETZT dran ist
-                    }
-                }
+        function updateOnlineStatus() {
+            db.collection('users').doc(currentUser.uid).update({ 
+                lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+                status: 'online' 
+            });
+            db.collection('users').orderBy('lastSeen', 'desc').limit(10).onSnapshot(snap => {
+                let html = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    html += `<div class="p-2 border-bottom border-secondary small">
+                        <span class="text-success">●</span> ${d.username} <span class="text-muted">#${d.displayId || '?'}</span>
+                    </div>`;
+                });
+                $('#online-list').html(html);
             });
         }
 
-        function initBoard() {
+        // --- 3. SETTINGS & ADMIN FIX ---
+        function openSettings() {
+            if(userData) $('#settings-username').val(userData.username);
+            $('#settings-modal').removeClass('hidden');
+        }
+        function closeSettings() { $('#settings-modal').addClass('hidden'); }
+
+        function saveSettings() {
+            const newName = $('#settings-username').val();
+            const newPass = $('#settings-password').val();
+            const msg = $('#settings-msg');
+
+            if(newName && newName !== userData.username) {
+                db.collection('users').doc(currentUser.uid).update({ username: newName })
+                .then(() => msg.text("Name gespeichert.").addClass("text-success"));
+            }
+            if(newPass) {
+                currentUser.updatePassword(newPass).then(() => {
+                    msg.text("Passwort & Name gespeichert.").addClass("text-success");
+                }).catch(error => msg.text(error.message).addClass("text-danger"));
+            }
+        }
+
+        // --- DER FIX FÜR ALTE USER ---
+        async function adminFixUserIds() {
+            const btn = $(event.target);
+            btn.prop('disabled', true).text('Arbeite...');
+            
+            try {
+                // 1. Zähler holen
+                const counterRef = db.collection('config').doc('userCounter');
+                const countDoc = await counterRef.get();
+                let currentCount = countDoc.exists ? countDoc.data().count : 0;
+                
+                // 2. Alle User holen
+                const usersSnap = await db.collection('users').get();
+                const batch = db.batch();
+                let updates = 0;
+
+                usersSnap.docs.forEach(doc => {
+                    // Wenn KEINE displayId existiert
+                    if (!doc.data().displayId) {
+                        currentCount++;
+                        updates++;
+                        batch.update(doc.ref, { displayId: currentCount });
+                    }
+                });
+
+                if (updates > 0) {
+                    // Counter auch updaten
+                    batch.set(counterRef, { count: currentCount });
+                    await batch.commit();
+                    alert(`Erfolg! ${updates} alten Nutzern wurde eine ID gegeben. Der Zähler ist jetzt bei ${currentCount}.`);
+                } else {
+                    alert("Alles sauber! Alle Nutzer haben bereits eine ID.");
+                }
+            } catch (e) {
+                alert("Fehler: " + e.message);
+            }
+            btn.prop('disabled', false).text('⚠️ DB Reparieren (IDs vergeben)');
+        }
+
+        // --- 4. MATCHMAKING ---
+        async function findMatch() {
+            $('#btn-matchmaking').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Suche...');
+            try {
+                const snapshot = await db.collection('games').where('status', '==', 'waiting').limit(1).get();
+                let foundGame = null;
+                snapshot.forEach(doc => {
+                    if(doc.data().white !== currentUser.uid) foundGame = doc;
+                });
+
+                if (foundGame) {
+                    await db.collection('games').doc(foundGame.id).update({
+                        black: currentUser.uid,
+                        blackName: userData.username,
+                        blackId: userData.displayId,
+                        status: 'active'
+                    });
+                    loadGame(foundGame.id, 'b');
+                } else {
+                    const newGameRef = db.collection('games').doc();
+                    await newGameRef.set({
+                        white: currentUser.uid,
+                        whiteName: userData.username,
+                        whiteId: userData.displayId,
+                        black: null,
+                        fen: 'start', turn: 'w', status: 'waiting',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    loadGame(newGameRef.id, 'w');
+                }
+            } catch (error) {
+                alert("Fehler bei der Suche.");
+                $('#btn-matchmaking').prop('disabled', false).text('SPIEL SUCHEN');
+            }
+        }
+
+        function joinGameByCode() {
+            const code = $('#join-id-input').val().trim();
+            if(!code) return;
+            db.collection('games').doc(code).get().then(doc => {
+                if(doc.exists && doc.data().status === 'waiting') {
+                    db.collection('games').doc(code).update({
+                         black: currentUser.uid, blackName: userData.username, blackId: userData.displayId, status: 'active'
+                    }).then(() => loadGame(code, 'b'));
+                } else { alert("Spiel nicht gefunden/voll."); }
+            });
+        }
+
+        // --- 5. GAME ENGINE ---
+        function loadGame(id, color) {
+            currentGameId = id;
+            myColor = color;
+            $('#game-id-display').text(id);
+            showScreen('game-screen');
             game = new Chess();
-            board = Chessboard('board', {
-                draggable: true,
-                position: 'start',
-                orientation: myColor === 'w' ? 'white' : 'black',
+            $('#move-history').empty();
+            
+            const config = {
+                draggable: true, position: 'start', orientation: myColor === 'w' ? 'white' : 'black',
                 pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
-                onDragStart: onDragStart,
-                onDrop: onDrop,
-                onSnapEnd: () => board.position(game.fen())
+                onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: () => board.position(game.fen())
+            };
+            board = Chessboard('board', config);
+
+            if(gameListener) gameListener();
+            gameListener = db.collection('games').doc(id).onSnapshot(doc => {
+                const data = doc.data();
+                if(!data) return;
+
+                const wName = `${data.whiteName} (#${data.whiteId})`;
+                const bName = data.blackName ? `${data.blackName} (#${data.blackId})` : "Warte...";
+                
+                if(myColor === 'w') {
+                    $('#player-bottom').text("Du (Weiß)");
+                    $('#player-top').text(bName + " (Schwarz)");
+                } else {
+                    $('#player-bottom').text("Du (Schwarz)");
+                    $('#player-top').text(wName + " (Weiß)");
+                }
+
+                if(data.status === 'active') {
+                    $('#wait-overlay').addClass('hidden');
+                    $('#game-status-text').removeClass('bg-warning').addClass('bg-success').text('Spiel läuft');
+                }
+
+                if(data.fen && data.fen !== game.fen()) {
+                    game.load(data.fen);
+                    board.position(data.fen);
+                    if(data.lastMoveSan) addLog(data.lastMoveSan);
+                }
             });
         }
 
         function onDragStart(source, piece) {
-            if ($('#wait-overlay').is(':visible')) return false;
-            if (game.game_over()) return false;
-            if (game.turn() !== myColor) return false;
-            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) || (game.turn() === 'b' && piece.search(/^w/) !== -1)) return false;
+            if($('#wait-overlay').is(':visible')) return false;
+            if(game.game_over()) return false;
+            if(game.turn() !== myColor) return false;
+            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) || 
+                (game.turn() === 'b' && piece.search(/^w/) !== -1)) return false;
         }
 
         function onDrop(source, target) {
-            // 1. Zug prüfen
             const move = game.move({ from: source, to: target, promotion: 'q' });
             if (move === null) return 'snapback';
-
-            // 2. Zug speichern und an DB senden
-            // Wir speichern auch das Move-Objekt für die Analyse beim Gegner
             db.collection('games').doc(currentGameId).update({
-                fen: game.fen(),
-                turn: game.turn(),
-                lastMove: move // WICHTIG für Analyse
+                fen: game.fen(), turn: game.turn(), lastMoveSan: move.san
             });
-
-            // 3. Lokal anzeigen
-            addMoveToLog(move, myColor);
+            addLog(move.san);
         }
 
-        // --- MOVE ANALYSE & ANZEIGE ---
-        function addMoveToLog(move, colorWhoMoved) {
-            // Analyse Logik (Simuliert Chess.com)
-            let evaluation = analyzeMove(move);
-            
-            // HTML Badge erstellen
-            let badgeHtml = '';
-            if(evaluation === 'BRILLIANT') badgeHtml = '<span class="badge badge-brilliant">!! BRILLIANT</span>';
-            else if(evaluation === 'GREAT') badgeHtml = '<span class="badge badge-great">! GREAT</span>';
-            else if(evaluation === 'BEST') badgeHtml = '<span class="badge badge-best"><i class="fas fa-star"></i> BEST</span>';
-            
-            const moveNumber = Math.floor(game.history().length / 2) + 1;
-            const moveText = colorWhoMoved === 'w' ? `Wait: ${move.san}` : `Schwarz: ${move.san}`;
-
-            const html = `
-                <div class="move-row">
-                    <span>${moveText}</span>
-                    ${badgeHtml}
-                </div>
-            `;
-            $('#move-history').append(html);
-            // Scroll nach unten
-            $('#move-history').scrollTop($('#move-history')[0].scrollHeight);
-
-            // Großes Feedback im Analysis Box
-            if(evaluation === 'BRILLIANT') {
-                $('#analysis-box').html('<h3 style="color: #1b9aaa; font-weight:900;">BRILLIANT MOVE !!</h3>');
-            } else if (evaluation === 'GREAT') {
-                 $('#analysis-box').html('<h4 style="color: #72c36f;">Exzellenter Zug !</h4>');
-            } else {
-                $('#analysis-box').html(`<span class="text-white">${move.san} gespielt.</span>`);
-            }
+        function addLog(san) {
+            $('#move-history').append(`<div class="move-row"><span>${san}</span></div>`);
+            $('#move-history').scrollTop(9999);
+            let msg = "Guter Zug.";
+            if(san.includes('#')) msg = "MATT !! Brillant!";
+            else if(san.includes('+')) msg = "Schach! Stark.";
+            $('#analysis-display').text(msg);
         }
 
-        function analyzeMove(move) {
-            // Einfache Heuristik für visuelle Effekte
-            
-            // 1. Schachmatt = Brilliant
-            if(move.san.includes('#')) return 'BRILLIANT';
-            
-            // 2. Schach geben = Great
-            if(move.san.includes('+')) return 'GREAT';
-
-            // 3. Dame geschlagen = Brilliant
-            if(move.captured && move.captured === 'q') return 'BRILLIANT';
-
-            // 4. Figur geschlagen (nicht Bauer) = Best
-            if(move.captured && move.captured !== 'p') return 'BEST';
-
-            // 5. Rochade = Best
-            if(move.san === 'O-O' || move.san === 'O-O-O') return 'BEST';
-
-            return 'NORMAL';
-        }
-
-        // --- MATCHMAKING & HELPERS ---
-        function startGlobalMatchmaking() {
-            createPrivateGame(); // Vereinfacht für dieses Beispiel: Erstellt immer neu
-            // (Erweitertes Matchmaking aus vorheriger Antwort hier einfügen wenn gewünscht)
-        }
-        function createPrivateGame() {
-            const gid = Math.random().toString(36).substring(2, 8);
-            db.collection('games').doc(gid).set({
-                creatorId: currentUser.uid, creatorName: currentUsername,
-                white: currentUser.uid, black: null, joinerName: null,
-                fen: 'start', turn: 'w', status: 'waiting'
-            }).then(() => enterGame(gid, 'w'));
-        }
-        function joinGameById() {
-             const id = $('#join-game-id').val();
-             if(id) db.collection('games').doc(id).update({
-                 black: currentUser.uid, joinerName: currentUsername, status: 'active'
-             }).then(() => enterGame(id, 'b'));
-        }
         function leaveGame() {
-            if(confirm("Verlassen?")) {
-                if(gameUnsub) gameUnsub();
-                showScreen('lobby-screen');
-                $('#wait-overlay').removeClass('hidden'); // Reset für nächstes mal
-            }
+            if(gameListener) gameListener();
+            showScreen('lobby-screen');
+            $('#btn-matchmaking').prop('disabled', false).text('SPIEL SUCHEN');
         }
+
         function showScreen(id) {
-            $('.hidden').removeClass('hidden').addClass('hidden'); // Alle verstecken hack
             $('#auth-screen, #lobby-screen, #game-screen').addClass('hidden');
             $('#' + id).removeClass('hidden');
         }
