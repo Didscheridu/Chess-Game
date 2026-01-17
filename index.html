@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters: FX Update</title>
+    <title>Chess Masters: Ultimate Social</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -14,78 +14,66 @@
         body { background-color: #18191a; color: #e4e6eb; font-family: 'Roboto', sans-serif; overflow-x: hidden; }
         .app-container { max-width: 1200px; margin: 0 auto; padding: 20px; position: relative; z-index: 50; }
         
-        /* UI Components */
         .card-dark { background-color: #242526; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); margin-bottom: 20px; border: 1px solid #333; position: relative; z-index: 60; }
         .btn-primary-custom { background-color: #2D88FF; color: white; font-weight: bold; border: none; }
         .btn-primary-custom:hover { background-color: #1A73E8; color: white; }
+        
         .hidden { display: none !important; }
         
-        /* Board Area */
+        #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; user-select: none; position: relative; z-index: 20; }
         .board-wrapper { position: relative; max-width: 550px; margin: 0 auto; }
-        #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; position: relative; z-index: 10; }
         
-        /* --- NEUES FX SYSTEM --- */
-        /* Diese Ebene liegt ÜBER dem Brett und fängt die Animationen auf */
-        #fx-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; /* Klicks gehen durch */
-            z-index: 100; /* Über den Figuren */
-            overflow: hidden;
-        }
-
-        /* Kill Animation Element */
-        .fx-kill-anim {
-            position: absolute;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 3.5rem; font-weight: bold;
-            text-shadow: 0 0 15px black;
-            animation: fx-pop 1s forwards;
-        }
-        @keyframes fx-pop {
-            0% { transform: scale(0.5); opacity: 0; }
-            30% { transform: scale(1.5); opacity: 1; }
-            100% { transform: scale(1); opacity: 0; }
-        }
-
-        /* GLOBAL WIN EFFECTS (Backgrounds) */
-        #global-win-fx { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; display: none; }
-        
-        .bg-win-fire { background: radial-gradient(circle, rgba(255, 69, 0, 0.4) 0%, transparent 70%); animation: bg-pulse-red 1s infinite; }
-        .bg-win-water { background: radial-gradient(circle, rgba(0, 191, 255, 0.4) 0%, transparent 70%); animation: bg-pulse-blue 2s infinite; }
-        .bg-win-forest { background: radial-gradient(circle, rgba(50, 205, 50, 0.4) 0%, transparent 70%); animation: bg-pulse-green 3s infinite; }
-        .bg-win-gold { background: radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, transparent 70%); animation: bg-pulse-gold 1s infinite; }
-        .bg-win-dark { background: rgba(0, 0, 0, 0.8); }
-
-        @keyframes bg-pulse-red { 0% {opacity: 0.5;} 50% {opacity: 1;} 100% {opacity: 0.5;} }
-        @keyframes bg-pulse-blue { 0% {transform: scale(1);} 50% {transform: scale(1.1);} 100% {transform: scale(1);} }
-
-        /* Overlays & Modals */
+        /* Overlays */
         #queue-overlay, #end-screen-overlay, .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 5000;
             display: flex; justify-content: center; align-items: center; flex-direction: column;
         }
-        .modal-content-custom { background: #242526; width: 500px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; position: relative; z-index: 5001; }
+        .modal-content-custom { background: #242526; width: 500px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; position: relative; max-height: 90vh; overflow-y: auto; z-index: 5001; }
+
+        /* UI Elements */
+        .notification-bell { position: relative; cursor: pointer; font-size: 1.2rem; margin-right: 15px; }
+        .notification-badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; justify-content: center; align-items: center; }
+        .notif-item { background: #3a3b3c; padding: 10px; border-radius: 5px; margin-bottom: 5px; font-size: 0.9em; text-align: left; }
+        .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; cursor: pointer; }
+        .best-friend { color: #f1c40f; text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); } 
+        
+        /* Leaderboard */
+        .leaderboard-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #333; }
+        .rank-1 { color: #f1c40f; font-weight: bold; }
+        .rank-2 { color: #bdc3c7; font-weight: bold; }
+        .rank-3 { color: #cd7f32; font-weight: bold; }
 
         /* Click System */
-        .highlight-dot { background-color: rgba(45, 136, 255, 0.8); width: 25%; height: 25%; border-radius: 50%; position: absolute; top: 37.5%; left: 37.5%; pointer-events: none; z-index: 15; }
+        .highlight-dot { background-color: rgba(45, 136, 255, 0.8); width: 25%; height: 25%; border-radius: 50%; position: absolute; top: 37.5%; left: 37.5%; pointer-events: none; z-index: 50; }
         .highlight-square { box-shadow: inset 0 0 3px 3px rgba(255, 255, 0, 0.5); }
         .square-55d63 { cursor: pointer; }
 
         /* Shop Styles */
         .coin-display { background: #f1c40f; color: #000; padding: 5px 12px; border-radius: 20px; font-weight: bold; margin-right: 15px; box-shadow: 0 0 10px rgba(241, 196, 15, 0.5); cursor: pointer; }
         .skin-card { background: #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: center; border: 2px solid transparent; transition: 0.2s; }
-        .skin-card:hover { transform: translateY(-2px); }
-        .skin-card.owned { border-color: #2ecc71; }
         .skin-card.active { border-color: #2D88FF; box-shadow: 0 0 15px #2D88FF; }
         .skin-preview { width: 30px; height: 30px; display: inline-block; margin: 2px; border-radius: 4px; }
+        
+        /* FX */
+        .kill-effect {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 4rem; pointer-events: none; z-index: 100;
+            animation: pop-fade 1s forwards; text-shadow: 0 0 20px black; font-weight: bold;
+        }
+        @keyframes pop-fade { 0% { transform: scale(0.5); opacity: 0; } 20% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+        
+        /* Global Win FX */
+        #global-win-fx { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; display: none; }
+        .bg-win-fire { background: radial-gradient(circle, rgba(255, 69, 0, 0.4) 0%, transparent 70%); animation: bg-pulse-red 1s infinite; }
+        .bg-win-water { background: radial-gradient(circle, rgba(0, 191, 255, 0.4) 0%, transparent 70%); animation: bg-pulse-blue 2s infinite; }
+        .bg-win-forest { background: radial-gradient(circle, rgba(50, 205, 50, 0.4) 0%, transparent 70%); animation: bg-pulse-green 3s infinite; }
+        .bg-win-gold { background: radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, transparent 70%); animation: bg-pulse-gold 1s infinite; }
+        .bg-win-dark { background: rgba(0, 0, 0, 0.8); }
+        @keyframes bg-pulse-red { 0% {opacity: 0.5;} 50% {opacity: 1;} 100% {opacity: 0.5;} }
+        @keyframes bg-pulse-blue { 0% {transform: scale(1);} 50% {transform: scale(1.1);} 100% {transform: scale(1);} }
 
-        /* Misc */
-        .notification-bell { position: relative; cursor: pointer; font-size: 1.2rem; margin-right: 15px; }
-        .notification-badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; justify-content: center; align-items: center; }
-        .notif-item { background: #3a3b3c; padding: 10px; border-radius: 5px; margin-bottom: 5px; text-align: left; }
-        .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; cursor: pointer; }
-        .best-friend { color: #f1c40f; text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); }
         .win-title { font-size: 4rem; font-weight: 900; text-shadow: 0 0 20px black; }
         .pulse { animation: pulse-anim 2s infinite; }
         @keyframes pulse-anim { 0% { opacity: 0.7; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1); } 100% { opacity: 0.7; transform: scale(0.95); } }
@@ -94,8 +82,16 @@
 <body>
 
     <style id="dynamic-skin-styles"></style>
-
     <div id="global-win-fx"></div>
+
+    <div id="challenge-wait-modal" class="modal-overlay hidden">
+        <div class="modal-content-custom text-center">
+            <h3>Herausforderung gesendet</h3>
+            <div class="spinner-border text-primary my-3" style="width: 3rem; height: 3rem;"></div>
+            <p class="text-muted">Warte auf <span id="challenge-target-name" class="fw-bold text-white">Freund</span>...</p>
+            <button onclick="cancelChallenge()" class="btn btn-outline-danger w-100 rounded-pill">Abbrechen</button>
+        </div>
+    </div>
 
     <div id="shop-modal" class="modal-overlay hidden">
         <div class="modal-content-custom">
@@ -146,10 +142,7 @@
 
     <div id="end-screen-overlay" class="hidden">
         <div class="modal-content-custom text-center">
-            <div id="end-title" class="win-title">SIEG!</div>
-            <div id="end-reward" class="fs-4 text-warning my-2 fw-bold"></div>
-            <p id="end-reason" class="text-muted">...</p>
-            <button onclick="backToLobby()" class="btn btn-light btn-lg w-100 fw-bold">Zurück zur Lobby</button>
+            <div id="end-title" class="win-title">SIEG!</div><div id="end-reward" class="fs-4 text-warning my-2 fw-bold"></div><p id="end-reason" class="text-muted">...</p><button onclick="backToLobby()" class="btn btn-light btn-lg w-100 fw-bold">Zurück zur Lobby</button>
         </div>
     </div>
 
@@ -158,8 +151,9 @@
             <h3 class="m-0 fw-bold"><i class="fas fa-chess"></i> CHESS MASTERS</h3>
             <div id="nav-user-area" class="hidden d-flex align-items-center">
                 <div class="coin-display" onclick="openShop()"><i class="fas fa-coins"></i> <span id="nav-coins">0</span></div>
-                <div class="notification-bell" onclick="openNotifModal()"><i class="fas fa-bell"></i><div id="bell-badge" class="notification-badge hidden">0</div></div>
-                <div class="me-3 text-end"><div class="fw-bold text-white"><span id="nav-username">Gast</span></div><div class="small text-muted">ID: <span id="nav-userid">#?</span></div></div>
+                <div class="me-3 ms-3 fw-bold text-warning" style="font-size:1.1rem;">Wins: <span id="nav-wins">0</span> 🏆</div>
+                <div class="notification-bell ms-3" onclick="openNotifModal()"><i class="fas fa-bell"></i><div id="bell-badge" class="notification-badge hidden">0</div></div>
+                <div class="me-3 text-end ms-3"><div class="fw-bold text-white"><span id="nav-username">Gast</span></div><div class="small text-muted">ID: <span id="nav-userid">#?</span></div></div>
                 <button onclick="openSettings()" class="btn btn-sm btn-outline-light me-2"><i class="fas fa-cog"></i></button>
                 <button onclick="logout()" class="btn btn-sm btn-outline-danger"><i class="fas fa-sign-out-alt"></i></button>
             </div>
@@ -167,12 +161,7 @@
 
         <div id="auth-screen">
             <div class="card-dark text-center" style="max-width: 400px; margin: 50px auto;">
-                <h3>Login</h3>
-                <input id="email-input" class="form-control mb-2" placeholder="E-Mail">
-                <input id="password-input" type="password" class="form-control mb-3" placeholder="Passwort">
-                <input id="username-input" class="form-control mb-3" placeholder="Username (Registrierung)">
-                <button onclick="loginUser()" class="btn btn-primary-custom w-100 mb-2">Login</button>
-                <button onclick="registerUserWithId()" class="btn btn-outline-light w-100">Konto erstellen</button>
+                <h3>Login</h3><input id="email-input" class="form-control mb-2" placeholder="E-Mail"><input id="password-input" type="password" class="form-control mb-3" placeholder="Passwort"><input id="username-input" class="form-control mb-3" placeholder="Username (Registrierung)"><button onclick="loginUser()" class="btn btn-primary-custom w-100 mb-2">Login</button><button onclick="registerUserWithId()" class="btn btn-outline-light w-100">Konto erstellen</button>
             </div>
         </div>
 
@@ -190,10 +179,14 @@
                     </div>
                 </div>
                 <div class="col-md-5">
+                    <div class="card-dark mb-3">
+                        <h5>🏆 Rangliste (Wins)</h5>
+                        <div id="leaderboard-list" style="max-height: 200px; overflow-y: auto;"></div>
+                    </div>
                     <div class="card-dark">
                         <h5>Freunde</h5>
                         <div class="input-group mb-3"><input type="number" id="friend-id-input" class="form-control" placeholder="ID"><button onclick="sendFriendRequest()" class="btn btn-outline-info">Add</button></div>
-                        <div id="friends-list" style="max-height: 300px; overflow-y: auto;"></div>
+                        <div id="friends-list" style="max-height: 250px; overflow-y: auto;"></div>
                     </div>
                 </div>
             </div>
@@ -236,7 +229,7 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // --- SKINS CONFIG ---
+        // --- DATA ---
         const SKINS = {
             'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', anim: '⚔️', winBg: '' },
             'water': { name: 'Atlantis', price: 50, colorW: '#a8d0e6', colorB: '#374785', filter: 'hue-rotate(180deg) brightness(1.2)', anim: '🌊', winBg: 'bg-win-water' },
@@ -249,9 +242,12 @@
         let currentUser = null, userData = null;
         let game = new Chess(), board = null, myColor = 'w';
         let currentGameId = null, gameMode = 'online';
-        let gameListener = null, queueListener = null, notifListener = null, hostListener = null;
+        let gameListener = null, queueListener = null, notifListener = null, hostListener = null, challengeListener = null;
         let selectedSquare = null, queueInterval = null, queueTime = 0;
         let currentWhiteSkin = 'default', currentBlackSkin = 'default';
+        
+        // Challenge Tracking
+        let currentChallengeGameId = null, currentChallengeNotifId = null, currentChallengeTargetUid = null;
 
         auth.onAuthStateChanged(user => {
             if(user) {
@@ -262,8 +258,10 @@
                         if(!userData.coins) userData.coins = 0;
                         if(!userData.inventory) userData.inventory = ['default'];
                         if(!userData.equippedSkin) userData.equippedSkin = 'default';
-                        updateHeader(); loadFriends(); listenNotifications();
+                        
+                        updateHeader(); loadFriends(); listenNotifications(); updateLeaderboard();
                         if(!$('#shop-modal').hasClass('hidden')) renderShopUI();
+
                         if(userData.activeGameId && $('#game-screen').hasClass('hidden')) {
                             db.collection('games').doc(userData.activeGameId).get().then(g => {
                                 if(g.exists && g.data().status !== 'finished' && g.data().status !== 'aborted') loadOnlineGame(userData.activeGameId);
@@ -276,7 +274,26 @@
             } else showScreen('auth-screen');
         });
 
-        function updateHeader() { $('#nav-username').text(userData.username); $('#nav-userid').text(`#${userData.displayId}`); $('#nav-coins').text(userData.coins); $('#nav-user-area').removeClass('hidden'); }
+        function updateHeader() {
+            $('#nav-username').text(userData.username);
+            $('#nav-userid').text(`#${userData.displayId}`);
+            $('#nav-coins').text(userData.coins);
+            $('#nav-wins').text(userData.wins || 0);
+            $('#nav-user-area').removeClass('hidden');
+        }
+
+        function updateLeaderboard() {
+            db.collection('users').orderBy('wins', 'desc').limit(10).onSnapshot(snap => {
+                let h=''; let r=1;
+                snap.forEach(doc => {
+                    const u = doc.data();
+                    let rc = r===1?'rank-1':(r===2?'rank-2':(r===3?'rank-3':''));
+                    h += `<div class="leaderboard-item"><span class="${rc}">#${r} ${u.username}</span><span class="text-warning fw-bold">${u.wins||0} 🏆</span></div>`;
+                    r++;
+                });
+                $('#leaderboard-list').html(h);
+            });
+        }
 
         // --- SHOP ---
         function openShop() { renderShopUI(); $('#shop-modal').removeClass('hidden'); }
@@ -293,38 +310,25 @@
         function buySkin(key) { if(userData.coins >= SKINS[key].price) db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(-SKINS[key].price), inventory: firebase.firestore.FieldValue.arrayUnion(key) }); else alert("Zu wenig Coins!"); }
         function equipSkin(key) { db.collection('users').doc(currentUser.uid).update({ equippedSkin: key }); }
 
-        // --- VISUALS: SPLIT BOARD & FX ---
+        // --- VISUALS ---
         function updateBoardVisuals() {
             const sW = SKINS[currentWhiteSkin] || SKINS['default'];
             const sB = SKINS[currentBlackSkin] || SKINS['default'];
             const cols = ['a','b','c','d','e','f','g','h'];
             let css = "";
-            
-            // Rows 1-4: White Skin
             for(let r=1; r<=4; r++) { cols.forEach((c, idx) => { const isBlack = (r + idx) % 2 !== 0; css += `.square-${c}${r} { background-color: ${isBlack ? sW.colorB : sW.colorW} !important; } `; }); }
-            // Rows 5-8: Black Skin
             for(let r=5; r<=8; r++) { cols.forEach((c, idx) => { const isBlack = (r + idx) % 2 !== 0; css += `.square-${c}${r} { background-color: ${isBlack ? sB.colorB : sB.colorW} !important; } `; }); }
-            
             css += `img[src*="/w"] { filter: ${sW.filter} !important; transition: all 0.3s; } `;
             css += `img[src*="/b"] { filter: ${sB.filter} !important; transition: all 0.3s; } `;
             document.getElementById('dynamic-skin-styles').innerHTML = css;
         }
-
-        // NEUES KILL FX SYSTEM MIT OVERLAY
         function playKillAnim(square, skinKey) {
             const anim = (SKINS[skinKey] || SKINS['default']).anim;
-            // Bestimme Position des Feldes
+            if(!anim) return;
             const $sq = $(`.square-${square}`);
             if($sq.length === 0) return;
-            
             const pos = $sq.position();
-            const width = $sq.width();
-            const height = $sq.height();
-
-            // Erstelle Element im FX Overlay
-            const $el = $(`<div class="fx-kill-anim">${anim}</div>`);
-            $el.css({ top: pos.top, left: pos.left, width: width, height: height });
-            
+            const $el = $(`<div class="fx-kill-anim" style="top:${pos.top}px; left:${pos.left}px; width:${$sq.width()}px; height:${$sq.height()}px;">${anim}</div>`);
             $('#fx-overlay').append($el);
             setTimeout(() => $el.remove(), 1000);
         }
@@ -334,7 +338,6 @@
             currentGameId = id; gameMode = 'online';
             showScreen('game-screen');
             game = new Chess(); $('#move-history').empty(); selectedSquare = null;
-            // Brett Init
             board = Chessboard('board', {position:'start', draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'});
             $('#board').off('click').on('click', '.square-55d63', function() { if(!asSpectator) handleSquareClick.call(this); });
 
@@ -342,10 +345,7 @@
             gameListener = db.collection('games').doc(id).onSnapshot(doc => {
                 if(!doc.exists) { db.collection('users').doc(currentUser.uid).update({activeGameId: null}); backToLobby(); return; }
                 const data = doc.data();
-                
-                // Skins laden & Visuals updaten
-                currentWhiteSkin = data.whiteSkin || 'default';
-                currentBlackSkin = data.blackSkin || 'default';
+                currentWhiteSkin = data.whiteSkin || 'default'; currentBlackSkin = data.blackSkin || 'default';
                 updateBoardVisuals();
 
                 if(asSpectator) { myColor='spectator'; board.orientation('white'); $('#player-top').text(data.blackName); $('#player-bottom').text(data.whiteName); }
@@ -356,22 +356,18 @@
                 }
 
                 if(data.fen && data.fen !== game.fen()) {
-                    // Check Capture
                     const temp = new Chess(game.fen());
                     const m = temp.move(data.lastMoveSan);
-                    if(m && (m.flags.includes('c') || m.flags.includes('e'))) {
-                        // Animation spielen für den, der gezogen hat (die Farbe der Figur im Zug)
+                    if(m && (m.flags.includes('c')||m.flags.includes('e'))) {
                         const killerSkin = (m.color === 'w') ? currentWhiteSkin : currentBlackSkin;
                         playKillAnim(m.to, killerSkin);
                     }
-                    
                     game.load(data.fen); board.position(data.fen); removeHighlights();
                     if(data.lastMoveSan) addLog(data.lastMoveSan);
                 }
                 
                 if(data.status === 'aborted') showEndScreen('aborted');
                 if(data.result) {
-                    // Bestimme Skin des Gewinners für Effekt
                     let winnerSkin = null;
                     if(data.result === 'w') winnerSkin = currentWhiteSkin;
                     if(data.result === 'b') winnerSkin = currentBlackSkin;
@@ -380,7 +376,7 @@
             });
         }
 
-        // --- CLICK & MOVE ---
+        // --- CLICK SYSTEM ---
         function handleSquareClick() {
             if(game.game_over() || (gameMode==='online' && game.turn()!==myColor)) return;
             const sq = $(this).attr('data-square');
@@ -388,14 +384,11 @@
                 const move = game.move({from:selectedSquare, to:sq, promotion:'q'});
                 if(move) {
                     selectedSquare = null; removeHighlights();
-                    
-                    // Lokaler Kill Effekt (sofort)
                     if(move.captured) {
                         const mySkin = (myColor==='w') ? currentWhiteSkin : currentBlackSkin;
                         playKillAnim(move.to, mySkin);
                         if(gameMode==='online') db.collection('users').doc(currentUser.uid).update({coins: firebase.firestore.FieldValue.increment(10)});
                     }
-
                     if(gameMode==='online') updateGameOnline(move);
                     else { board.position(game.fen()); setTimeout(botMove, 500); }
                 } else {
@@ -417,40 +410,66 @@
             board.position(game.fen()); addLog(move.san);
         }
 
-        // --- WIN FX & END SCREEN ---
+        // --- CHALLENGE WAIT LOGIC ---
+        function inviteFriend(uid, name) {
+            const gameRef = db.collection('games').doc();
+            const gameId = gameRef.id;
+            
+            // 1. Spiel erstellen
+            gameRef.set({
+                white: currentUser.uid, whiteName: userData.username, whiteId: userData.displayId, whiteSkin: userData.equippedSkin,
+                black: uid, blackName: name, blackId: '?', // wird beim Joinen geupdated
+                fen: 'start', turn: 'w', status: 'waiting_friend', 
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                // 2. Notification senden
+                db.collection('users').doc(uid).collection('notifications').add({
+                    type: 'game_invite', fromUid: currentUser.uid, title: 'Herausforderung!',
+                    message: `${userData.username} fordert dich heraus.`, payload: gameId, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(notifRef => {
+                    // 3. IDs speichern für Abbruch
+                    currentChallengeGameId = gameId;
+                    currentChallengeNotifId = notifRef.id;
+                    currentChallengeTargetUid = uid;
+
+                    // 4. Warte-Modal anzeigen
+                    $('#challenge-target-name').text(name);
+                    $('#challenge-wait-modal').removeClass('hidden');
+                    closeModal('profile-modal');
+
+                    // 5. Auf Annahme hören
+                    if(challengeListener) challengeListener();
+                    challengeListener = gameRef.onSnapshot(doc => {
+                        if(doc.exists && doc.data().status === 'active') {
+                            // Angenommen!
+                            if(challengeListener) challengeListener();
+                            $('#challenge-wait-modal').addClass('hidden');
+                            db.collection('users').doc(currentUser.uid).update({activeGameId: gameId});
+                            loadOnlineGame(gameId);
+                        }
+                    });
+                });
+            });
+        }
+
+        function cancelChallenge() {
+            if(challengeListener) challengeListener();
+            // Spiel löschen
+            db.collection('games').doc(currentChallengeGameId).delete();
+            // Notifikation löschen
+            db.collection('users').doc(currentChallengeTargetUid).collection('notifications').doc(currentChallengeNotifId).delete();
+            $('#challenge-wait-modal').addClass('hidden');
+        }
+
+        // --- HELPERS ---
         function showEndScreen(res, winnerSkin) {
-            $('#end-screen-overlay').removeClass('hidden');
-            $('#global-win-fx').hide().removeClass(); // Reset FX
-
+            $('#end-screen-overlay').removeClass('hidden'); $('#global-win-fx').hide().removeClass();
             let txt="SIEG!", c="text-success", r="";
-            if(res==='aborted'){txt="GEGNER WEG";c="text-danger";}
-            else if(res==='draw'){txt="REMIS";c="text-warning";}
-            else if(res!==myColor && myColor!=='spectator'){txt="VERLOREN";c="text-danger";}
-            else r="+50 Coins!";
-            
-            $('#end-title').text(txt).removeClass().addClass('win-title '+c); 
-            $('#end-reward').text(r);
-            
-            // Trigger Win Effect
-            if(winnerSkin) {
-                const bgClass = SKINS[winnerSkin].winBg;
-                if(bgClass) {
-                    $('#global-win-fx').addClass(bgClass).fadeIn(500);
-                }
-            }
-
+            if(res==='aborted'){txt="GEGNER WEG";c="text-danger";} else if(res==='draw'){txt="REMIS";c="text-warning";} else if(res!==myColor&&myColor!=='spectator'){txt="VERLOREN";c="text-danger";} else { r="+50 Coins!"; if(winnerSkin && SKINS[winnerSkin].winBg) $('#global-win-fx').addClass(SKINS[winnerSkin].winBg).fadeIn(500); }
+            $('#end-title').text(txt).removeClass().addClass('win-title '+c); $('#end-reward').text(r);
             if(myColor!=='spectator') db.collection('users').doc(currentUser.uid).update({activeGameId: null});
         }
-
-        function backToLobby() { 
-            if(gameListener) gameListener(); 
-            $('#end-screen-overlay').addClass('hidden'); 
-            $('#global-win-fx').fadeOut(200); // FX ausblenden
-            db.collection('users').doc(currentUser.uid).update({activeGameId: null}); 
-            showScreen('lobby-screen'); 
-        }
-
-        // --- STANDARD HELPERS ---
+        function backToLobby() { if(gameListener) gameListener(); $('#end-screen-overlay').addClass('hidden'); $('#global-win-fx').fadeOut(200); db.collection('users').doc(currentUser.uid).update({activeGameId: null}); showScreen('lobby-screen'); }
         function highlight(sq) { removeHighlights(); $(`.square-${sq}`).addClass('highlight-square'); game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
         function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
         function leaveGame() { if(confirm("Verlassen?")) { if(gameMode==='online' && myColor!=='spectator') db.collection('games').doc(currentGameId).update({status:'aborted'}); backToLobby(); } }
@@ -476,12 +495,12 @@
         function listenNotifications(){ if(notifListener)notifListener(); notifListener=db.collection('users').doc(currentUser.uid).collection('notifications').orderBy('timestamp','desc').onSnapshot(s=>{ $('#bell-badge').text(s.size).toggleClass('hidden',s.size===0); let h=s.size===0?'<div class="text-center small p-3">Leer</div>':''; s.forEach(d=>{const n=d.data(); h+=`<div class="notif-item"><b>${n.title}</b><div class="small mb-2">${n.message}</div><div class="d-flex gap-2"><button onclick="handleNotif('${d.id}','${n.type}',true,'${n.fromUid}','${n.payload}')" class="btn btn-sm btn-success flex-grow-1">Ja</button><button onclick="handleNotif('${d.id}','${n.type}',false)" class="btn btn-sm btn-secondary">Nein</button></div></div>`;}); $('#notif-list').html(h); }); }
         function handleNotif(id,t,a,f,p){ const r=db.collection('users').doc(currentUser.uid).collection('notifications').doc(id); if(!a){r.delete();return;} if(t==='friend_request'){const b=db.batch(); b.update(db.collection('users').doc(currentUser.uid),{friends:firebase.firestore.FieldValue.arrayUnion(f)}); b.update(db.collection('users').doc(f),{friends:firebase.firestore.FieldValue.arrayUnion(currentUser.uid)}); b.delete(r); b.commit().then(()=>{closeModal('notif-modal');alert("Freund!");}); } else if(t==='game_invite'){ db.collection('games').doc(p).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{r.delete();closeModal('notif-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:p});loadOnlineGame(p);}); } }
         function openProfile(u){ db.collection('users').doc(u).get().then(d=>{const f=d.data();$('#profile-name').text(f.username);$('#profile-id').text(`#${f.displayId}`);$('#profile-wins').text(f.wins||0);let b=`<button onclick="inviteFriend('${u}','${f.username}')" class="btn btn-primary w-100">Herausfordern</button>`;$('#profile-actions').html(b);$('#profile-modal').removeClass('hidden');});}
-        function inviteFriend(u,n){ const g=db.collection('games').doc(); g.set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,black:u,blackName:n,blackId:'?',fen:'start',turn:'w',status:'waiting_friend',createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{ db.collection('users').doc(u).collection('notifications').add({type:'game_invite',fromUid:currentUser.uid,title:'Herausforderung',message:`${userData.username} fordert dich.`,payload:g.id,timestamp:firebase.firestore.FieldValue.serverTimestamp()}); closeModal('profile-modal'); db.collection('users').doc(currentUser.uid).update({activeGameId:g.id}); loadOnlineGame(g.id); }); }
-        function showPrivateMenu() { $('#private-menu-modal').removeClass('hidden'); }
+        function cancelPrivateHost(){ if(hostListener)hostListener(); if(currentGameId)db.collection('games').doc(currentGameId).delete(); closeModal('private-create-modal'); }
         function openPrivateCreate() { closeModal('private-menu-modal'); const c=Math.random().toString(36).substring(2,7).toUpperCase(); db.collection('games').doc(c).set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,status:'waiting_private',fen:'start',turn:'w',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); $('#host-code-display').text(c); $('#private-create-modal').removeClass('hidden'); hostListener=db.collection('games').doc(c).onSnapshot(d=>{if(d.exists&&d.data().status==='active'){hostListener();closeModal('private-create-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);}}); currentGameId=c; }
-        function openPrivateJoin() { closeModal('private-menu-modal'); $('#private-join-input').val(''); $('#private-join-modal').removeClass('hidden'); }
-        function submitPrivateJoin() { const c=$('#private-join-input').val().trim().toUpperCase(); db.collection('games').doc(c).get().then(d=>{if(d.exists&&d.data().status==='waiting_private'){db.collection('games').doc(c).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{closeModal('private-join-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);});}else alert("Fehler");}); }
+        function openPrivateJoin(){ closeModal('private-menu-modal'); $('#private-join-input').val(''); $('#private-join-modal').removeClass('hidden'); }
+        function submitPrivateJoin(){ const c=$('#private-join-input').val().trim().toUpperCase(); db.collection('games').doc(c).get().then(d=>{if(d.exists&&d.data().status==='waiting_private'){db.collection('games').doc(c).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{closeModal('private-join-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);});}else alert("Fehler");}); }
         function spectateGame(id) { closeModal('profile-modal'); loadOnlineGame(id, true); }
+        function showPrivateMenu() { $('#private-menu-modal').removeClass('hidden'); }
     </script>
 </body>
 </html>
