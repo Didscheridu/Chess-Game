@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schach Community (Login)</title>
+    <title>Schach Community (Bilder Fix)</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -99,7 +99,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <script>
-        // --- DEINE FIREBASE DATEN ---
+        // --- DEINE FIREBASE DATEN (Bereits eingefügt) ---
         const firebaseConfig = {
             apiKey: "AIzaSyBqCKRhB87r_r-IgbOd9ESm9MQLKTGwSU0",
             authDomain: "chess-dff93.firebaseapp.com",
@@ -127,11 +127,9 @@
         // AUTHENTICATION LOGIK
         // ----------------------------------------------------
 
-        // Prüfen ob User schon eingeloggt ist (beim Neuladen der Seite)
         auth.onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
-                // Username aus Datenbank holen
                 db.collection("users").doc(user.uid).get().then((doc) => {
                     if(doc.exists) {
                         currentUsername = doc.data().username;
@@ -157,7 +155,6 @@
 
             auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
-                    // Erfolgreich registriert -> Username speichern
                     const user = userCredential.user;
                     db.collection("users").doc(user.uid).set({
                         username: username,
@@ -165,7 +162,6 @@
                         uid: user.uid
                     }).then(() => {
                         errorDiv.innerText = "";
-                        // onAuthStateChanged übernimmt den Rest
                     });
                 })
                 .catch((error) => {
@@ -199,7 +195,7 @@
         // ----------------------------------------------------
         
         function createGame() {
-            const gameId = Math.random().toString(36).substring(2, 8); // Kurze ID
+            const gameId = Math.random().toString(36).substring(2, 8); 
             
             db.collection("games").doc(gameId).set({
                 creatorId: currentUser.uid,
@@ -224,7 +220,6 @@
                 if (doc.exists) {
                     const data = doc.data();
                     
-                    // Szenario 1: Spiel ist offen -> Ich werde Schwarz
                     if (data.status === "waiting" && data.white !== currentUser.uid) {
                         gameRef.update({
                             black: currentUser.uid,
@@ -232,7 +227,6 @@
                             status: "active"
                         }).then(() => enterGame(gameId, 'b'));
                     } 
-                    // Szenario 2: Ich bin schon in diesem Spiel (Reconnect)
                     else if (data.white === currentUser.uid) {
                         enterGame(gameId, 'w');
                     } else if (data.black === currentUser.uid) {
@@ -251,32 +245,33 @@
             myColor = color;
             document.getElementById('current-game-id-display').innerText = gameId;
             showScreen('game-screen');
-            
-            // Brett initialisieren
             initBoard();
-            // Datenbank Updates abonnieren
             listenToGame();
         }
 
         function leaveGame() {
-            if (gameListener) gameListener(); // Listener beenden
+            if (gameListener) gameListener(); 
             showScreen('lobby-screen');
             currentGameId = null;
             myColor = null;
         }
 
         // ----------------------------------------------------
-        // SCHACH LOGIK
+        // SCHACH LOGIK (MIT BILD FIX)
         // ----------------------------------------------------
         function initBoard() {
-            game = new Chess(); // Reset Logik
+            game = new Chess(); 
             var config = {
                 draggable: true,
                 position: 'start',
                 onDragStart: onDragStart,
                 onDrop: onDrop,
                 onSnapEnd: onSnapEnd,
-                orientation: (myColor === 'w') ? 'white' : 'black'
+                orientation: (myColor === 'w') ? 'white' : 'black',
+                
+                // --- HIER IST DER FIX ---
+                // Wir laden die Bilder direkt von unpkg.com
+                pieceTheme: 'https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png'
             };
             board = Chessboard('board', config);
             updateStatusDisplay();
@@ -287,11 +282,9 @@
                 if (doc.exists) {
                     const data = doc.data();
                     
-                    // Namen aktualisieren
                     document.getElementById('player-white').innerText = "⚪ " + (data.creatorName || "...");
                     document.getElementById('player-black').innerText = "⚫ " + (data.joinerName || "Warte...");
 
-                    // Wenn neuer Zug kam (FEN String ist anders)
                     if (data.fen && data.fen !== game.fen()) {
                         game.load(data.fen);
                         board.position(data.fen);
@@ -302,13 +295,8 @@
         }
 
         function onDragStart(source, piece) {
-            // Spiel vorbei?
             if (game.game_over()) return false;
-
-            // Ist es mein Zug?
             if (game.turn() !== myColor) return false;
-
-            // Greife ich meine eigene Figur?
             if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
                 (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
                 return false;
@@ -316,7 +304,6 @@
         }
 
         function onDrop(source, target) {
-            // Lokale Prüfung
             var move = game.move({
                 from: source,
                 to: target,
@@ -325,7 +312,6 @@
 
             if (move === null) return 'snapback';
 
-            // Zug an Firebase senden
             db.collection("games").doc(currentGameId).update({
                 fen: game.fen(),
                 turn: game.turn()
