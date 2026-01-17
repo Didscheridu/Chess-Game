@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters Social</title>
+    <title>Chess Masters Social Pro</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -44,7 +44,7 @@
         /* Friend List */
         .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; cursor: pointer; }
         .friend-item:hover { background: #3a3b3c; }
-        .best-friend { color: #f1c40f; } 
+        .best-friend { color: #f1c40f; text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); } 
 
         /* Profile Card */
         .profile-avatar { width: 80px; height: 80px; background: #2D88FF; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 2rem; margin: 0 auto 10px auto; }
@@ -232,19 +232,15 @@
                     if(doc.exists) {
                         userData = doc.data();
                         updateHeader();
-                        loadFriends();
+                        loadFriends(); // Lädt Freunde neu
                         listenNotifications();
                         
-                        // RECONNECT CHECK:
-                        // Wenn der User eine aktive GameID hat, laden wir diese sofort.
-                        // Aber nur, wenn wir nicht eh schon auf dem Game-Screen sind.
+                        // Game Reconnect Logik
                         if(userData.activeGameId && $('#game-screen').hasClass('hidden')) {
-                            // Check ob Game existiert
                             db.collection('games').doc(userData.activeGameId).get().then(g => {
                                 if(g.exists && g.data().status !== 'finished' && g.data().status !== 'aborted') {
                                     loadOnlineGame(userData.activeGameId);
                                 } else {
-                                    // Game ist vorbei, ID löschen
                                     db.collection('users').doc(currentUser.uid).update({activeGameId: null});
                                     showScreen('lobby-screen');
                                 }
@@ -254,7 +250,7 @@
                         }
                     }
                 });
-                // Online Status Heartbeat
+                // Heartbeat
                 setInterval(() => {
                     if(currentUser) db.collection('users').doc(currentUser.uid).update({lastSeen: firebase.firestore.FieldValue.serverTimestamp()});
                 }, 60000);
@@ -268,7 +264,79 @@
             $('#nav-user-area').removeClass('hidden');
         }
 
-        // --- NOTIFICATIONS & FRIEND LOGIC ---
+        // --- FRIEND LOGIC MIT FIX FÜR DOPPELUNG & BIDIREKTIONAL ---
+        async function loadFriends() {
+            const list = $('#friends-list');
+            
+            if(!userData.friends || userData.friends.length === 0) {
+                list.html('<div class="text-center text-muted small mt-3">Noch keine Freunde.</div>'); 
+                return;
+            }
+
+            // WICHTIG: Hier holen wir ALLE Freunde auf einmal, um Flackern und Duplikate zu vermeiden
+            const promises = userData.friends.map(uid => db.collection('users').doc(uid).get());
+            const docs = await Promise.all(promises);
+
+            // Liste leeren BEVOR wir neu rendern -> Fix für Duplikate
+            list.empty();
+
+            docs.forEach(doc => {
+                if(!doc.exists) return;
+                const f = doc.data();
+                const fUid = doc.id;
+
+                // --- SELBST-REPARATUR ---
+                // Prüfen ob dieser Freund auch MICH als Freund hat. Wenn nicht, fixen.
+                if(!f.friends || !f.friends.includes(currentUser.uid)) {
+                    console.log("Fixing friendship connection...");
+                    db.collection('users').doc(fUid).update({
+                        friends: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+                    });
+                }
+                // -----------------------
+
+                const isBest = (userData.bestFriends && userData.bestFriends.includes(fUid));
+                const isPlaying = !!f.activeGameId;
+                const star = isBest ? 'best-friend' : 'text-muted';
+                
+                const el = $(`
+                    <div class="friend-item" onclick="openProfile('${fUid}')">
+                        <div>
+                            <i class="fas fa-star ${star} me-2" onclick="toggleBest(event,'${fUid}')"></i>
+                            <b>${f.username}</b> <small class="text-muted">#${f.displayId}</small>
+                        </div>
+                        ${isPlaying ? '<span class="badge bg-danger small">Im Spiel</span>' : '<i class="fas fa-circle text-success small"></i>'}
+                    </div>
+                `);
+                
+                if(isBest) list.prepend(el); else list.append(el);
+            });
+        }
+
+        function toggleBest(e, uid) { 
+            e.stopPropagation(); 
+            let op = userData.bestFriends && userData.bestFriends.includes(uid) ? 'arrayRemove':'arrayUnion'; 
+            // Optimistisch: UI wird eh durch onSnapshot neu geladen
+            db.collection('users').doc(currentUser.uid).update({bestFriends: firebase.firestore.FieldValue[op](uid)}); 
+        }
+
+        function sendFriendRequest() {
+            const idInput = $('#friend-id-input').val(); if(!idInput) return;
+            const targetId = parseInt(idInput);
+            db.collection('users').where('displayId', '==', targetId).get().then(snap => {
+                if(snap.empty) return alert("User nicht gefunden.");
+                const targetUser = snap.docs[0];
+                if(targetUser.id === currentUser.uid) return alert("Das bist du.");
+                if(userData.friends && userData.friends.includes(targetUser.id)) return alert("Schon befreundet.");
+                
+                db.collection('users').doc(targetUser.id).collection('notifications').add({
+                    type: 'friend_request', fromUid: currentUser.uid, title: 'Freundschaftsanfrage',
+                    message: `${userData.username} möchte dein Freund sein.`, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => { alert("Anfrage gesendet!"); $('#friend-id-input').val(''); });
+            });
+        }
+
+        // --- NOTIFICATIONS & CHALLENGE ---
         function listenNotifications() {
             if(notifListener) notifListener();
             notifListener = db.collection('users').doc(currentUser.uid).collection('notifications')
@@ -292,61 +360,24 @@
 
             if(type === 'friend_request') {
                 const batch = db.batch();
-                // BEIDSEITIG Freunde hinzufügen
                 batch.update(db.collection('users').doc(currentUser.uid), { friends: firebase.firestore.FieldValue.arrayUnion(fromUid) });
                 batch.update(db.collection('users').doc(fromUid), { friends: firebase.firestore.FieldValue.arrayUnion(currentUser.uid) });
                 batch.delete(notifRef);
-                batch.commit().then(() => { closeModal('notif-modal'); alert("Freund hinzugefügt!"); loadFriends(); });
+                batch.commit().then(() => { closeModal('notif-modal'); alert("Freund hinzugefügt!"); });
             } 
             else if (type === 'game_invite') {
-                // Game beitreten
+                // Game Invite annehmen
                 db.collection('games').doc(payload).update({
                     black: currentUser.uid, blackName: userData.username, blackId: userData.displayId, status: 'active'
                 }).then(() => {
                     notifRef.delete();
                     closeModal('notif-modal');
-                    // WICHTIG: Setze Active Game ID auch hier
+                    // Wichtig: Beitreten und speichern
                     db.collection('users').doc(currentUser.uid).update({activeGameId: payload});
                     loadOnlineGame(payload);
                 });
             }
         }
-
-        function sendFriendRequest() {
-            const idInput = $('#friend-id-input').val(); if(!idInput) return;
-            const targetId = parseInt(idInput);
-            db.collection('users').where('displayId', '==', targetId).get().then(snap => {
-                if(snap.empty) return alert("User nicht gefunden.");
-                const targetUser = snap.docs[0];
-                if(targetUser.id === currentUser.uid) return alert("Das bist du.");
-                if(userData.friends && userData.friends.includes(targetUser.id)) return alert("Schon befreundet.");
-                
-                db.collection('users').doc(targetUser.id).collection('notifications').add({
-                    type: 'friend_request', fromUid: currentUser.uid, title: 'Freundschaftsanfrage',
-                    message: `${userData.username} möchte dein Freund sein.`, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => { alert("Anfrage gesendet!"); $('#friend-id-input').val(''); });
-            });
-        }
-
-        function loadFriends() {
-            if(!userData.friends || userData.friends.length === 0) {
-                $('#friends-list').html('<div class="text-center text-muted small mt-3">Noch keine Freunde.</div>'); return;
-            }
-            const list = $('#friends-list'); list.empty();
-            userData.friends.forEach(fUid => {
-                db.collection('users').doc(fUid).get().then(doc => {
-                    if(!doc.exists) return;
-                    const f = doc.data();
-                    const isBest = (userData.bestFriends && userData.bestFriends.includes(fUid));
-                    const isPlaying = !!f.activeGameId;
-                    const star = isBest ? 'best-friend' : 'text-muted';
-                    const el = $(`<div class="friend-item" onclick="openProfile('${fUid}')"><div><i class="fas fa-star ${star} me-2" onclick="toggleBest(event,'${fUid}')"></i><b>${f.username}</b> <small class="text-muted">#${f.displayId}</small></div>
-                    ${isPlaying ? '<span class="badge bg-danger small">Im Spiel</span>' : '<i class="fas fa-circle text-success small"></i>'}</div>`);
-                    if(isBest) list.prepend(el); else list.append(el);
-                });
-            });
-        }
-        function toggleBest(e, uid) { e.stopPropagation(); let op = userData.bestFriends && userData.bestFriends.includes(uid) ? 'arrayRemove':'arrayUnion'; db.collection('users').doc(currentUser.uid).update({bestFriends: firebase.firestore.FieldValue[op](uid)}).then(loadFriends); }
 
         function openProfile(uid) {
             db.collection('users').doc(uid).get().then(doc => {
@@ -363,19 +394,19 @@
         function inviteFriend(uid, name) {
             if(!confirm(`Möchtest du ${name} herausfordern?`)) return;
             const gameRef = db.collection('games').doc();
-            // Game erstellen
+            // Erstelle Spiel
             gameRef.set({
                 white: currentUser.uid, whiteName: userData.username, whiteId: userData.displayId,
-                black: uid, blackName: name, blackId: '?', // Platzhalter
+                black: uid, blackName: name, blackId: '?', // Wird beim Joinen updated
                 fen: 'start', turn: 'w', status: 'active', createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                // Einladung senden
+                // Sende Einladung
                 db.collection('users').doc(uid).collection('notifications').add({
                     type: 'game_invite', fromUid: currentUser.uid, title: 'Herausforderung!',
                     message: `${userData.username} fordert dich heraus.`, payload: gameRef.id, timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 closeModal('profile-modal');
-                // Ich (Host) trete sofort bei und speichere ID
+                // SOFORT BEITRETEN
                 db.collection('users').doc(currentUser.uid).update({activeGameId: gameRef.id});
                 loadOnlineGame(gameRef.id);
             });
@@ -492,7 +523,6 @@
             else if(res === 'draw') { txt = "REMIS"; color = "text-warning"; }
             else if(res !== myColor && myColor !== 'spectator') { txt = "VERLOREN"; color = "text-danger"; }
             $('#end-title').text(txt).removeClass().addClass('win-title '+color);
-            // Wenn Spiel vorbei, Game ID aus User entfernen
             if(myColor !== 'spectator') db.collection('users').doc(currentUser.uid).update({activeGameId: null});
         }
         function backToLobby() { 
