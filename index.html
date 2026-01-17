@@ -120,7 +120,7 @@
             <div id="admin-tab-eco">
                 <div class="input-group mb-3">
                     <input type="number" id="admin-target-id" class="form-control" placeholder="Ziel User ID">
-                    <button class="btn btn-outline-light" onclick="adminLoadUser()">Laden</button>
+                    <button class="btn btn-light" onclick="adminLoadUser()">Laden</button>
                 </div>
                 <div id="admin-user-info" class="card bg-dark p-3 mb-3 hidden">
                     <h5>User: <span id="adm-u-name">...</span> (ID: <span id="adm-u-id">...</span>)</h5>
@@ -396,7 +396,11 @@
 
             if(gameListener) gameListener();
             gameListener = db.collection('games').doc(id).onSnapshot(doc => {
-                if(!doc.exists) { db.collection('users').doc(currentUser.uid).update({activeGameId: null}); backToLobby(); return; }
+                if(!doc.exists) { 
+                    db.collection('users').doc(currentUser.uid).update({activeGameId: null}); 
+                    backToLobby(); 
+                    return; 
+                }
                 const data = doc.data();
                 currentWhiteSkin = data.whiteSkin || 'default'; currentBlackSkin = data.blackSkin || 'default';
                 updateBoardVisuals();
@@ -456,10 +460,21 @@
                 if(move.captured) {
                     const mySkin = (myColor==='w') ? currentWhiteSkin : currentBlackSkin;
                     if(gameMode==='online') db.collection('users').doc(currentUser.uid).update({coins: firebase.firestore.FieldValue.increment(10)});
-                    handleCaptureVisuals(move, mySkin, () => { if(gameMode==='online') updateGameOnline(move); else { board.position(game.fen(), true); setTimeout(botMove, 500); } });
+                    handleCaptureVisuals(move, mySkin, () => { 
+                        if(gameMode==='online') updateGameOnline(move); 
+                        else { 
+                            board.position(game.fen(), true); 
+                            checkLocalGameEnd(); // Check if player won
+                            setTimeout(botMove, 500); 
+                        } 
+                    });
                 } else {
                     if(gameMode==='online') updateGameOnline(move);
-                    else { board.position(game.fen(), true); setTimeout(botMove, 500); }
+                    else { 
+                        board.position(game.fen(), true); 
+                        checkLocalGameEnd(); // Check if player won
+                        setTimeout(botMove, 500); 
+                    }
                 }
             }
         }
@@ -471,19 +486,6 @@
             if(!move.captured) board.position(game.fen(), true); addLog(move.san);
         }
 
-        // --- REST STANDARD ---
-        function updateHeader() { $('#nav-username').text(userData.username); $('#nav-userid').text(`#${userData.displayId}`); $('#nav-coins').text(userData.coins); $('#nav-wins').text(userData.wins || 0); $('#nav-user-area').removeClass('hidden'); }
-        function updateLeaderboard() { db.collection('users').orderBy('wins', 'desc').limit(10).onSnapshot(snap => { let h=''; let r=1; snap.forEach(doc => { const u = doc.data(); let rc = r===1?'rank-1':(r===2?'rank-2':(r===3?'rank-3':'')); h += `<div class="leaderboard-item"><span class="${rc}">#${r} ${u.username}</span><span class="text-warning fw-bold">${u.wins||0} 🏆</span></div>`; r++; }); $('#leaderboard-list').html(h); }); }
-        function openShop() { renderShopUI(); $('#shop-modal').removeClass('hidden'); }
-        function renderShopUI() { $('#shop-coins').text(userData.coins); const list = $('#skin-list'); list.empty(); for (const [key, skin] of Object.entries(SKINS)) { if(skin.adminOnly && !userData.inventory.includes(key)) continue; const owned = userData.inventory.includes(key); const active = userData.equippedSkin === key; let btnHtml = active ? `<button class="btn btn-sm btn-success disabled w-100">Aktiv</button>` : owned ? `<button onclick="equipSkin('${key}')" class="btn btn-sm btn-outline-primary w-100">Wählen</button>` : `<button onclick="buySkin('${key}')" class="btn btn-sm btn-warning w-100">${skin.price} <i class="fas fa-coins"></i></button>`; list.append(`<div class="col-6 col-md-4"><div class="skin-card ${owned?'owned':''} ${active?'active':''}"><h5>${skin.name} ${skin.anim}</h5><div class="d-flex justify-content-center mb-2"><div class="skin-preview" style="background:${skin.colorW}"></div><div class="skin-preview" style="background:${skin.colorB}"></div></div>${btnHtml}</div></div>`); } }
-        function buySkin(key) { if(userData.coins >= SKINS[key].price) db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(-SKINS[key].price), inventory: firebase.firestore.FieldValue.arrayUnion(key) }); else alert("Need Coins"); }
-        function equipSkin(key) { db.collection('users').doc(currentUser.uid).update({ equippedSkin: key }); }
-        function showEndScreen(res, winnerSkin) { $('#end-screen-overlay').removeClass('hidden'); $('#global-win-fx').hide().removeClass(); let txt="SIEG!", c="text-success", r=""; if(res==='aborted'){txt="GEGNER WEG";c="text-danger";} else if(res==='draw'){txt="REMIS";c="text-warning";} else if(res!==myColor&&myColor!=='spectator'){txt="VERLOREN";c="text-danger";} else { r="+50 Coins!"; if(winnerSkin && SKINS[winnerSkin].winBg) $('#global-win-fx').addClass(SKINS[winnerSkin].winBg).fadeIn(500); } $('#end-title').text(txt).removeClass().addClass('win-title '+c); $('#end-reward').text(r); if(myColor!=='spectator') db.collection('users').doc(currentUser.uid).update({activeGameId: null}); }
-        function backToLobby() { if(gameListener) gameListener(); $('#end-screen-overlay').addClass('hidden'); $('#global-win-fx').fadeOut(200); if(wingsInterval) clearInterval(wingsInterval); db.collection('users').doc(currentUser.uid).update({activeGameId: null}); showScreen('lobby-screen'); }
-        function highlight(sq) { removeHighlights(); $(`.square-${sq}`).addClass('highlight-square'); game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
-        function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
-        function leaveGame() { if(confirm("Verlassen?")) { if(gameMode==='online' && myColor!=='spectator') db.collection('games').doc(currentGameId).update({status:'aborted'}); backToLobby(); } }
-        
         // --- BOT GAME ---
         function startBotGame() { 
             gameMode='bot'; 
@@ -504,9 +506,50 @@
             const move=m[Math.floor(Math.random()*m.length)]; 
             game.move(move.san); 
             board.position(game.fen(), true); 
+            
             if(move.captured) playKillAnim(move.to, 'default'); 
+            checkLocalGameEnd();
         }
 
+        // --- NEW LOCAL CHECK FUNCTION ---
+        function checkLocalGameEnd() {
+            if (game.game_over()) {
+                let result = 'draw';
+                if (game.in_checkmate()) {
+                    // game.turn() is the loser. If turn is 'w', 'b' won.
+                    result = game.turn() === 'w' ? 'b' : 'w';
+                }
+                // Determine winner skin
+                let winnerSkin = null;
+                if (result === 'w') winnerSkin = currentWhiteSkin;
+                if (result === 'b') winnerSkin = currentBlackSkin;
+
+                // Award prizes if player won
+                if (result === myColor) {
+                     db.collection('users').doc(currentUser.uid).update({
+                        wins: firebase.firestore.FieldValue.increment(1),
+                        coins: firebase.firestore.FieldValue.increment(50)
+                    });
+                }
+
+                showEndScreen(result, winnerSkin);
+                return true;
+            }
+            return false;
+        }
+
+        // --- REST STANDARD ---
+        function updateHeader() { $('#nav-username').text(userData.username); $('#nav-userid').text(`#${userData.displayId}`); $('#nav-coins').text(userData.coins); $('#nav-wins').text(userData.wins || 0); $('#nav-user-area').removeClass('hidden'); }
+        function updateLeaderboard() { db.collection('users').orderBy('wins', 'desc').limit(10).onSnapshot(snap => { let h=''; let r=1; snap.forEach(doc => { const u = doc.data(); let rc = r===1?'rank-1':(r===2?'rank-2':(r===3?'rank-3':'')); h += `<div class="leaderboard-item"><span class="${rc}">#${r} ${u.username}</span><span class="text-warning fw-bold">${u.wins||0} 🏆</span></div>`; r++; }); $('#leaderboard-list').html(h); }); }
+        function openShop() { renderShopUI(); $('#shop-modal').removeClass('hidden'); }
+        function renderShopUI() { $('#shop-coins').text(userData.coins); const list = $('#skin-list'); list.empty(); for (const [key, skin] of Object.entries(SKINS)) { if(skin.adminOnly && !userData.inventory.includes(key)) continue; const owned = userData.inventory.includes(key); const active = userData.equippedSkin === key; let btnHtml = active ? `<button class="btn btn-sm btn-success disabled w-100">Aktiv</button>` : owned ? `<button onclick="equipSkin('${key}')" class="btn btn-sm btn-outline-primary w-100">Wählen</button>` : `<button onclick="buySkin('${key}')" class="btn btn-sm btn-warning w-100">${skin.price} <i class="fas fa-coins"></i></button>`; list.append(`<div class="col-6 col-md-4"><div class="skin-card ${owned?'owned':''} ${active?'active':''}"><h5>${skin.name} ${skin.anim}</h5><div class="d-flex justify-content-center mb-2"><div class="skin-preview" style="background:${skin.colorW}"></div><div class="skin-preview" style="background:${skin.colorB}"></div></div>${btnHtml}</div></div>`); } }
+        function buySkin(key) { if(userData.coins >= SKINS[key].price) db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(-SKINS[key].price), inventory: firebase.firestore.FieldValue.arrayUnion(key) }); else alert("Need Coins"); }
+        function equipSkin(key) { db.collection('users').doc(currentUser.uid).update({ equippedSkin: key }); }
+        function showEndScreen(res, winnerSkin) { $('#end-screen-overlay').removeClass('hidden'); $('#global-win-fx').hide().removeClass(); let txt="SIEG!", c="text-success", r=""; if(res==='aborted'){txt="GEGNER WEG";c="text-danger";} else if(res==='draw'){txt="REMIS";c="text-warning";} else if(res!==myColor&&myColor!=='spectator'){txt="VERLOREN";c="text-danger";} else { r="+50 Coins!"; if(winnerSkin && SKINS[winnerSkin].winBg) $('#global-win-fx').addClass(SKINS[winnerSkin].winBg).fadeIn(500); } $('#end-title').text(txt).removeClass().addClass('win-title '+c); $('#end-reward').text(r); if(myColor!=='spectator' && gameMode !== 'bot') db.collection('users').doc(currentUser.uid).update({activeGameId: null}); }
+        function backToLobby() { if(gameListener) gameListener(); $('#end-screen-overlay').addClass('hidden'); $('#global-win-fx').fadeOut(200); if(wingsInterval) clearInterval(wingsInterval); db.collection('users').doc(currentUser.uid).update({activeGameId: null}); showScreen('lobby-screen'); }
+        function highlight(sq) { removeHighlights(); $(`.square-${sq}`).addClass('highlight-square'); game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
+        function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
+        function leaveGame() { if(confirm("Verlassen?")) { if(gameMode==='online' && myColor!=='spectator') db.collection('games').doc(currentGameId).update({status:'aborted'}); backToLobby(); } }
         function joinRankedQueue() { $('#queue-overlay').removeClass('hidden'); queueTime=0; if(queueInterval)clearInterval(queueInterval); queueInterval=setInterval(()=>{queueTime++;$('#queue-timer').text(`Zeit: ${queueTime}s`);checkMatchmaking();},2000); db.collection('queue').doc(currentUser.uid).set({uid:currentUser.uid,username:userData.username,displayId:userData.displayId,joinedAt:firebase.firestore.FieldValue.serverTimestamp(),gameId:null,skin:userData.equippedSkin}); if(queueListener)queueListener(); queueListener=db.collection('queue').doc(currentUser.uid).onSnapshot(d=>{if(d.exists&&d.data().gameId){leaveQueue(false);db.collection('queue').doc(currentUser.uid).delete();db.collection('users').doc(currentUser.uid).update({activeGameId:d.data().gameId});loadOnlineGame(d.data().gameId);}}); }
         async function checkMatchmaking(){ const s=await db.collection('queue').orderBy('joinedAt','asc').limit(2).get(); if(s.size>=2){const p1=s.docs[0].data(),p2=s.docs[1].data(); if(p1.uid===currentUser.uid){const g=db.collection('games').doc(); await g.set({white:p1.uid,whiteName:p1.username,whiteId:p1.displayId,whiteSkin:p1.skin,black:p2.uid,blackName:p2.username,blackId:p2.displayId,blackSkin:p2.skin,fen:'start',turn:'w',status:'active',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); const b=db.batch(); b.update(db.collection('queue').doc(p1.uid),{gameId:g.id}); b.update(db.collection('queue').doc(p2.uid),{gameId:g.id}); await b.commit();}}}
         function leaveQueue(d=true){ $('#queue-overlay').addClass('hidden'); if(queueInterval)clearInterval(queueInterval); if(queueListener)queueListener(); if(d)db.collection('queue').doc(currentUser.uid).delete(); }
