@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters Pro - Ranked Queue</title>
+    <title>Chess Masters Pro - Click & Move</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -21,7 +21,7 @@
         .hidden { display: none !important; }
         .id-badge { background: #3a3b3c; color: #b0b3b8; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 5px; }
 
-        #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; }
+        #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; user-select: none; }
         .board-wrapper { position: relative; max-width: 550px; margin: 0 auto; }
         
         /* Queue Overlay */
@@ -40,7 +40,7 @@
         /* End Screen Overlay */
         #end-screen-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 5000;
+            background: rgba(0,0,0,0.9); z-index: 9999; /* Sehr hoch, damit es über allem liegt */
             display: flex; justify-content: center; align-items: center;
         }
         .end-card { background: #242526; padding: 40px; border-radius: 20px; text-align: center; border: 2px solid #444; min-width: 300px; }
@@ -52,6 +52,23 @@
         .modal-content-custom { background: #242526; width: 400px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; }
 
         .move-log { height: 250px; overflow-y: auto; background: #18191a; padding: 10px; border-radius: 6px; }
+
+        /* --- STYLES FÜR PUNKTE (CLICK SYSTEM) --- */
+        .highlight-dot {
+            background-color: rgba(45, 136, 255, 0.8);
+            width: 25%;
+            height: 25%;
+            border-radius: 50%;
+            position: absolute;
+            top: 37.5%;
+            left: 37.5%;
+            pointer-events: none; /* Wichtig: Klick muss durch den Punkt auf das Feld gehen */
+        }
+        .highlight-square {
+            box-shadow: inset 0 0 3px 3px rgba(255, 255, 0, 0.5);
+        }
+        /* Wenn man auf eine Figur klickt (Mauszeiger) */
+        .square-55d63 { cursor: pointer; }
     </style>
 </head>
 <body>
@@ -95,7 +112,6 @@
         <div id="auth-screen">
             <div class="card-dark text-center" style="max-width: 400px; margin: 50px auto;">
                 <h3>Login</h3>
-                <p class="text-muted small">ID System aktiv</p>
                 <input type="email" id="email-input" class="form-control mb-2" placeholder="E-Mail">
                 <input type="password" id="password-input" class="form-control mb-3" placeholder="Passwort">
                 <input type="text" id="username-input" class="form-control mb-3" placeholder="Username (nur Registrierung)">
@@ -203,6 +219,9 @@
         let queueListener = null;
         let queueTimerInterval = null;
 
+        // CLICK SYSTEM VARIABLEN
+        let selectedSquare = null; // Welches Feld wurde angeklickt?
+
         // --- 2. AUTH & INIT ---
         auth.onAuthStateChanged(user => {
             if(user) {
@@ -213,7 +232,6 @@
                         updateNavUI();
                         showScreen('lobby-screen');
                         updateLeaderboard();
-                        // WICHTIG: Prüfen ob wir noch in der Queue sind (Page Reload)
                         checkQueueStatus();
                     }
                 });
@@ -222,131 +240,76 @@
             }
         });
 
-        // --- 3. DAS NEUE QUEUE SYSTEM ---
-        
-        // A. Der Queue beitreten
+        // --- 3. QUEUE SYSTEM ---
         function joinQueue() {
             if(!userData) return;
-            
-            // UI sofort ändern
             showQueueUI();
-
-            // Eintrag in Queue Collection erstellen
             const queueRef = db.collection('queue').doc(currentUser.uid);
-            
             queueRef.set({
-                uid: currentUser.uid,
-                username: userData.username,
-                displayId: userData.displayId,
-                joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                gameId: null // Noch kein Spiel gefunden
+                uid: currentUser.uid, username: userData.username, displayId: userData.displayId,
+                joinedAt: firebase.firestore.FieldValue.serverTimestamp(), gameId: null
             }).then(() => {
-                // Sobald wir drin sind, versuchen wir zu matchen
                 attemptMatchmaking();
-                // Und wir hören zu, falls uns jemand anders matcht
                 listenToMyQueueEntry();
             });
         }
 
-        // B. Versuch, zwei Spieler zu paaren
         async function attemptMatchmaking() {
             try {
-                // Wir holen die ältesten Einträge (FIFO)
-                const snapshot = await db.collection('queue')
-                    .orderBy('joinedAt', 'asc')
-                    .limit(2) // Wir brauchen nur 2 Leute
-                    .get();
-
+                const snapshot = await db.collection('queue').orderBy('joinedAt', 'asc').limit(2).get();
                 if (snapshot.size >= 2) {
-                    const player1 = snapshot.docs[0].data();
-                    const player2 = snapshot.docs[1].data();
-
-                    // Transaktion um Race-Conditions zu vermeiden
-                    await db.runTransaction(async (transaction) => {
-                        // Spiel erstellen
+                    const p1 = snapshot.docs[0].data();
+                    const p2 = snapshot.docs[1].data();
+                    await db.runTransaction(async (t) => {
                         const newGameRef = db.collection('games').doc();
-                        
-                        // Queue Einträge aktualisieren (damit beide Clients bescheid wissen)
-                        transaction.update(db.collection('queue').doc(player1.uid), { gameId: newGameRef.id });
-                        transaction.update(db.collection('queue').doc(player2.uid), { gameId: newGameRef.id });
-                        
-                        // Das Spiel in der DB anlegen
-                        transaction.set(newGameRef, {
-                            white: player1.uid, whiteName: player1.username, whiteId: player1.displayId,
-                            black: player2.uid, blackName: player2.username, blackId: player2.displayId,
+                        t.update(db.collection('queue').doc(p1.uid), { gameId: newGameRef.id });
+                        t.update(db.collection('queue').doc(p2.uid), { gameId: newGameRef.id });
+                        t.set(newGameRef, {
+                            white: p1.uid, whiteName: p1.username, whiteId: p1.displayId,
+                            black: p2.uid, blackName: p2.username, blackId: p2.displayId,
                             fen: 'start', turn: 'w', status: 'active', result: null,
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                     });
-                    console.log("Match erstellt!");
-                } else {
-                    console.log("Warte auf zweiten Spieler...");
                 }
-            } catch (e) {
-                console.log("Matching konflikt (normal):", e);
-            }
+            } catch (e) { console.log(e); }
         }
 
-        // C. Zuhören, ob ich gematcht wurde
         function listenToMyQueueEntry() {
-            if(queueListener) queueListener(); // Reset
-            
+            if(queueListener) queueListener();
             queueListener = db.collection('queue').doc(currentUser.uid).onSnapshot(doc => {
-                if(doc.exists) {
-                    const data = doc.data();
-                    // Wurde ein Spiel gefunden?
-                    if(data.gameId) {
-                        // Juhu! Spiel laden.
-                        loadGame(data.gameId, (data.uid === currentUser.uid) ? 'unknown_yet' : 'unknown_yet'); 
-                        // Wir wissen Farbe noch nicht sicher, loadGame holt das aus dem Game Doc
-                        
-                        // Aus Queue löschen (Cleanup)
-                        db.collection('queue').doc(currentUser.uid).delete();
-                    }
-                } else {
-                    // Falls mein Eintrag gelöscht wurde (z.B. manuell), Queue UI beenden
-                    hideQueueUI();
-                }
+                if(doc.exists && doc.data().gameId) {
+                    loadGame(doc.data().gameId);
+                    db.collection('queue').doc(currentUser.uid).delete();
+                } else if(!doc.exists) hideQueueUI();
             });
         }
 
-        // D. Queue verlassen
         function leaveQueue() {
             db.collection('queue').doc(currentUser.uid).delete();
             hideQueueUI();
         }
 
-        // E. Beim Neuladen prüfen
         function checkQueueStatus() {
             db.collection('queue').doc(currentUser.uid).get().then(doc => {
                 if(doc.exists) {
-                    const data = doc.data();
-                    if(data.gameId) {
-                        // Spiel war schon bereit
-                        loadGame(data.gameId, 'w'); // Farbe wird eh korrigiert
+                    if(doc.data().gameId) {
+                        loadGame(doc.data().gameId);
                         db.collection('queue').doc(currentUser.uid).delete();
                     } else {
-                        // Noch am Warten -> UI zeigen
                         showQueueUI();
                         listenToMyQueueEntry();
-                        // Auch nochmal versuchen zu matchen (falls der andere gewartet hat)
                         attemptMatchmaking();
                     }
                 }
             });
         }
 
-        // UI Helper für Queue
         function showQueueUI() {
             $('#queue-overlay').removeClass('hidden');
-            let seconds = 0;
-            if(queueTimerInterval) clearInterval(queueTimerInterval);
-            queueTimerInterval = setInterval(() => {
-                seconds++;
-                $('#queue-time').text(`Wartezeit: ${seconds}s`);
-            }, 1000);
+            let s = 0; if(queueTimerInterval) clearInterval(queueTimerInterval);
+            queueTimerInterval = setInterval(() => { s++; $('#queue-time').text(`Wartezeit: ${s}s`); }, 1000);
         }
-
         function hideQueueUI() {
             $('#queue-overlay').addClass('hidden');
             if(queueTimerInterval) clearInterval(queueTimerInterval);
@@ -354,17 +317,27 @@
         }
 
 
-        // --- 4. GAME ENGINE (WIE VORHER) ---
-        function loadGame(id, colorPlaceholder) {
+        // --- 4. GAME ENGINE MIT CLICK SYSTEM ---
+        function loadGame(id) {
             currentGameId = id;
-            hideQueueUI(); // Sicherstellen, dass Overlay weg ist
+            hideQueueUI();
             showScreen('game-screen');
+            $('#end-screen-overlay').addClass('hidden'); // Fix für hängenden Screen
+
             game = new Chess();
             $('#move-history').empty();
-            $('#end-screen-overlay').addClass('hidden');
+            selectedSquare = null; // Reset selection
 
-            // Erstmal leer initialisieren
-            board = Chessboard('board', { position: 'start' });
+            // Board Init - WICHTIG: draggable: false
+            board = Chessboard('board', {
+                position: 'start',
+                draggable: false, // KEIN DRAG MEHR
+                pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+            });
+
+            // Klick Event Listener hinzufügen
+            // Wir nutzen jQuery um Klicks auf die Felder abzufangen
+            $('#board').off('click').on('click', '.square-55d63', handleSquareClick);
 
             if(gameListener) gameListener();
             
@@ -372,77 +345,106 @@
                 const data = doc.data();
                 if(!data) return; 
 
-                // FARBE BESTIMMEN (Wichtig!)
+                // Farbe setzen
                 if (data.white === currentUser.uid) myColor = 'w';
                 else if (data.black === currentUser.uid) myColor = 'b';
-                else myColor = 'spectator'; // Sollte nicht passieren
-
-                // UI Update
-                const wName = `${data.whiteName} (#${data.whiteId})`;
-                const bName = `${data.blackName} (#${data.blackId})`;
                 
+                // UI Namen
                 if(myColor === 'w') {
                     $('#player-bottom').text(`Du (Weiß)`);
-                    $('#player-top').text(`${bName} (Schwarz)`);
+                    $('#player-top').text(`${data.blackName} (Schwarz)`);
                     board.orientation('white');
                 } else {
                     $('#player-bottom').text(`Du (Schwarz)`);
-                    $('#player-top').text(`${wName} (Weiß)`);
+                    $('#player-top').text(`${data.whiteName} (Weiß)`);
                     board.orientation('black');
                 }
-                
-                // Config mit korrekter Orientation neu setzen
-                const config = {
-                    draggable: true, position: 'start', orientation: (myColor==='w'?'white':'black'),
-                    pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
-                    onDragStart: onDragStart, onDrop: onDrop, onSnapEnd: () => board.position(game.fen())
-                };
-                board = Chessboard('board', config); // Reload Board
 
-                // --- ABORT CHECK ---
                 if(data.status === 'aborted') {
-                    showEndScreen('GEWONNEN!', 'Gegner hat das Spiel verlassen.', 'win');
+                    showEndScreen('GEWONNEN!', 'Gegner hat aufgegeben.', 'win');
                     return;
                 }
 
-                // --- MOVE UPDATE ---
                 if(data.fen && data.fen !== game.fen()) {
                     game.load(data.fen);
                     board.position(data.fen);
+                    removeHighlights(); // Markierungen entfernen bei neuem Zug
                     if(data.lastMoveSan) addLog(data.lastMoveSan);
                 }
 
-                // --- RESULT CHECK ---
                 if (data.result) handleGameEnd(data.result);
             });
         }
 
-        function handleGameEnd(result) {
-            if (result === 'draw') showEndScreen('REMIS', 'Unentschieden.', 'draw');
-            else if (result === myColor) showEndScreen('GEWONNEN!', 'Du hast gewonnen.', 'win');
-            else showEndScreen('VERLOREN', 'Schachmatt.', 'lose');
+        // --- DAS NEUE KLICK-SYSTEM ---
+        function handleSquareClick(e) {
+            // Spiel muss laufen
+            if(game.game_over() || game.turn() !== myColor) return;
+
+            // Das geklickte Feld ermitteln (z.B. "e2")
+            const square = $(this).attr('data-square');
+
+            // 1. Haben wir schon eine Figur ausgewählt?
+            if (selectedSquare) {
+                // Ja -> Versuch einen Zug zu machen
+                const move = game.move({
+                    from: selectedSquare,
+                    to: square,
+                    promotion: 'q' // Immer Dame
+                });
+
+                if (move) {
+                    // GÜLTIGER ZUG!
+                    makeMove(move);
+                    selectedSquare = null;
+                    removeHighlights();
+                } else {
+                    // Ungültiger Zug -> Ist es vielleicht eine andere eigene Figur?
+                    // Wenn ja, wähle diese aus. Wenn nein, Auswahl aufheben.
+                    const piece = game.get(square);
+                    if (piece && piece.color === myColor) {
+                        selectedSquare = square;
+                        highlightPossibleMoves(square);
+                    } else {
+                        selectedSquare = null;
+                        removeHighlights();
+                    }
+                }
+            } else {
+                // Nein -> Figur auswählen
+                const piece = game.get(square);
+                if (piece && piece.color === myColor) {
+                    selectedSquare = square;
+                    highlightPossibleMoves(square);
+                }
+            }
         }
 
-        function showEndScreen(title, reason, type) {
-            $('#end-screen-overlay').removeClass('hidden');
-            $('#end-title').text(title);
-            $('#end-reason').text(reason);
-            $('#end-title').removeClass('win-title lose-title draw-title');
-            if(type === 'win') $('#end-title').addClass('win-title');
-            if(type === 'lose') $('#end-title').addClass('lose-title');
-            if(type === 'draw') $('#end-title').addClass('draw-title');
+        function highlightPossibleMoves(square) {
+            removeHighlights();
+            
+            // Eigenes Feld markieren
+            $(`.square-${square}`).addClass('highlight-square');
+
+            // Mögliche Züge holen
+            const moves = game.moves({ square: square, verbose: true });
+            
+            if (moves.length === 0) return;
+
+            // Punkte zeichnen
+            moves.forEach(move => {
+                // Punkt in das div des Feldes einfügen
+                $(`.square-${move.to}`).append('<div class="highlight-dot"></div>');
+            });
         }
 
-        function onDragStart(source, piece) {
-            if(game.game_over() || game.turn() !== myColor) return false;
-            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) || 
-                (game.turn() === 'b' && piece.search(/^w/) !== -1)) return false;
+        function removeHighlights() {
+            $('.square-55d63').removeClass('highlight-square');
+            $('.highlight-dot').remove();
         }
 
-        function onDrop(source, target) {
-            const move = game.move({ from: source, to: target, promotion: 'q' });
-            if (move === null) return 'snapback';
-
+        function makeMove(move) {
+            // Firebase Update
             let result = null;
             let status = 'active';
 
@@ -450,7 +452,7 @@
                 if (game.in_checkmate()) {
                     result = game.turn() === 'w' ? 'b' : 'w'; 
                     incrementWins();
-                } else if (game.in_draw() || game.in_stalemate() || game.in_threefold_repetition()) {
+                } else if (game.in_draw()) {
                     result = 'draw';
                 }
                 status = 'finished';
@@ -460,7 +462,33 @@
                 fen: game.fen(), turn: game.turn(), lastMoveSan: move.san,
                 result: result, status: status
             });
+            board.position(game.fen());
             addLog(move.san);
+        }
+
+        // --- END SCREEN LOGIC (FIXED) ---
+        function handleGameEnd(result) {
+            if (result === 'draw') showEndScreen('REMIS', 'Unentschieden.', 'draw');
+            else if (result === myColor) showEndScreen('GEWONNEN!', 'Du hast gewonnen.', 'win');
+            else showEndScreen('VERLOREN', 'Schachmatt.', 'lose');
+        }
+
+        function showEndScreen(title, reason, type) {
+            $('#end-screen-overlay').removeClass('hidden'); // Zeigen
+            $('#end-title').text(title);
+            $('#end-reason').text(reason);
+            $('#end-title').removeClass('win-title lose-title draw-title');
+            if(type === 'win') $('#end-title').addClass('win-title');
+            if(type === 'lose') $('#end-title').addClass('lose-title');
+            if(type === 'draw') $('#end-title').addClass('draw-title');
+        }
+
+        // FIX FÜR DEN "VERLASSEN" BUTTON
+        function backToLobby() {
+            if(gameListener) gameListener();
+            // Overlay erzwingen auszublenden
+            $('#end-screen-overlay').addClass('hidden');
+            showScreen('lobby-screen');
         }
 
         function incrementWins() {
@@ -474,11 +502,6 @@
             }
         }
         
-        function backToLobby() {
-            if(gameListener) gameListener();
-            showScreen('lobby-screen');
-        }
-
         // --- HELPER & AUTH ---
         function registerUserWithId() {
             const email = $('#email-input').val(); const pass = $('#password-input').val(); const name = $('#username-input').val();
@@ -503,11 +526,11 @@
         }
         function addLog(s) { $('#move-history').append(`<div>${s}</div>`).scrollTop(999); }
         function showScreen(id) { $('.hidden').removeClass('hidden').addClass('hidden'); $('#auth-screen, #lobby-screen, #game-screen').addClass('hidden'); $('#'+id).removeClass('hidden'); }
-        function joinGameByCode() { /* Code Join Logic same as before */ }
+        function joinGameByCode() { /* ... */ }
         function openSettings(){ $('#settings-modal').removeClass('hidden'); }
         function closeSettings(){ $('#settings-modal').addClass('hidden'); }
-        function saveSettings(){ /* Save logic same as before */ closeSettings(); }
-        async function adminFixUserIds() { /* Fix logic same as before */ }
+        function saveSettings(){ /* ... */ closeSettings(); }
+        async function adminFixUserIds() { /* ... */ }
     </script>
 </body>
 </html>
