@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Chess Platform</title>
+    <title>Chess Masters Pro</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,9 +12,9 @@
     
     <style>
         body { background-color: #18191a; color: #e4e6eb; font-family: 'Roboto', sans-serif; }
-        .app-container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .app-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         
-        .card-dark { background-color: #242526; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); margin-bottom: 20px; }
+        .card-dark { background-color: #242526; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); margin-bottom: 20px; border: 1px solid #333; }
         .btn-primary-custom { background-color: #2D88FF; color: white; font-weight: bold; border: none; }
         .btn-primary-custom:hover { background-color: #1A73E8; color: white; }
         
@@ -23,11 +23,24 @@
 
         #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; }
         .board-wrapper { position: relative; max-width: 550px; margin: 0 auto; }
+        
+        /* Overlays */
         .board-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 100;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.85); z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
         }
+
+        /* End Screen Overlay */
+        #end-screen-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 5000;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .end-card { background: #242526; padding: 40px; border-radius: 20px; text-align: center; border: 2px solid #444; min-width: 300px; }
+        .win-title { font-size: 3rem; font-weight: 900; color: #2ecc71; text-shadow: 0 0 20px rgba(46, 204, 113, 0.5); }
+        .lose-title { font-size: 3rem; font-weight: 900; color: #e74c3c; text-shadow: 0 0 20px rgba(231, 76, 60, 0.5); }
+        .draw-title { font-size: 3rem; font-weight: 900; color: #f1c40f; }
 
         /* Settings Modal */
         .modal-overlay {
@@ -38,28 +51,20 @@
         .modal-content-custom { background: #242526; width: 400px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; }
 
         .move-log { height: 250px; overflow-y: auto; background: #18191a; padding: 10px; border-radius: 6px; border: 1px solid #3a3b3c; }
-        .move-row { padding: 4px; border-bottom: 1px solid #242526; display: flex; justify-content: space-between; font-size: 0.9em; }
+        .leaderboard-row { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #333; }
+        .rank-1 { color: #f1c40f; font-weight: bold; } /* Gold */
+        .rank-2 { color: #bdc3c7; font-weight: bold; } /* Silber */
+        .rank-3 { color: #cd7f32; font-weight: bold; } /* Bronze */
     </style>
 </head>
 <body>
 
     <div id="settings-modal" class="modal-overlay hidden">
         <div class="modal-content-custom">
-            <h4><i class="fas fa-cog"></i> Einstellungen</h4>
-            <hr style="border-color: #444;">
-            
-            <label class="small text-muted">Benutzernamen ändern</label>
+            <h4>Einstellungen</h4>
             <input type="text" id="settings-username" class="form-control mb-3" placeholder="Neuer Name">
-            
-            <label class="small text-muted">Neues Passwort</label>
-            <input type="password" id="settings-password" class="form-control mb-3" placeholder="Mind. 6 Zeichen">
-
-            <hr style="border-color: #444;">
-            <p class="small text-warning">Admin Zone:</p>
-            <button onclick="adminFixUserIds()" class="btn btn-warning btn-sm w-100 mb-3">
-                ⚠️ DB Reparieren (IDs vergeben)
-            </button>
-
+            <input type="password" id="settings-password" class="form-control mb-3" placeholder="Neues Passwort">
+            <button onclick="adminFixUserIds()" class="btn btn-warning btn-sm w-100 mb-3">⚠️ Admin: IDs reparieren</button>
             <div class="d-flex justify-content-end gap-2">
                 <button onclick="closeSettings()" class="btn btn-secondary">Abbrechen</button>
                 <button onclick="saveSettings()" class="btn btn-success">Speichern</button>
@@ -68,10 +73,18 @@
         </div>
     </div>
 
+    <div id="end-screen-overlay" class="hidden">
+        <div class="end-card">
+            <div id="end-title" class="win-title">SIEG!</div>
+            <p id="end-reason" class="text-muted my-3">Durch Schachmatt</p>
+            <button onclick="backToLobby()" class="btn btn-light btn-lg w-100 fw-bold">Zurück zur Lobby</button>
+        </div>
+    </div>
+
     <div class="app-container">
         
         <div class="d-flex justify-content-between align-items-center mb-4 p-3 card-dark">
-            <h3 class="m-0 fw-bold"><i class="fas fa-chess-king"></i> CHESS PRO</h3>
+            <h3 class="m-0 fw-bold"><i class="fas fa-chess"></i> CHESS PRO</h3>
             <div id="nav-user-area" class="hidden d-flex align-items-center gap-3">
                 <div>
                     <span id="nav-username" class="fw-bold text-white">Gast</span>
@@ -84,12 +97,11 @@
 
         <div id="auth-screen">
             <div class="card-dark text-center" style="max-width: 400px; margin: 50px auto;">
-                <h3>Willkommen</h3>
-                <p class="text-muted small">Bitte einloggen oder registrieren</p>
+                <h3>Login / Registrieren</h3>
+                <p class="text-muted small">Startet bei ID #1</p>
                 <input type="email" id="email-input" class="form-control mb-2" placeholder="E-Mail">
                 <input type="password" id="password-input" class="form-control mb-3" placeholder="Passwort">
                 <input type="text" id="username-input" class="form-control mb-3" placeholder="Username (nur Registrierung)">
-                
                 <button onclick="loginUser()" class="btn btn-primary-custom w-100 mb-2">Login</button>
                 <button onclick="registerUserWithId()" class="btn btn-outline-light w-100">Konto erstellen</button>
                 <div id="auth-error" class="text-danger mt-2 small"></div>
@@ -98,22 +110,30 @@
 
         <div id="lobby-screen" class="hidden">
             <div class="row">
-                <div class="col-md-8">
-                    <div class="card-dark text-center" style="padding: 50px 20px;">
-                        <h1 class="display-4 fw-bold mb-4">Bereit zum Spiel?</h1>
-                        <button onclick="findMatch()" id="btn-matchmaking" class="btn btn-primary-custom btn-lg w-100 py-3 mb-4" style="font-size: 1.5em; box-shadow: 0 0 15px rgba(45, 136, 255, 0.5);">
+                <div class="col-md-7">
+                    <div class="card-dark text-center" style="padding: 40px 20px;">
+                        <h1 class="fw-bold mb-4">Bereit?</h1>
+                        <button onclick="findMatch()" id="btn-matchmaking" class="btn btn-primary-custom btn-lg w-100 py-4 mb-4" style="font-size: 1.5em; box-shadow: 0 0 15px rgba(45, 136, 255, 0.5);">
                             <i class="fas fa-play"></i> SPIEL SUCHEN
                         </button>
-                        <div class="d-flex justify-content-center gap-2">
-                            <input type="text" id="join-id-input" class="form-control" style="max-width: 150px;" placeholder="Code...">
-                            <button onclick="joinGameByCode()" class="btn btn-secondary">Code beitreten</button>
+                        <hr>
+                        <div class="d-flex justify-content-center gap-2 mt-3">
+                            <input type="text" id="join-id-input" class="form-control" style="max-width: 150px;" placeholder="Spiel-Code...">
+                            <button onclick="joinGameByCode()" class="btn btn-secondary">Beitreten</button>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                
+                <div class="col-md-5">
                     <div class="card-dark">
-                        <h5>Online Spieler</h5>
-                        <div id="online-list" style="max-height: 300px; overflow-y: auto;"></div>
+                        <h5 class="text-warning"><i class="fas fa-trophy"></i> Top Spieler (Wins)</h5>
+                        <div id="leaderboard-list" style="max-height: 250px; overflow-y: auto;">
+                            </div>
+                    </div>
+                    
+                    <div class="card-dark mt-3">
+                        <h5>Online</h5>
+                        <div id="online-list" style="max-height: 150px; overflow-y: auto;"></div>
                     </div>
                 </div>
             </div>
@@ -126,25 +146,27 @@
                         <span id="player-top"><i class="fas fa-user"></i> Gegner</span>
                         <span id="game-status-text" class="badge bg-warning">Warte auf Gegner...</span>
                     </div>
+                    
                     <div class="board-wrapper">
                         <div id="board"></div>
                         <div id="wait-overlay" class="board-overlay">
                             <div class="spinner-border text-primary mb-3" role="status"></div>
                             <h4 class="text-white">Suche Gegner...</h4>
-                            <p class="text-muted">Teile diesen Code: <span id="game-id-display" class="text-white fw-bold user-select-all"></span></p>
+                            <p class="text-muted">Code: <span id="game-id-display" class="text-white fw-bold user-select-all"></span></p>
                             <button onclick="leaveGame()" class="btn btn-outline-danger btn-sm mt-3">Abbrechen</button>
                         </div>
                     </div>
+
                     <div class="mt-2">
                         <span id="player-bottom"><i class="fas fa-user"></i> Du</span>
                     </div>
                 </div>
+
                 <div class="col-lg-5 mt-3 mt-lg-0">
                     <div class="card-dark h-100 d-flex flex-column">
-                        <h5>Partieverlauf</h5>
+                        <h5>Verlauf</h5>
                         <div id="move-history" class="move-log flex-grow-1 mb-3"></div>
-                        <div id="analysis-display" class="alert alert-dark text-center p-2 mb-2"><small class="text-muted">Analyse Bereich</small></div>
-                        <button onclick="leaveGame()" class="btn btn-danger w-100">Spiel verlassen</button>
+                        <button onclick="leaveGame()" class="btn btn-danger w-100">Aufgeben / Verlassen</button>
                     </div>
                 </div>
             </div>
@@ -184,7 +206,7 @@
         let myColor = 'w';
         let gameListener = null;
 
-        // --- 2. AUTH ---
+        // --- 2. AUTH & ID LOGIC ---
         auth.onAuthStateChanged(user => {
             if(user) {
                 currentUser = user;
@@ -194,9 +216,7 @@
                         updateNavUI();
                         showScreen('lobby-screen');
                         updateOnlineStatus();
-                    } else {
-                        // Falls User Auth hat, aber kein DB Doc (sollte nicht passieren, aber zur Sicherheit)
-                        $('#auth-error').text("Benutzerdaten fehlen. Bitte neu registrieren oder Admin kontaktieren.");
+                        updateLeaderboard(); // Leaderboard laden
                     }
                 });
             } else {
@@ -204,7 +224,6 @@
             }
         });
 
-        // REGISTRIERUNG MIT ID (Transaktion)
         function registerUserWithId() {
             const email = $('#email-input').val();
             const password = $('#password-input').val();
@@ -212,27 +231,16 @@
             if(!username) return $('#auth-error').text("Bitte Name eingeben.");
 
             const counterRef = db.collection('config').doc('userCounter');
-
-            // Erst Auth, dann DB
             auth.createUserWithEmailAndPassword(email, password).then(cred => {
                 const uid = cred.user.uid;
-                
                 db.runTransaction(async (t) => {
                     const cDoc = await t.get(counterRef);
                     let nextId = 1;
                     if(cDoc.exists) nextId = cDoc.data().count + 1;
-                    
                     t.set(counterRef, { count: nextId });
                     t.set(db.collection('users').doc(uid), {
-                        username: username,
-                        displayId: nextId,
-                        uid: uid,
-                        email: email,
-                        wins: 0,
-                        lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+                        username: username, displayId: nextId, uid: uid, email: email, wins: 0, lastSeen: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                }).then(() => {
-                    // Success handled by onAuthStateChanged
                 });
             }).catch(e => $('#auth-error').text(e.message));
         }
@@ -251,116 +259,77 @@
             }
         }
 
-        function updateOnlineStatus() {
-            db.collection('users').doc(currentUser.uid).update({ 
-                lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-                status: 'online' 
+        // --- 3. LEADERBOARD & ONLINE ---
+        function updateLeaderboard() {
+            // Hole Top 10 Spieler sortiert nach Wins
+            db.collection('users').orderBy('wins', 'desc').limit(10).onSnapshot(snap => {
+                let html = '';
+                let rank = 1;
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    let rankClass = '';
+                    if(rank === 1) rankClass = 'rank-1';
+                    else if(rank === 2) rankClass = 'rank-2';
+                    else if(rank === 3) rankClass = 'rank-3';
+
+                    html += `
+                        <div class="leaderboard-row">
+                            <span class="${rankClass}">#${rank} ${d.username}</span>
+                            <span class="badge bg-secondary">${d.wins || 0} Wins</span>
+                        </div>
+                    `;
+                    rank++;
+                });
+                $('#leaderboard-list').html(html);
             });
+        }
+
+        function updateOnlineStatus() {
+            db.collection('users').doc(currentUser.uid).update({ lastSeen: firebase.firestore.FieldValue.serverTimestamp(), status: 'online' });
             db.collection('users').orderBy('lastSeen', 'desc').limit(10).onSnapshot(snap => {
                 let html = '';
                 snap.forEach(doc => {
                     const d = doc.data();
-                    html += `<div class="p-2 border-bottom border-secondary small">
-                        <span class="text-success">●</span> ${d.username} <span class="text-muted">#${d.displayId || '?'}</span>
-                    </div>`;
+                    html += `<div class="p-2 border-bottom border-secondary small"><span class="text-success">●</span> ${d.username}</div>`;
                 });
                 $('#online-list').html(html);
             });
         }
 
-        // --- 3. SETTINGS & ADMIN FIX ---
-        function openSettings() {
-            if(userData) $('#settings-username').val(userData.username);
-            $('#settings-modal').removeClass('hidden');
-        }
-        function closeSettings() { $('#settings-modal').addClass('hidden'); }
-
-        function saveSettings() {
-            const newName = $('#settings-username').val();
-            const newPass = $('#settings-password').val();
-            const msg = $('#settings-msg');
-
-            if(newName && newName !== userData.username) {
-                db.collection('users').doc(currentUser.uid).update({ username: newName })
-                .then(() => msg.text("Name gespeichert.").addClass("text-success"));
-            }
-            if(newPass) {
-                currentUser.updatePassword(newPass).then(() => {
-                    msg.text("Passwort & Name gespeichert.").addClass("text-success");
-                }).catch(error => msg.text(error.message).addClass("text-danger"));
-            }
-        }
-
-        // --- DER FIX FÜR ALTE USER ---
-        async function adminFixUserIds() {
-            const btn = $(event.target);
-            btn.prop('disabled', true).text('Arbeite...');
+        // --- 4. MATCHMAKING (FIXED) ---
+        async function findMatch() {
+            $('#btn-matchmaking').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Suche...');
             
             try {
-                // 1. Zähler holen
-                const counterRef = db.collection('config').doc('userCounter');
-                const countDoc = await counterRef.get();
-                let currentCount = countDoc.exists ? countDoc.data().count : 0;
+                // Suche Spiel wo status 'waiting' ist
+                const snapshot = await db.collection('games').where('status', '==', 'waiting').limit(5).get();
                 
-                // 2. Alle User holen
-                const usersSnap = await db.collection('users').get();
-                const batch = db.batch();
-                let updates = 0;
-
-                usersSnap.docs.forEach(doc => {
-                    // Wenn KEINE displayId existiert
-                    if (!doc.data().displayId) {
-                        currentCount++;
-                        updates++;
-                        batch.update(doc.ref, { displayId: currentCount });
+                let foundGame = null;
+                // Client-Side Filter: Nicht mein eigenes Spiel joinen
+                snapshot.forEach(doc => {
+                    if(doc.data().white !== currentUser.uid) {
+                        foundGame = doc;
                     }
                 });
 
-                if (updates > 0) {
-                    // Counter auch updaten
-                    batch.set(counterRef, { count: currentCount });
-                    await batch.commit();
-                    alert(`Erfolg! ${updates} alten Nutzern wurde eine ID gegeben. Der Zähler ist jetzt bei ${currentCount}.`);
-                } else {
-                    alert("Alles sauber! Alle Nutzer haben bereits eine ID.");
-                }
-            } catch (e) {
-                alert("Fehler: " + e.message);
-            }
-            btn.prop('disabled', false).text('⚠️ DB Reparieren (IDs vergeben)');
-        }
-
-        // --- 4. MATCHMAKING ---
-        async function findMatch() {
-            $('#btn-matchmaking').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Suche...');
-            try {
-                const snapshot = await db.collection('games').where('status', '==', 'waiting').limit(1).get();
-                let foundGame = null;
-                snapshot.forEach(doc => {
-                    if(doc.data().white !== currentUser.uid) foundGame = doc;
-                });
-
                 if (foundGame) {
+                    console.log("Spiel gefunden:", foundGame.id);
                     await db.collection('games').doc(foundGame.id).update({
-                        black: currentUser.uid,
-                        blackName: userData.username,
-                        blackId: userData.displayId,
-                        status: 'active'
+                        black: currentUser.uid, blackName: userData.username, blackId: userData.displayId, status: 'active'
                     });
                     loadGame(foundGame.id, 'b');
                 } else {
+                    console.log("Erstelle neues Spiel...");
                     const newGameRef = db.collection('games').doc();
                     await newGameRef.set({
-                        white: currentUser.uid,
-                        whiteName: userData.username,
-                        whiteId: userData.displayId,
-                        black: null,
-                        fen: 'start', turn: 'w', status: 'waiting',
+                        white: currentUser.uid, whiteName: userData.username, whiteId: userData.displayId,
+                        black: null, fen: 'start', turn: 'w', status: 'waiting', result: null,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     loadGame(newGameRef.id, 'w');
                 }
             } catch (error) {
+                console.error(error);
                 alert("Fehler bei der Suche.");
                 $('#btn-matchmaking').prop('disabled', false).text('SPIEL SUCHEN');
             }
@@ -378,7 +347,7 @@
             });
         }
 
-        // --- 5. GAME ENGINE ---
+        // --- 5. GAME ENGINE & WIN SCREEN ---
         function loadGame(id, color) {
             currentGameId = id;
             myColor = color;
@@ -386,7 +355,8 @@
             showScreen('game-screen');
             game = new Chess();
             $('#move-history').empty();
-            
+            $('#end-screen-overlay').addClass('hidden'); // Verstecke End Screen
+
             const config = {
                 draggable: true, position: 'start', orientation: myColor === 'w' ? 'white' : 'black',
                 pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
@@ -395,10 +365,13 @@
             board = Chessboard('board', config);
 
             if(gameListener) gameListener();
+            
+            // LISTENER
             gameListener = db.collection('games').doc(id).onSnapshot(doc => {
                 const data = doc.data();
-                if(!data) return;
+                if(!data) return; // Spiel gelöscht?
 
+                // Player Names
                 const wName = `${data.whiteName} (#${data.whiteId})`;
                 const bName = data.blackName ? `${data.blackName} (#${data.blackId})` : "Warte...";
                 
@@ -410,17 +383,52 @@
                     $('#player-top').text(wName + " (Weiß)");
                 }
 
+                // Status Check
                 if(data.status === 'active') {
                     $('#wait-overlay').addClass('hidden');
                     $('#game-status-text').removeClass('bg-warning').addClass('bg-success').text('Spiel läuft');
                 }
+                
+                // --- ABORT / LEAVE CHECK ---
+                if(data.status === 'aborted') {
+                    showEndScreen('GEWONNEN!', 'Gegner hat aufgegeben / verlassen.', 'win');
+                    return;
+                }
 
+                // --- MOVE UPDATE ---
                 if(data.fen && data.fen !== game.fen()) {
                     game.load(data.fen);
                     board.position(data.fen);
                     if(data.lastMoveSan) addLog(data.lastMoveSan);
                 }
+
+                // --- RESULT CHECK (Datenbank sagt Spiel ist vorbei) ---
+                if (data.result) {
+                    handleGameEnd(data.result);
+                }
             });
+        }
+
+        function handleGameEnd(result) {
+            // result kann sein: 'w', 'b', 'draw'
+            if (result === 'draw') {
+                showEndScreen('REMIS', 'Unentschieden.', 'draw');
+            } else if (result === myColor) {
+                showEndScreen('GEWONNEN!', 'Du hast das Spiel gewonnen.', 'win');
+            } else {
+                showEndScreen('VERLOREN', 'Viel Glück beim nächsten Mal.', 'lose');
+            }
+        }
+
+        function showEndScreen(title, reason, type) {
+            $('#end-screen-overlay').removeClass('hidden');
+            $('#end-title').text(title);
+            $('#end-reason').text(reason);
+
+            $('#end-title').removeClass('win-title lose-title draw-title');
+            if(type === 'win') $('#end-title').addClass('win-title');
+            if(type === 'lose') $('#end-title').addClass('lose-title');
+            if(type === 'draw') $('#end-title').addClass('draw-title');
         }
 
         function onDragStart(source, piece) {
@@ -434,25 +442,79 @@
         function onDrop(source, target) {
             const move = game.move({ from: source, to: target, promotion: 'q' });
             if (move === null) return 'snapback';
+
+            let result = null;
+            let status = 'active';
+
+            // GAME OVER PRÜFUNG (Hier entscheidet der Spieler, der den Zug macht)
+            if (game.game_over()) {
+                if (game.in_checkmate()) {
+                    result = game.turn() === 'w' ? 'b' : 'w'; // Der, der NICHT am Zug ist, hat gewonnen (weil der andere Matt ist)
+                    // WIN COUNT HOCHZÄHLEN
+                    incrementWins();
+                } else if (game.in_draw() || game.in_stalemate() || game.in_threefold_repetition()) {
+                    result = 'draw';
+                }
+                status = 'finished';
+            }
+
             db.collection('games').doc(currentGameId).update({
-                fen: game.fen(), turn: game.turn(), lastMoveSan: move.san
+                fen: game.fen(), turn: game.turn(), lastMoveSan: move.san,
+                result: result, status: status
             });
             addLog(move.san);
         }
 
-        function addLog(san) {
-            $('#move-history').append(`<div class="move-row"><span>${san}</span></div>`);
-            $('#move-history').scrollTop(9999);
-            let msg = "Guter Zug.";
-            if(san.includes('#')) msg = "MATT !! Brillant!";
-            else if(san.includes('+')) msg = "Schach! Stark.";
-            $('#analysis-display').text(msg);
+        function incrementWins() {
+            // Erhöhe meinen Win-Count um 1
+            db.collection('users').doc(currentUser.uid).update({
+                wins: firebase.firestore.FieldValue.increment(1)
+            });
         }
 
+        function addLog(san) {
+            $('#move-history').append(`<div style="padding:4px; border-bottom:1px solid #333;">${san}</div>`);
+            $('#move-history').scrollTop(9999);
+        }
+
+        // --- 6. LEAVE / ABORT ---
         function leaveGame() {
+            if(confirm("Willst du wirklich aufgeben? Das zählt als Niederlage.")) {
+                if(currentGameId) {
+                    // Setze Status auf 'aborted', damit der Gegner gewinnt
+                    db.collection('games').doc(currentGameId).update({
+                        status: 'aborted'
+                    });
+                }
+                backToLobby();
+            }
+        }
+        
+        function backToLobby() {
             if(gameListener) gameListener();
             showScreen('lobby-screen');
             $('#btn-matchmaking').prop('disabled', false).text('SPIEL SUCHEN');
+        }
+
+        // --- SETTINGS & ADMIN FIX ---
+        function openSettings() { if(userData) $('#settings-username').val(userData.username); $('#settings-modal').removeClass('hidden'); }
+        function closeSettings() { $('#settings-modal').addClass('hidden'); }
+        function saveSettings() {
+             const newName = $('#settings-username').val();
+             if(newName && newName !== userData.username) db.collection('users').doc(currentUser.uid).update({ username: newName });
+             closeSettings();
+        }
+        async function adminFixUserIds() {
+            // (Code from previous answer kept for safety)
+            const cRef = db.collection('config').doc('userCounter');
+            const cDoc = await cRef.get();
+            let count = cDoc.exists ? cDoc.data().count : 0;
+            const users = await db.collection('users').get();
+            const batch = db.batch();
+            users.docs.forEach(doc => { if(!doc.data().displayId) { count++; batch.update(doc.ref, { displayId: count }); }});
+            batch.set(cRef, { count: count });
+            await batch.commit();
+            alert("IDs repariert!");
         }
 
         function showScreen(id) {
