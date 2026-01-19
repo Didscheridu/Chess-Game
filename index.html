@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters: Bot Fix</title>
+    <title>Chess Masters: The Ultimate Edition</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -13,202 +13,147 @@
     <style>
         body { background-color: #18191a; color: #e4e6eb; font-family: 'Roboto', sans-serif; overflow-x: hidden; }
         .app-container { max-width: 1200px; margin: 0 auto; padding: 20px; position: relative; z-index: 50; padding-bottom: 80px; }
-        
         .card-dark { background-color: #242526; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); margin-bottom: 20px; border: 1px solid #333; position: relative; z-index: 60; }
         .btn-primary-custom { background-color: #2D88FF; color: white; font-weight: bold; border: none; }
         .btn-primary-custom:hover { background-color: #1A73E8; color: white; }
         .btn-admin { background: #e74c3c; color: white; font-weight: bold; box-shadow: 0 0 10px #e74c3c; border: none; }
-        
         .hidden { display: none !important; }
-        .id-badge { background: #3a3b3c; color: #b0b3b8; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 5px; }
-
         #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; user-select: none; position: relative; z-index: 20; }
         .board-wrapper { position: relative; max-width: 550px; margin: 0 auto; }
+        .piece-417db { transition: top 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), left 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important; z-index: 50; position: relative; }
         
-        /* SMOOTH PHYSICS */
-        .piece-417db { transition: top 0.2s ease-out, left 0.2s ease-out !important; z-index: 50; position: relative; }
-
-        /* Overlays */
-        #queue-overlay, #end-screen-overlay, .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 5000;
-            display: flex; justify-content: center; align-items: center; flex-direction: column;
-        }
-        .modal-content-custom { background: #242526; width: 500px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; position: relative; max-height: 90vh; overflow-y: auto; z-index: 5001; }
-
-        /* UI */
-        .notification-bell { position: relative; cursor: pointer; font-size: 1.2rem; margin-right: 15px; }
-        .notification-badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; justify-content: center; align-items: center; }
-        .notif-item { background: #3a3b3c; padding: 10px; border-radius: 5px; margin-bottom: 5px; font-size: 0.9em; text-align: left; }
-        .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #333; cursor: pointer; }
-        .best-friend { color: #f1c40f; text-shadow: 0 0 5px rgba(241, 196, 15, 0.5); } 
-        
-        /* Click System */
-        .highlight-dot { background-color: rgba(45, 136, 255, 0.8); width: 25%; height: 25%; border-radius: 50%; position: absolute; top: 37.5%; left: 37.5%; pointer-events: none; z-index: 55; }
-        .highlight-square { box-shadow: inset 0 0 3px 3px rgba(255, 255, 0, 0.5); }
-        .square-55d63 { cursor: pointer; }
-
-        /* Shop */
-        .coin-display { background: #f1c40f; color: #000; padding: 5px 12px; border-radius: 20px; font-weight: bold; margin-right: 15px; box-shadow: 0 0 10px rgba(241, 196, 15, 0.5); cursor: pointer; }
-        .skin-card { background: #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: center; border: 2px solid transparent; transition: 0.2s; }
-        .skin-card.active { border-color: #2D88FF; box-shadow: 0 0 15px #2D88FF; }
-        .skin-preview { width: 30px; height: 30px; display: inline-block; margin: 2px; border-radius: 4px; }
-        
-        /* FX SYSTEM */
         #fx-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; overflow: visible; }
         .kill-effect { position: absolute; display: flex; justify-content: center; align-items: center; font-size: 4.5rem; pointer-events: none; animation: pop-fade 0.8s forwards; text-shadow: 0 0 15px black; font-weight: bold; transform-origin: center; }
         @keyframes pop-fade { 0% { transform: scale(0.5); opacity: 0; } 40% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
         .projectile { position: absolute; font-size: 3rem; z-index: 200; pointer-events: none; transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
-
-        /* Win FX */
-        #global-win-fx { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; display: none; }
-        .bg-win-fire { background: radial-gradient(circle, rgba(255, 69, 0, 0.4) 0%, transparent 70%); animation: bg-pulse-red 1s infinite; }
-        .bg-win-water { background: radial-gradient(circle, rgba(0, 191, 255, 0.4) 0%, transparent 70%); animation: bg-pulse-blue 2s infinite; }
-        .bg-win-forest { background: radial-gradient(circle, rgba(50, 205, 50, 0.4) 0%, transparent 70%); animation: bg-pulse-green 3s infinite; }
-        .bg-win-gold { background: radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, transparent 70%); animation: bg-pulse-gold 1s infinite; }
-        .bg-win-dark { background: rgba(0, 0, 0, 0.8); }
-        .bg-win-hacker { background: #000; background-image: linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px); background-size: 20px 20px; }
-        .bg-win-angel { background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(200, 230, 255, 0.5) 100%); animation: bg-pulse-angel 3s infinite; }
-        .bg-win-sport { background: repeating-linear-gradient(45deg, #222, #222 10px, #333 10px, #333 20px); }
-
-        @keyframes bg-pulse-red { 0% {opacity: 0.5;} 50% {opacity: 1;} 100% {opacity: 0.5;} }
-        @keyframes bg-pulse-blue { 0% {transform: scale(1);} 50% {transform: scale(1.1);} 100% {transform: scale(1);} }
-        @keyframes bg-pulse-angel { 0% {opacity: 0.6;} 50% {opacity: 1;} 100% {opacity: 0.6;} }
-
-        .win-title { font-size: 4rem; font-weight: 900; text-shadow: 0 0 20px black; }
-        .pulse { animation: pulse-anim 2s infinite; }
-        @keyframes pulse-anim { 0% { opacity: 0.7; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1); } 100% { opacity: 0.7; transform: scale(0.95); } }
         
-        .admin-row { border-bottom: 1px solid #444; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .god-mode-active { border: 4px solid #e74c3c !important; box-shadow: 0 0 20px #e74c3c; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        .modal-content-custom { background: #242526; width: 500px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; position: relative; max-height: 90vh; overflow-y: auto; z-index: 5001; }
         
-        /* SPECIAL ANIMATIONS */
-        @keyframes hacker-glitch-anim { 0% { transform: translate(0); } 20% { transform: translate(-1px, 1px); clip-path: inset(5% 0 5% 0); } 40% { transform: translate(1px, -1px); clip-path: inset(0 5% 0 5%); } 60% { transform: translate(-1px, 0); clip-path: inset(5% 0 5% 0); } 80% { transform: translate(1px, 1px); } 100% { transform: translate(0); clip-path: inset(0 0 0 0); } }
-        @keyframes angel-float-anim { 0%, 100% { transform: translateY(0); filter: brightness(1.2) drop-shadow(0 0 2px white); } 50% { transform: translateY(-4px); filter: brightness(1.5) drop-shadow(0 0 8px white); } }
-        @keyframes gold-shine-anim { 0%, 100% { filter: brightness(1) sepia(1) saturate(5) hue-rotate(10deg); } 50% { filter: brightness(1.5) sepia(1) saturate(5) hue-rotate(10deg) drop-shadow(0 0 10px gold); } }
-
-        /* WINGS */
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background: #7f8c8d; }
+        .status-online { background: #2ecc71; box-shadow: 0 0 5px #2ecc71; }
+        .status-ingame { background: #e74c3c; }
+        
         .wing-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 45; display: flex; justify-content: center; align-items: center; }
-        .wing-left, .wing-right { font-size: 2.2rem; color: rgba(255,255,255,0.9); text-shadow: 0 0 10px #00ffff; position: absolute; top: -5px; }
-        .wing-left { left: -12px; transform: scaleX(-1); animation: wing-flap-l 0.6s infinite alternate ease-in-out; }
-        .wing-right { right: -12px; animation: wing-flap-r 0.6s infinite alternate ease-in-out; }
-        @keyframes wing-flap-r { from { transform: rotate(0deg); } to { transform: rotate(20deg); } }
-        @keyframes wing-flap-l { from { transform: scaleX(-1) rotate(0deg); } to { transform: scaleX(-1) rotate(20deg); } }
-        
+        .wing-left, .wing-right { font-size: 2.2rem; color: white; position: absolute; top: -5px; }
+        .wing-left { left: -12px; transform: scaleX(-1); animation: flap-l 0.6s infinite alternate; }
+        .wing-right { right: -12px; animation: flap-r 0.6s infinite alternate; }
+        @keyframes flap-r { from { transform: rotate(0deg); } to { transform: rotate(20deg); } }
+        @keyframes flap-l { from { transform: scaleX(-1) rotate(0deg); } to { transform: scaleX(-1) rotate(20deg); } }
+
+        @keyframes hacker-glitch-anim { 0% { transform: translate(0); } 20% { transform: translate(-1px, 1px); clip-path: inset(5% 0 5% 0); } 40% { transform: translate(1px, -1px); clip-path: inset(0 5% 0 5%); } 100% { transform: translate(0); clip-path: inset(0 0 0 0); } }
+        @keyframes angel-float-anim { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+        @keyframes gold-shine-anim { 0%, 100% { filter: brightness(1) sepia(1) saturate(5); } 50% { filter: brightness(1.5) sepia(1) saturate(5) drop-shadow(0 0 10px gold); } }
+
         .legal-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; padding: 10px; text-align: center; font-size: 0.8rem; z-index: 100; border-top: 1px solid #333; }
         .legal-footer a { color: #aaa; margin: 0 10px; text-decoration: none; cursor: pointer; }
-        .legal-footer a:hover { color: #fff; }
-        #cookie-banner { position: fixed; bottom: 0; left: 0; width: 100%; background: #2D88FF; color: white; padding: 20px; z-index: 9999; text-align: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
-        .legal-text { text-align: left; font-size: 0.9em; color: #ccc; line-height: 1.5; white-space: pre-wrap; }
-        .nav-legal .nav-link { color: #aaa; cursor: pointer; }
-        .nav-legal .nav-link.active { color: #fff; background-color: #3a3b3c; }
+        .coin-display { background: #f1c40f; color: #000; padding: 5px 12px; border-radius: 20px; font-weight: bold; margin-right: 15px; cursor: pointer; }
         .promo-btn { font-size: 2rem; width: 60px; height: 60px; margin: 5px; }
+        .leaderboard-item { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid #333; }
     </style>
 </head>
 <body>
 
     <style id="dynamic-skin-styles"></style>
-    <div id="global-win-fx"></div>
+    <div id="global-win-fx" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none; display:none;"></div>
+
+    <div id="challenge-wait-modal" class="modal-overlay hidden">
+        <div class="modal-content-custom text-center">
+            <h3>Herausforderung gesendet</h3>
+            <div class="spinner-border text-primary my-3"></div>
+            <p>Warte auf <span id="challenge-target-name" class="fw-bold">...</span></p>
+            <button onclick="cancelChallenge()" class="btn btn-outline-danger w-100">Abbrechen</button>
+        </div>
+    </div>
 
     <div id="admin-modal" class="modal-overlay hidden">
         <div class="modal-content-custom" style="width: 700px;">
             <h3 class="text-danger fw-bold"><i class="fas fa-shield-alt"></i> ADMIN PANEL</h3>
-            <ul class="nav nav-tabs mb-3">
-                <li class="nav-item"><a class="nav-link active" onclick="showAdminTab('eco')">User & Items</a></li>
-                <li class="nav-item"><a class="nav-link" onclick="showAdminTab('bans')">Banns</a></li>
-            </ul>
-            <div id="admin-tab-eco">
-                <div class="input-group mb-3">
-                    <input type="number" id="admin-target-id" class="form-control" placeholder="Ziel User ID">
-                    <button class="btn btn-light" onclick="adminLoadUser()">Laden</button>
-                </div>
-                <div id="admin-user-info" class="card bg-dark p-3 mb-3 hidden">
-                    <h5>User: <span id="adm-u-name">...</span> (ID: <span id="adm-u-id">...</span>)</h5>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6"><input type="number" id="adm-coins" class="form-control" placeholder="Coins"><button class="btn btn-success w-100 mt-1" onclick="adminSetVal('coins')">Set Coins</button></div>
-                        <div class="col-6"><input type="number" id="adm-wins" class="form-control" placeholder="Wins"><button class="btn btn-success w-100 mt-1" onclick="adminSetVal('wins')">Set Wins</button></div>
-                    </div>
-                    <div class="input-group mb-3">
-                        <input type="text" id="adm-skin-input" class="form-control" placeholder="Skin Key (z.B. admin_gold)">
-                        <button class="btn btn-warning" onclick="adminGiveSkin()">Skin geben</button>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button onclick="adminKick()" class="btn btn-outline-warning flex-grow-1">Match Kick</button>
-                        <button onclick="adminBan()" class="btn btn-danger flex-grow-1">BANNEN</button>
-                    </div>
-                </div>
+            <div class="input-group mb-3">
+                <input type="text" id="admin-target-search" class="form-control" placeholder="User Name oder ID">
+                <button class="btn btn-light" onclick="adminLoadUser()">Laden</button>
             </div>
-            <div id="admin-tab-bans" class="hidden">
-                <h5>Gebannte Spieler</h5>
-                <div id="admin-ban-list" style="max-height: 300px; overflow-y:auto;"></div>
+            <div id="admin-user-info" class="card bg-dark p-3 mb-3 hidden">
+                <h5 id="adm-u-name">...</h5>
+                <div class="row g-2 mb-3">
+                    <div class="col-6"><label>ID Nachtragen:</label><div class="input-group"><input type="number" id="adm-displayid" class="form-control"><button class="btn btn-primary" onclick="adminSetVal('displayId')">Set</button></div></div>
+                    <div class="col-6"><label>Coins:</label><div class="input-group"><input type="number" id="adm-coins" class="form-control"><button class="btn btn-success" onclick="adminSetVal('coins')">Set</button></div></div>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="text" id="adm-skin-input" class="form-control" placeholder="Skin Key (z.B. admin_gold)">
+                    <button class="btn btn-warning" onclick="adminGiveSkin()">Skin geben</button>
+                </div>
+                <div class="d-flex gap-2">
+                    <button onclick="adminKick()" class="btn btn-outline-warning w-50">Match Kick</button>
+                    <button onclick="adminBan()" class="btn btn-danger w-50">BANNEN</button>
+                </div>
             </div>
             <button onclick="closeModal('admin-modal')" class="btn btn-secondary w-100 mt-3">Schließen</button>
         </div>
     </div>
 
-    <div id="cookie-banner" class="hidden"><div class="container"><h4>Cookies</h4><p class="small">Technisch notwendige Cookies.</p><button onclick="acceptCookies()" class="btn btn-light">OK</button></div></div>
-    <div id="legal-modal" class="modal-overlay hidden"><div class="modal-content-custom" style="width:800px;text-align:left;"><h3>Rechtliches</h3><ul class="nav nav-tabs mb-3 nav-legal"><li class="nav-item"><a class="nav-link active" onclick="showLegalTab('impressum')">Impressum</a></li><li class="nav-item"><a class="nav-link" onclick="showLegalTab('datenschutz')">Datenschutz</a></li><li class="nav-item"><a class="nav-link" onclick="showLegalTab('agb')">AGB</a></li><li class="nav-item"><a class="nav-link" onclick="showLegalTab('widerruf')">Widerruf</a></li></ul><div id="legal-content" class="legal-text p-3 bg-dark rounded" style="max-height:400px;overflow-y:auto;"></div><button onclick="closeModal('legal-modal')" class="btn btn-secondary w-100 mt-3">Close</button></div></div>
-    <div id="promotion-modal" class="modal-overlay hidden"><div class="modal-content-custom text-center" style="width: 300px;"><h4>Umwandlung</h4><div class="d-flex justify-content-center"><button onclick="selectPromotion('q')" class="btn btn-outline-light promo-btn"><i class="fas fa-chess-queen"></i></button><button onclick="selectPromotion('r')" class="btn btn-outline-light promo-btn"><i class="fas fa-chess-rook"></i></button><button onclick="selectPromotion('b')" class="btn btn-outline-light promo-btn"><i class="fas fa-chess-bishop"></i></button><button onclick="selectPromotion('n')" class="btn btn-outline-light promo-btn"><i class="fas fa-chess-knight"></i></button></div></div></div>
-    <div id="challenge-wait-modal" class="modal-overlay hidden"><div class="modal-content-custom text-center"><h3>Herausforderung gesendet</h3><div class="spinner-border text-primary my-3"></div><p>Warte auf <span id="challenge-target-name">...</span></p><button onclick="cancelChallenge()" class="btn btn-outline-danger w-100">Abbrechen</button></div></div>
-    <div id="shop-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h3>Shop</h3><div class="d-flex justify-content-between mb-3 bg-dark p-2 rounded"><span>Coins:</span><span class="text-warning fw-bold" id="shop-coins">0</span></div><div id="skin-list" class="row g-2"></div><button onclick="closeModal('shop-modal')" class="btn btn-secondary w-100 mt-3">Close</button></div></div>
-    <div id="queue-overlay" class="hidden"><div class="text-center"><div class="spinner-border text-primary mb-3" style="width:4rem;height:4rem;"></div><h2 class="pulse">Suche...</h2><p id="queue-timer">0s</p><button onclick="leaveQueue()" class="btn btn-outline-danger mt-4 px-5 rounded-pill">Abbrechen</button></div></div>
-    <div id="notif-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Notifs</h4><div id="notif-list" style="max-height:300px;overflow:auto;"></div><button onclick="closeModal('notif-modal')" class="btn btn-secondary w-100 mt-3">Close</button></div></div>
-    <div id="profile-modal" class="modal-overlay hidden"><div class="modal-content-custom text-center"><div style="width:80px;height:80px;background:#2D88FF;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:2rem;"><i class="fas fa-user"></i></div><h3 id="profile-name">...</h3><p id="profile-id">#0</p><div class="d-flex justify-content-center gap-3"><div><h4 id="profile-wins" class="text-warning">0</h4><small>Wins</small></div><div><h4 id="profile-status" class="text-success">On</h4><small>Status</small></div></div><hr><div id="profile-actions" class="d-grid gap-2"></div><button onclick="closeModal('profile-modal')" class="btn btn-outline-secondary mt-3 w-100">Close</button></div></div>
-    <div id="private-menu-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h3>Privat</h3><div class="d-grid gap-3 mt-4"><button onclick="openPrivateCreate()" class="btn btn-primary btn-lg">Host</button><button onclick="openPrivateJoin()" class="btn btn-outline-light btn-lg">Join</button></div><button onclick="closeModal('private-menu-modal')" class="btn btn-link mt-3">Close</button></div></div>
-    <div id="private-create-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Code:</h4><div id="host-code-display" class="fw-bold fs-1 bg-dark p-2 rounded mb-3 text-success">...</div><div class="spinner-border spinner-border-sm text-warning"></div><br><button onclick="cancelPrivateHost()" class="btn btn-danger w-100 mt-3">Cancel</button></div></div>
-    <div id="private-join-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Code</h4><input id="private-join-input" class="form-control text-center mb-3 fs-4"><button onclick="submitPrivateJoin()" class="btn btn-success w-100">Join</button><button onclick="closeModal('private-join-modal')" class="btn btn-secondary w-100 mt-2">Cancel</button></div></div>
-    <div id="settings-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Settings</h4><input id="settings-username" class="form-control mb-3" placeholder="Name"><input type="password" id="settings-password" class="form-control mb-3" placeholder="PW"><hr><button onclick="openLegal('impressum')" class="btn btn-sm btn-outline-light w-100 mb-2">Rechtliches</button><button onclick="deleteAccount()" class="btn btn-sm btn-danger w-100">Widerruf / Löschen</button><hr><div class="d-flex justify-content-end gap-2"><button onclick="closeModal('settings-modal')" class="btn btn-secondary">Cancel</button><button onclick="saveSettings()" class="btn btn-success">Save</button></div></div></div>
-    <div id="end-screen-overlay" class="hidden"><div class="modal-content-custom text-center"><div id="end-title" class="win-title">SIEG!</div><div id="end-reward" class="fs-4 text-warning my-2 fw-bold"></div><p id="end-reason" class="text-muted">...</p><button onclick="backToLobby()" class="btn btn-light btn-lg w-100 fw-bold">Lobby</button></div></div>
-
-    <div class="app-container">
-        <div class="d-flex justify-content-between align-items-center mb-4 p-3 card-dark">
-            <h3 class="m-0 fw-bold"><i class="fas fa-chess"></i> CHESS MASTERS</h3>
-            <div id="nav-user-area" class="hidden d-flex align-items-center">
-                <button id="admin-btn" onclick="openAdminPanel()" class="btn btn-admin me-3 hidden"><i class="fas fa-crown"></i> ADMIN</button>
-                <div class="coin-display" onclick="openShop()"><i class="fas fa-coins"></i> <span id="nav-coins">0</span></div>
-                <div class="me-3 ms-3 fw-bold text-warning" style="font-size:1.1rem;">Wins: <span id="nav-wins">0</span> 🏆</div>
-                <div class="notification-bell ms-3" onclick="openNotifModal()"><i class="fas fa-bell"></i><div id="bell-badge" class="notification-badge hidden">0</div></div>
-                <div class="me-3 text-end ms-3"><div class="fw-bold text-white"><span id="nav-username">...</span></div><div class="small text-muted">ID: <span id="nav-userid">#?</span></div></div>
-                <button onclick="openSettings()" class="btn btn-sm btn-outline-light me-2"><i class="fas fa-cog"></i></button>
-                <button onclick="logout()" class="btn btn-sm btn-outline-danger"><i class="fas fa-sign-out-alt"></i></button>
-            </div>
+    <div id="auth-screen">
+        <div class="card-dark text-center" style="max-width: 400px; margin: 80px auto;">
+            <h2 class="fw-bold mb-4">Chess Masters</h2>
+            <div id="auth-error" class="alert alert-danger hidden"></div>
+            <input id="email-input" class="form-control mb-2" placeholder="E-Mail">
+            <input id="password-input" type="password" class="form-control mb-3" placeholder="Passwort">
+            <input id="username-input" class="form-control mb-3" placeholder="Username (Registrierung)">
+            <button onclick="loginUser()" class="btn btn-primary-custom w-100 mb-2">Login</button>
+            <button onclick="registerUserWithId()" class="btn btn-outline-light w-100">Konto erstellen</button>
         </div>
+    </div>
 
-        <div id="auth-screen">
-            <div class="card-dark text-center" style="max-width: 400px; margin: 50px auto;">
-                <h3>Login</h3><input id="email-input" class="form-control mb-2" placeholder="E-Mail"><input id="password-input" type="password" class="form-control mb-3" placeholder="Passwort"><input id="username-input" class="form-control mb-3" placeholder="Username (Registrierung)"><button onclick="loginUser()" class="btn btn-primary-custom w-100 mb-2">Login</button><button onclick="registerUserWithId()" class="btn btn-outline-light w-100">Konto erstellen</button>
+    <div id="lobby-screen" class="hidden">
+        <div class="app-container">
+            <div class="d-flex justify-content-between align-items-center mb-4 p-3 card-dark">
+                <h3 class="m-0 fw-bold">CHESS MASTERS</h3>
+                <div id="nav-user-area" class="d-flex align-items-center">
+                    <button id="admin-btn" onclick="openAdminPanel()" class="btn btn-admin me-3 hidden">ADMIN</button>
+                    <div class="coin-display" onclick="openShop()"><i class="fas fa-coins"></i> <span id="nav-coins">0</span></div>
+                    <div class="me-3 ms-3 fw-bold text-warning">Wins: <span id="nav-wins">0</span> 🏆</div>
+                    <div class="me-3 text-end"><span id="nav-username" class="fw-bold">...</span><br><small id="nav-userid">#?</small></div>
+                    <button onclick="openSettings()" class="btn btn-sm btn-outline-light me-2"><i class="fas fa-cog"></i></button>
+                    <button onclick="logout()" class="btn btn-sm btn-outline-danger"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
             </div>
-        </div>
-
-        <div id="lobby-screen" class="hidden">
             <div class="row">
                 <div class="col-md-7">
-                    <div class="card-dark text-center" style="padding: 40px 20px; min-height: 400px;">
-                        <h2 class="fw-bold mb-4">Bereit?</h2>
-                        <button onclick="joinRankedQueue()" class="btn btn-primary-custom btn-lg w-100 p-4 mb-3"><i class="fas fa-globe"></i> RANKED MATCH</button>
-                        <div class="row g-2 mb-3"><div class="col-6"><button onclick="startBotGame()" class="btn btn-warning w-100 p-3 fw-bold"><i class="fas fa-robot"></i> VS BOT</button></div><div class="col-6"><button onclick="showPrivateMenu()" class="btn btn-info w-100 p-3 fw-bold"><i class="fas fa-user-secret"></i> PRIVAT</button></div></div>
-                        <button onclick="openShop()" class="btn btn-outline-warning w-100"><i class="fas fa-store"></i> SKIN SHOP</button>
+                    <div class="card-dark text-center" style="padding: 50px;">
+                        <button onclick="joinRankedQueue()" class="btn btn-primary-custom btn-lg w-100 mb-3">RANKED MATCH</button>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6"><button onclick="startBotGame()" class="btn btn-warning w-100 p-3">VS BOT</button></div>
+                            <div class="col-6"><button onclick="showPrivateMenu()" class="btn btn-info w-100 p-3">PRIVAT</button></div>
+                        </div>
+                        <button onclick="openShop()" class="btn btn-outline-warning w-100">SKIN SHOP</button>
                     </div>
                 </div>
                 <div class="col-md-5">
-                    <div class="card-dark mb-3"><h5>🏆 Rangliste</h5><div id="leaderboard-list" style="max-height: 200px; overflow-y: auto;"></div></div>
-                    <div class="card-dark"><h5>Freunde</h5><div class="input-group mb-3"><input type="number" id="friend-id-input" class="form-control" placeholder="ID"><button onclick="sendFriendRequest()" class="btn btn-outline-info">Add</button></div><div id="friends-list" style="max-height: 250px; overflow-y: auto;"></div></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="game-screen" class="hidden">
-            <div class="row">
-                <div class="col-lg-7">
-                    <div class="d-flex justify-content-between mb-2"><span id="player-top">Gegner</span><div class="d-flex gap-2"><button id="god-mode-btn" onclick="toggleGodMode()" class="btn btn-sm btn-outline-danger fw-bold hidden"><i class="fas fa-bolt"></i> GOD MODE</button><span id="game-status-text" class="badge bg-success">Spiel läuft</span></div></div>
-                    <div class="board-wrapper"><div id="board"></div><div id="fx-overlay"></div></div><div class="mt-2"><span id="player-bottom">Du</span></div>
-                </div>
-                <div class="col-lg-5 mt-3">
-                    <div class="card-dark h-100 d-flex flex-column"><h5>Verlauf</h5><div id="move-history" class="move-log flex-grow-1 mb-3" style="height:250px;overflow-y:auto;background:#222;padding:10px;"></div><button onclick="leaveGame()" class="btn btn-danger w-100">Aufgeben</button></div>
+                    <div class="card-dark mb-3"><h5>🏆 Rangliste</h5><div id="leaderboard-list"></div></div>
+                    <div class="card-dark"><h5>Freunde</h5><input type="number" id="friend-id-input" class="form-control mb-2" placeholder="ID"><button onclick="sendFriendRequest()" class="btn btn-sm btn-outline-info w-100">Add</button><div id="friends-list" class="mt-3"></div></div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div id="game-screen" class="hidden">
+        <div class="app-container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="d-flex justify-content-between mb-2"><span id="player-top">Gegner</span><button id="god-mode-btn" onclick="toggleGodMode()" class="btn btn-sm btn-danger hidden">GOD MODE</button></div>
+                    <div class="board-wrapper"><div id="board"></div><div id="fx-overlay"></div></div>
+                    <div class="mt-2"><span id="player-bottom">Du</span></div>
+                </div>
+                <div class="col-lg-4"><div class="card-dark h-100"><h5>Verlauf</h5><div id="move-history" style="height:300px; overflow-y:auto;"></div><button onclick="leaveGame()" class="btn btn-danger w-100 mt-3">Aufgeben</button></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="shop-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h3>Shop</h3><div id="skin-list" class="row g-2"></div><button onclick="closeModal('shop-modal')" class="btn btn-secondary w-100 mt-3">Close</button></div></div>
+    <div id="promotion-modal" class="modal-overlay hidden"><div class="modal-content-custom text-center"><h4>Umwandlung</h4><div class="d-flex justify-content-center"><button onclick="selectPromotion('q')" class="btn btn-outline-light promo-btn">👸</button><button onclick="selectPromotion('r')" class="btn btn-outline-light promo-btn">🏰</button><button onclick="selectPromotion('b')" class="btn btn-outline-light promo-btn">♗</button><button onclick="selectPromotion('n')" class="btn btn-outline-light promo-btn">🐴</button></div></div></div>
+    <div id="settings-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Settings</h4><input id="settings-username" class="form-control mb-3"><hr><button onclick="openLegal('impressum')" class="btn btn-sm btn-outline-light w-100 mb-2">Rechtliches</button><button onclick="deleteAccount()" class="btn btn-sm btn-danger w-100">Widerruf / Löschen</button><hr><button onclick="saveSettings()" class="btn btn-success w-100">Save</button><button onclick="closeModal('settings-modal')" class="btn btn-link w-100">Close</button></div></div>
+    <div id="legal-modal" class="modal-overlay hidden"><div class="modal-content-custom" style="width:800px;"><div id="legal-content" style="text-align:left; font-size:0.9rem;"></div><button onclick="closeModal('legal-modal')" class="btn btn-secondary w-100 mt-3">Close</button></div></div>
+    <div id="end-screen-overlay" class="hidden"><div class="modal-content-custom text-center"><div id="end-title" class="win-title">SIEG!</div><div id="end-reward" class="text-warning fw-bold fs-4"></div><button onclick="backToLobby()" class="btn btn-light w-100 mt-3">Lobby</button></div></div>
 
     <div class="legal-footer"><a onclick="openLegal('impressum')">Impressum</a> | <a onclick="openLegal('datenschutz')">Datenschutz</a></div>
 
@@ -225,110 +170,36 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // LEGAL - BITTE DATEN ERGÄNZEN!
-         const LEGAL_TEXTS = {
-            impressum: `
-                <strong>IMPRESSUM</strong><br><br>
-                Angaben gemäß § 5 DDG:<br><br>
-                <strong>Kayden Schunack</strong><br>
-                Kontakt:<br>
-                E-Mail: didskanal@gmail.com<br>
-                Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV:<br>
-                Kayden Schunack<br>
-            `,
-            datenschutz: `
-                <strong>DATENSCHUTZERKLÄRUNG</strong><br><br>
-                1. Datenschutz auf einen Blick<br>
-                Wir nutzen Google Firebase zur Speicherung von Spieldaten und zur Authentifizierung. Es werden keine Werbe-Tracker Dritter eingesetzt.<br><br>
-                2. Verantwortliche Stelle<br>
-                Kayden schunack, didskanal@gmail.com<br><br>
-                3. Deine Rechte<br>
-                Du hast jederzeit das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung deiner Daten. Nutze dafür den Button "Account Löschen" in den Einstellungen.
-            `,
-            agb: `
-                <strong>ALLGEMEINE GESCHÄFTSBEDINGUNGEN (AGB)</strong><br><br>
-                1. Geltungsbereich<br>
-                Diese AGB gelten für die Nutzung der App Chess Masters.<br><br>
-                2. Virtuelle Währung<br>
-                Die im Spiel erworbenen "Coins" und "Skins" sind virtuelle Gegenstände ohne realen Geldwert. Eine Auszahlung ist ausgeschlossen.
-            `,
-            widerruf: `
-                <strong>WIDERRUFSBELEHRUNG</strong><br><br>
-                Sie haben das Recht, binnen vierzehn Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen.<br>
-                Um Ihr Widerrufsrecht auszuüben, können Sie Ihren Account in den Einstellungen unter "Widerruf / Account Löschen" sofort auflösen oder uns kontaktieren unter [DEINE EMAIL].
-            `
-        };
-
         const SKINS = {
-            'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', animCss: '', anim: '⚔️', winBg: '' },
-            'water': { name: 'Atlantis', price: 50, colorW: '#a8d0e6', colorB: '#374785', filter: 'hue-rotate(180deg) brightness(1.2)', anim: '🌊', winBg: 'bg-win-water' },
+            'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', anim: '⚔️' },
             'fire': { name: 'Inferno', price: 100, colorW: '#f6c7b6', colorB: '#a31621', filter: 'sepia(1) saturate(5) hue-rotate(-50deg)', anim: '💥', winBg: 'bg-win-fire' },
-            'forest': { name: 'Smaragd', price: 200, colorW: '#c8e6c9', colorB: '#2e7d32', filter: 'sepia(1) hue-rotate(80deg) saturate(2)', anim: '🍃', winBg: 'bg-win-forest' },
-            'dark': { name: 'Shadow', price: 500, colorW: '#95a5a6', colorB: '#2c3e50', filter: 'grayscale(100%) contrast(1.5)', anim: '💀', winBg: 'bg-win-dark' },
-            'gold': { name: 'Midas', price: 1000, colorW: '#f9e79f', colorB: '#b7950b', filter: 'sepia(1) saturate(3) hue-rotate(10deg)', anim: '✨', winBg: 'bg-win-gold' },
-            'admin_gold': { name: 'KING GOLD', price: 99999, adminOnly: true, colorW: '#ffd700', colorB: '#b8860b', filter: 'none', animCss: 'gold-shine-anim', anim: '👑', winBg: 'bg-win-gold' },
-            'admin_hacker': { name: 'HACKER', price: 99999, adminOnly: true, colorW: '#0f0', colorB: '#000', filter: 'contrast(1.5) grayscale(1) drop-shadow(0 0 2px white)', animCss: 'hacker-glitch-anim 0.3s infinite', anim: '💻', winBg: 'bg-win-hacker' },
-            'admin_angel': { name: 'ARCHANGEL', price: 99999, adminOnly: true, colorW: '#fff', colorB: '#87ceeb', filter: 'brightness(1.5) drop-shadow(0 0 5px white)', animCss: 'angel-float-anim 3s infinite', anim: '👼', winBg: 'bg-win-angel', hasWings: true },
-            'admin_football': { name: 'FUSSBALL', price: 99999, adminOnly: true, colorW: '#4caf50', colorB: '#fff', filter: 'drop-shadow(0 0 2px white)', anim: '⚽', winBg: 'bg-win-sport', isProjectile: true },
-            'admin_basketball': { name: 'BASKETBALL', price: 99999, adminOnly: true, colorW: '#e67e22', colorB: '#000', filter: 'drop-shadow(0 0 2px white)', anim: '🏀', winBg: 'bg-win-sport', isProjectile: true }
+            'admin_gold': { name: 'KING GOLD', adminOnly: true, colorW: '#ffd700', colorB: '#b8860b', filter: 'none', animCss: 'gold-shine-anim', anim: '👑', winBg: 'bg-win-gold' },
+            'admin_hacker': { name: 'HACKER', adminOnly: true, colorW: '#0f0', colorB: '#000', filter: 'contrast(1.5) grayscale(1) drop-shadow(0 0 2px white)', animCss: 'hacker-glitch-anim 0.3s infinite', anim: '💻', winBg: 'bg-win-hacker' },
+            'admin_angel': { name: 'ARCHANGEL', adminOnly: true, colorW: '#fff', colorB: '#87ceeb', filter: 'brightness(1.5) drop-shadow(0 0 5px white)', animCss: 'angel-float-anim 3s infinite', anim: '👼', winBg: 'bg-win-angel', hasWings: true },
+            'admin_football': { name: 'FUSSBALL', adminOnly: true, colorW: '#4caf50', colorB: '#fff', filter: 'drop-shadow(0 0 2px white)', anim: '⚽', isProjectile: true },
+            'admin_basketball': { name: 'BASKETBALL', adminOnly: true, colorW: '#e67e22', colorB: '#000', filter: 'drop-shadow(0 0 2px white)', anim: '🏀', isProjectile: true }
         };
 
-        let currentUser = null, userData = null;
-        let game = new Chess(), board = null, myColor = 'w';
-        let currentGameId = null, gameMode = 'online';
-        let gameListener = null, queueListener = null, notifListener = null, hostListener = null, challengeListener = null;
-        let selectedSquare = null, queueInterval = null, queueTime = 0;
-        let currentWhiteSkin = 'default', currentBlackSkin = 'default';
-        let currentChallengeGameId = null, currentChallengeNotifId = null, currentChallengeTargetUid = null;
-        let isAdmin = false, godMode = false, adminLoadedUserUid = null;
-        let wingsInterval = null, pendingPromotion = null;
-
-        if(!localStorage.getItem('cookiesAccepted')) $('#cookie-banner').removeClass('hidden');
-        function acceptCookies() { localStorage.setItem('cookiesAccepted', 'true'); $('#cookie-banner').addClass('hidden'); }
+        let currentUser, userData, isAdmin = false, game = new Chess(), board, currentGameId = null, gameMode = 'lobby';
+        let currentWhiteSkin = 'default', currentBlackSkin = 'default', wingsInterval, selectedSquare, myColor, pendingPromotion;
+        let currentChallengeGameId, currentChallengeNotifId, currentChallengeTargetUid, challengeListener;
 
         auth.onAuthStateChanged(user => {
-            if(user) {
+            if (user) {
                 currentUser = user;
                 db.collection('users').doc(user.uid).onSnapshot(doc => {
-                    if(doc.exists) {
+                    if (doc.exists) {
                         userData = doc.data();
-                        if(userData.banned && userData.displayId > 2) { alert("BANNED"); auth.signOut(); location.reload(); return; }
+                        if (userData.banned && userData.displayId > 2) { auth.signOut(); location.reload(); return; }
                         isAdmin = (userData.displayId === 1 || userData.displayId === 2);
-                        if(isAdmin) $('#admin-btn').removeClass('hidden');
-                        if(!userData.coins) userData.coins = 0;
-                        if(!userData.inventory) userData.inventory = ['default'];
-                        if(!userData.equippedSkin) userData.equippedSkin = 'default';
-                        
-                        updateHeader(); loadFriends(); listenNotifications(); updateLeaderboard();
-                        if(!$('#shop-modal').hasClass('hidden')) renderShopUI();
-                        
-                        // FIX: Only load if in online mode and ID changed. BOT MODE IS IGNORED HERE.
-                        if (gameMode !== 'bot') {
-                            if(userData.activeGameId && userData.activeGameId !== currentGameId && $('#game-screen').hasClass('hidden')) {
-                                db.collection('games').doc(userData.activeGameId).get().then(g => {
-                                    if(g.exists && g.data().status !== 'finished' && g.data().status !== 'aborted') loadOnlineGame(userData.activeGameId);
-                                    else { db.collection('users').doc(currentUser.uid).update({activeGameId: null}); showScreen('lobby-screen'); }
-                                });
-                            } else if (!userData.activeGameId && currentGameId === null) showScreen('lobby-screen');
-                        }
+                        if (isAdmin) $('#admin-btn, #god-mode-btn').removeClass('hidden');
+                        updateUI();
+                        if (gameMode === 'lobby' && userData.activeGameId && userData.activeGameId !== currentGameId) loadOnlineGame(userData.activeGameId);
+                        else if (!userData.activeGameId && gameMode !== 'bot') showScreen('lobby-screen');
                     }
                 });
-                setInterval(() => { if(currentUser) db.collection('users').doc(currentUser.uid).update({lastSeen: firebase.firestore.FieldValue.serverTimestamp()}); }, 60000);
             } else showScreen('auth-screen');
         });
-
-        // --- ADMIN ---
-        function openAdminPanel() { $('#admin-modal').removeClass('hidden'); }
-        function showAdminTab(tab) { $('#admin-tab-eco, #admin-tab-bans').addClass('hidden'); $(`#admin-tab-${tab}`).removeClass('hidden'); if(tab==='bans')loadBanList(); }
-        function adminLoadUser() { const id = parseInt($('#admin-target-id').val()); db.collection('users').where('displayId', '==', id).get().then(s => { if(s.empty) return alert("User 404"); const d = s.docs[0].data(); adminLoadedUserUid = s.docs[0].id; $('#adm-u-name').text(d.username); $('#adm-u-id').text(d.displayId); $('#adm-coins').val(d.coins||0); $('#adm-wins').val(d.wins||0); $('#admin-user-info').removeClass('hidden'); }); }
-        function adminSetVal(field) { if(!adminLoadedUserUid) return; db.collection('users').doc(adminLoadedUserUid).update({[field]: parseInt($(`#adm-${field}`).val())}).then(()=>alert("Saved")); }
-        function adminKick() { if(!adminLoadedUserUid) return; db.collection('users').doc(adminLoadedUserUid).get().then(d => { if(d.data().activeGameId) db.collection('games').doc(d.data().activeGameId).update({status: 'aborted'}).then(()=>alert("Kicked")); }); }
-        function adminBan() { if(!adminLoadedUserUid) return; if(parseInt($('#adm-u-id').text()) <= 2) return alert("Admin immun!"); db.collection('users').doc(adminLoadedUserUid).update({banned: true}).then(()=>{ alert("BANNED"); adminLoadUser(); }); }
-        function loadBanList() { db.collection('users').where('banned', '==', true).get().then(s => { let h = ''; s.forEach(d => { h += `<div class="admin-row"><span>${d.data().username} (#${d.data().displayId})</span><button class="btn btn-sm btn-success" onclick="adminUnban('${d.id}')">Unban</button></div>`; }); $('#admin-ban-list').html(h || "None"); }); }
-        function adminUnban(uid) { db.collection('users').doc(uid).update({banned: false}).then(()=>loadBanList()); }
-        function adminGiveSkin() { const sk=$('#adm-skin-input').val(); if(!SKINS[sk]) return alert("Invalid"); if(!adminLoadedUserUid) return; db.collection('users').doc(adminLoadedUserUid).update({inventory: firebase.firestore.FieldValue.arrayUnion(sk)}).then(()=>alert("Given")); }
-        function toggleGodMode() { godMode = !godMode; if(godMode) { $('#god-mode-btn').addClass('god-mode-active').html('<i class="fas fa-bolt"></i> GOD ON'); board = Chessboard('board', { position: game.fen(), draggable: true, onDrop: onGodDrop, pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png' }); updateBoardVisuals(); } else { $('#god-mode-btn').removeClass('god-mode-active').html('<i class="fas fa-bolt"></i> GOD MODE'); board = Chessboard('board', { position: game.fen(), draggable: false, pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png' }); $('#board').off('click').on('click', '.square-55d63', handleSquareClick); updateBoardVisuals(); } }
-        function onGodDrop(source, target, piece, newPos) { if(!isAdmin || !godMode) return 'snapback'; const newFen = Chessboard.objToFen(newPos) + " " + game.turn() + " - - 0 1"; db.collection('games').doc(currentGameId).update({ fen: newFen, lastMoveSan: "GOD MODE" }); game.load(newFen); }
 
         // --- VISUALS ---
         function updateBoardVisuals() {
@@ -336,246 +207,155 @@
             const sB = SKINS[currentBlackSkin] || SKINS['default'];
             const cols = ['a','b','c','d','e','f','g','h'];
             let css = "";
-            for(let r=1; r<=4; r++) { cols.forEach((c, idx) => { const isBlack = (r + idx) % 2 !== 0; css += `.square-${c}${r} { background-color: ${isBlack ? sW.colorB : sW.colorW} !important; } `; }); }
-            for(let r=5; r<=8; r++) { cols.forEach((c, idx) => { const isBlack = (r + idx) % 2 !== 0; css += `.square-${c}${r} { background-color: ${isBlack ? sB.colorB : sB.colorW} !important; } `; }); }
-            
-            let animW = sW.animCss ? `animation: ${sW.animCss};` : '';
-            let animB = sB.animCss ? `animation: ${sB.animCss};` : '';
-            let filterW = `${sW.filter} drop-shadow(0 0 2px black)`;
-            let filterB = `${sB.filter} drop-shadow(0 0 2px white)`;
-
-            css += `img[src*="/w"] { filter: ${filterW} !important; ${animW} } `;
-            css += `img[src*="/b"] { filter: ${filterB} !important; ${animB} } `;
+            for(let r=1; r<=4; r++) { cols.forEach((c, idx) => { css += `.square-${c}${r} { background-color: ${(r+idx)%2!==0?sW.colorB:sW.colorW} !important; } `; }); }
+            for(let r=5; r<=8; r++) { cols.forEach((c, idx) => { css += `.square-${c}${r} { background-color: ${(r+idx)%2!==0?sB.colorB:sB.colorW} !important; } `; }); }
+            css += `img[src*="/w"] { filter: ${sW.filter} drop-shadow(0 0 2px black) !important; ${sW.animCss ? 'animation:'+sW.animCss : ''} } `;
+            css += `img[src*="/b"] { filter: ${sB.filter} drop-shadow(0 0 2px white) !important; ${sB.animCss ? 'animation:'+sB.animCss : ''} } `;
             document.getElementById('dynamic-skin-styles').innerHTML = css;
-
-            if(wingsInterval) clearInterval(wingsInterval);
-            $('.wing-container').remove();
-            if(sW.hasWings || sB.hasWings) wingsInterval = setInterval(() => renderWings(sW.hasWings, sB.hasWings), 300);
+            if (wingsInterval) clearInterval(wingsInterval);
+            if (sW.hasWings || sB.hasWings) wingsInterval = setInterval(() => renderWings(sW.hasWings, sB.hasWings), 300);
         }
 
-        function renderWings(whiteHas, blackHas) {
-            $('.wing-container').each(function() { if($(this).siblings('img').length === 0) $(this).remove(); });
-            if(whiteHas) $('img[src*="/w"]').each(function() { const p = $(this).parent(); if(p.find('.wing-container').length === 0) p.append(`<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>`); });
-            else $('img[src*="/w"]').siblings('.wing-container').remove();
-            if(blackHas) $('img[src*="/b"]').each(function() { const p = $(this).parent(); if(p.find('.wing-container').length === 0) p.append(`<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>`); });
-            else $('img[src*="/b"]').siblings('.wing-container').remove();
+        function renderWings(wH, bH) {
+            $('.wing-container').each(function(){ if($(this).siblings('img').length===0) $(this).remove(); });
+            if(wH) $('img[src*="/w"]').each(function(){ if($(this).parent().find('.wing-container').length===0) $(this).parent().append('<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>'); });
+            if(bH) $('img[src*="/b"]').each(function(){ if($(this).parent().find('.wing-container').length===0) $(this).parent().append('<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>'); });
         }
 
-        // --- FX LOGIC ---
-        function handleCaptureVisuals(move, skinKey, callback) {
-            const skin = SKINS[skinKey] || SKINS['default'];
-            if(skinKey === 'default') { callback(); return; }
-            if (skin.isProjectile) { shootProjectile(move.from, move.to, skin.anim, callback); } 
-            else { playKillAnim(move.to, skin.anim); callback(); }
-        }
-
-        function playKillAnim(square, emoji) {
-            const $sq = $(`.square-${square}`); if($sq.length === 0) return;
-            const pos = $sq.position();
-            const $el = $(`<div class="kill-effect" style="top:${pos.top}px; left:${pos.left}px; width:${$sq.width()}px; height:${$sq.height()}px;">${emoji}</div>`);
-            $('#fx-overlay').append($el); setTimeout(() => $el.remove(), 1000);
-        }
-
-        function shootProjectile(fromSq, toSq, emoji, callback) {
-            const $from = $(`.square-${fromSq}`); const $to = $(`.square-${toSq}`);
-            if($from.length === 0 || $to.length === 0) { callback(); return; }
-            const p1 = $from.position(); const p2 = $to.position(); const w = $from.width();
-            const $ball = $(`<div class="projectile" style="top:${p1.top}px; left:${p1.left}px; width:${w}px; height:${w}px; display:flex; justify-content:center; align-items:center;">${emoji}</div>`);
-            $('#fx-overlay').append($ball);
-            $ball.animate({ top: p2.top, left: p2.left }, 500, 'linear', function() { $ball.remove(); playKillAnim(toSq, '💥'); callback(); });
-        }
-
-        // --- GAME LOGIC ---
-        function loadOnlineGame(id, asSpectator=false) {
-            currentGameId = id; gameMode = 'online';
-            showScreen('game-screen');
-            if(isAdmin) $('#god-mode-btn').removeClass('hidden');
-            game = new Chess(); $('#move-history').empty(); selectedSquare = null;
-            board = Chessboard('board', {position:'start', moveSpeed: 200, snapSpeed: 100, draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'});
-            $('#board').off('click').on('click', '.square-55d63', function() { if(!asSpectator && !godMode) handleSquareClick.call(this); });
-
-            if(gameListener) gameListener();
-            gameListener = db.collection('games').doc(id).onSnapshot(doc => {
-                if(!doc.exists) { 
-                    db.collection('users').doc(currentUser.uid).update({activeGameId: null}); 
-                    backToLobby(); 
-                    return; 
-                }
-                const data = doc.data();
-                currentWhiteSkin = data.whiteSkin || 'default'; currentBlackSkin = data.blackSkin || 'default';
-                updateBoardVisuals();
-
-                if(asSpectator) { myColor='spectator'; board.orientation('white'); $('#player-top').text(data.blackName); $('#player-bottom').text(data.whiteName); }
-                else {
-                    if(data.white === currentUser.uid) myColor = 'w'; else if(data.black === currentUser.uid) myColor = 'b';
-                    board.orientation(myColor==='b'?'black':'white');
-                    $('#player-top').text(myColor==='w'? data.blackName : data.whiteName); $('#player-bottom').text("Du");
-                }
-
-                if(data.fen && data.fen !== game.fen()) {
-                    const temp = new Chess(game.fen());
-                    const m = temp.move(data.lastMoveSan);
-                    if(m && (m.flags.includes('c') || m.flags.includes('e'))) {
-                        const attSkin = (m.color === 'w') ? currentWhiteSkin : currentBlackSkin;
-                        handleCaptureVisuals(m, attSkin, () => { game.load(data.fen); board.position(data.fen, true); if(data.lastMoveSan) addLog(data.lastMoveSan); });
-                    } else { game.load(data.fen); board.position(data.fen, true); if(data.lastMoveSan) addLog(data.lastMoveSan); }
-                    removeHighlights();
-                }
-                
-                if(data.status === 'aborted') showEndScreen('aborted');
-                if(data.result) { let w = null; if(data.result === 'w') w = currentWhiteSkin; if(data.result === 'b') w = currentBlackSkin; showEndScreen(data.result, w); }
-            });
-        }
-
-        // --- CLICK & MOVE & PROMOTION ---
+        // --- CORE GAMEPLAY ---
         function handleSquareClick() {
             if(game.game_over() || (gameMode==='online' && game.turn()!==myColor)) return;
             const sq = $(this).attr('data-square');
             if(selectedSquare) {
-                const piece = game.get(selectedSquare);
-                // PROMOTION CHECK
-                const isPromotion = piece && piece.type === 'p' && ((piece.color === 'w' && sq[1] === '8') || (piece.color === 'b' && sq[1] === '1'));
-                const tempGame = new Chess(game.fen());
-                const validMove = tempGame.move({from: selectedSquare, to: sq, promotion: 'q'});
-
-                if (validMove) {
-                    if (isPromotion) { pendingPromotion = { from: selectedSquare, to: sq }; $('#promotion-modal').removeClass('hidden'); return; }
-                    executeMove({from: selectedSquare, to: sq, promotion: 'q'});
-                } else {
-                    selectedSquare = null; removeHighlights();
-                    if(game.get(sq) && game.get(sq).color === (gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); }
+                const p = game.get(selectedSquare);
+                if(p && p.type==='p' && ((p.color==='w'&&sq[1]==='8')||(p.color==='b'&&sq[1]==='1'))) {
+                    const temp = new Chess(game.fen());
+                    if(temp.move({from:selectedSquare, to:sq, promotion:'q'})) { pendingPromotion={from:selectedSquare, to:sq}; $('#promotion-modal').removeClass('hidden'); return; }
                 }
-            } else { if(game.get(sq) && game.get(sq).color === (gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); } }
+                executeMove({from:selectedSquare, to:sq, promotion:'q'});
+            } else { if(game.get(sq) && game.get(sq).color===(gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); } }
         }
 
-        function selectPromotion(pType) {
-            $('#promotion-modal').addClass('hidden');
-            if(pendingPromotion) { executeMove({from: pendingPromotion.from, to: pendingPromotion.to, promotion: pType}); pendingPromotion = null; }
+        function executeMove(mObj) {
+            const move = game.move(mObj);
+            if(!move) { selectedSquare=null; removeHighlights(); return; }
+            selectedSquare=null; removeHighlights();
+            const sK = (myColor==='w'?currentWhiteSkin:currentBlackSkin);
+            if(move.captured && sK !== 'default') {
+                if(SKINS[sK].isProjectile) shootProjectile(move.from, move.to, SKINS[sK].anim, () => finishMove(move));
+                else { playKillAnim(move.to, SKINS[sK].anim); finishMove(move); }
+            } else finishMove(move);
         }
 
-        function executeMove(moveObj) {
-            const move = game.move(moveObj);
-            if(move) {
-                selectedSquare = null; removeHighlights();
-                if(move.captured) {
-                    const mySkin = (myColor==='w') ? currentWhiteSkin : currentBlackSkin;
-                    if(gameMode==='online') db.collection('users').doc(currentUser.uid).update({coins: firebase.firestore.FieldValue.increment(10)});
-                    handleCaptureVisuals(move, mySkin, () => { 
-                        if(gameMode==='online') updateGameOnline(move); 
-                        else { 
-                            board.position(game.fen(), true); 
-                            checkLocalGameEnd(); // Check if player won
-                            setTimeout(botMove, 500); 
-                        } 
-                    });
-                } else {
-                    if(gameMode==='online') updateGameOnline(move);
-                    else { 
-                        board.position(game.fen(), true); 
-                        checkLocalGameEnd(); // Check if player won
-                        setTimeout(botMove, 500); 
-                    }
+        function finishMove(move) {
+            if(gameMode==='online') {
+                let res = null;
+                if(game.game_over()) {
+                    if(game.in_checkmate()) { res=game.turn()==='w'?'b':'w'; if(res===myColor) db.collection('users').doc(currentUser.uid).update({wins:firebase.firestore.FieldValue.increment(1), coins:firebase.firestore.FieldValue.increment(50)}); }
+                    else res='draw';
                 }
+                db.collection('games').doc(currentGameId).update({fen:game.fen(), turn:game.turn(), lastMoveSan:move.san, result:res});
+            } else {
+                board.position(game.fen(), true);
+                if(game.game_over()) showEndScreen(game.in_checkmate()?(game.turn()==='w'?'b':'w'):'draw');
+                else setTimeout(botMove, 500);
             }
         }
 
-        function updateGameOnline(move) {
-            let res = null;
-            if(game.game_over()) { if(game.in_checkmate()) { res = game.turn()==='w'?'b':'w'; if(res === myColor) db.collection('users').doc(currentUser.uid).update({wins: firebase.firestore.FieldValue.increment(1), coins: firebase.firestore.FieldValue.increment(50)}); } else res = 'draw'; }
-            db.collection('games').doc(currentGameId).update({fen: game.fen(), turn: game.turn(), lastMoveSan: move.san, result: res});
-            if(!move.captured) board.position(game.fen(), true); addLog(move.san);
+        function botMove() {
+            const moves = game.moves(); if(moves.length===0) return;
+            const move = moves[Math.floor(Math.random()*moves.length)];
+            game.move(move); board.position(game.fen(), true);
+            if(game.game_over()) showEndScreen(game.in_checkmate()?(game.turn()==='w'?'b':'w'):'draw');
         }
 
-        // --- BOT GAME ---
-        function startBotGame() { 
-            gameMode='bot'; 
-            myColor='w'; 
-            currentWhiteSkin=userData.equippedSkin; 
-            currentBlackSkin='default'; 
-            showScreen('game-screen'); 
-            updateBoardVisuals(); 
-            game=new Chess(); 
-            board=Chessboard('board', {position:'start', moveSpeed:200, draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'}); 
-            $('#board').off('click').on('click', '.square-55d63', handleSquareClick); 
-            $('#player-top').text("Bot"); $('#player-bottom').text("Du"); 
+        // --- FX ---
+        function shootProjectile(f,t,e,cb) {
+            const $f=$('.square-'+f), $t=$('.square-'+t); if($f.length===0||$t.length===0) return cb();
+            const p1=$f.position(), p2=$t.position();
+            const $b=$(`<div class="projectile" style="top:${p1.top}px;left:${p1.left}px;width:${$f.width()}px;height:${$f.height()}px;display:flex;justify-content:center;align-items:center;">${e}</div>`);
+            $('#fx-overlay').append($b); $b.animate({top:p2.top, left:p2.left}, 500, () => { $b.remove(); playKillAnim(t, '💥'); cb(); });
         }
-        function botMove() { 
-            if(game.game_over())return; 
-            const m=game.moves({verbose:true}); 
-            // Random move, prioritizing promotion if available
-            const move=m[Math.floor(Math.random()*m.length)]; 
-            game.move(move.san); 
-            board.position(game.fen(), true); 
-            
-            if(move.captured) playKillAnim(move.to, 'default'); 
-            checkLocalGameEnd();
+        function playKillAnim(s,e) {
+            const $s=$('.square-'+s); if($s.length===0) return;
+            const p=$s.position(); const $el=$(`<div class="kill-effect" style="top:${p.top}px;left:${p.left}px;width:${$s.width()}px;height:${$s.height()}px;">${e}</div>`);
+            $('#fx-overlay').append($el); setTimeout(()=>$el.remove(),1000);
         }
 
-        // --- NEW LOCAL CHECK FUNCTION ---
-        function checkLocalGameEnd() {
-            if (game.game_over()) {
-                let result = 'draw';
-                if (game.in_checkmate()) {
-                    // game.turn() is the loser. If turn is 'w', 'b' won.
-                    result = game.turn() === 'w' ? 'b' : 'w';
-                }
-                // Determine winner skin
-                let winnerSkin = null;
-                if (result === 'w') winnerSkin = currentWhiteSkin;
-                if (result === 'b') winnerSkin = currentBlackSkin;
-
-                // Award prizes if player won
-                if (result === myColor) {
-                     db.collection('users').doc(currentUser.uid).update({
-                        wins: firebase.firestore.FieldValue.increment(1),
-                        coins: firebase.firestore.FieldValue.increment(50)
-                    });
-                }
-
-                showEndScreen(result, winnerSkin);
-                return true;
-            }
-            return false;
+        // --- ADMIN ---
+        async function adminLoadUser() {
+            const val = $('#admin-target-search').val();
+            let s = await db.collection('users').where('displayId','==',parseInt(val)).get();
+            if(s.empty) s = await db.collection('users').where('username','==',val).get();
+            if(!s.empty) { const d=s.docs[0].data(); adminLoadedUserUid=s.docs[0].id; $('#adm-u-name').text(d.username); $('#adm-displayid').val(d.displayId); $('#adm-coins').val(d.coins); $('#admin-user-info').removeClass('hidden'); }
         }
+        function adminSetVal(f) { db.collection('users').doc(adminLoadedUserUid).update({[f]:parseInt($('#adm-'+f.toLowerCase()).val())}).then(()=>alert("OK")); }
+        function adminGiveSkin() { db.collection('users').doc(adminLoadedUserUid).update({inventory:firebase.firestore.FieldValue.arrayUnion($('#adm-skin-input').val())}).then(()=>alert("OK")); }
+        function adminKick() { db.collection('users').doc(adminLoadedUserUid).get().then(d => { if(d.data().activeGameId) db.collection('games').doc(d.data().activeGameId).update({status:'aborted'}); }); }
+        function adminBan() { db.collection('users').doc(adminLoadedUserUid).update({banned:true}); }
 
-        // --- REST STANDARD ---
-        function updateHeader() { $('#nav-username').text(userData.username); $('#nav-userid').text(`#${userData.displayId}`); $('#nav-coins').text(userData.coins); $('#nav-wins').text(userData.wins || 0); $('#nav-user-area').removeClass('hidden'); }
-        function updateLeaderboard() { db.collection('users').orderBy('wins', 'desc').limit(10).onSnapshot(snap => { let h=''; let r=1; snap.forEach(doc => { const u = doc.data(); let rc = r===1?'rank-1':(r===2?'rank-2':(r===3?'rank-3':'')); h += `<div class="leaderboard-item"><span class="${rc}">#${r} ${u.username}</span><span class="text-warning fw-bold">${u.wins||0} 🏆</span></div>`; r++; }); $('#leaderboard-list').html(h); }); }
-        function openShop() { renderShopUI(); $('#shop-modal').removeClass('hidden'); }
-        function renderShopUI() { $('#shop-coins').text(userData.coins); const list = $('#skin-list'); list.empty(); for (const [key, skin] of Object.entries(SKINS)) { if(skin.adminOnly && !userData.inventory.includes(key)) continue; const owned = userData.inventory.includes(key); const active = userData.equippedSkin === key; let btnHtml = active ? `<button class="btn btn-sm btn-success disabled w-100">Aktiv</button>` : owned ? `<button onclick="equipSkin('${key}')" class="btn btn-sm btn-outline-primary w-100">Wählen</button>` : `<button onclick="buySkin('${key}')" class="btn btn-sm btn-warning w-100">${skin.price} <i class="fas fa-coins"></i></button>`; list.append(`<div class="col-6 col-md-4"><div class="skin-card ${owned?'owned':''} ${active?'active':''}"><h5>${skin.name} ${skin.anim}</h5><div class="d-flex justify-content-center mb-2"><div class="skin-preview" style="background:${skin.colorW}"></div><div class="skin-preview" style="background:${skin.colorB}"></div></div>${btnHtml}</div></div>`); } }
-        function buySkin(key) { if(userData.coins >= SKINS[key].price) db.collection('users').doc(currentUser.uid).update({ coins: firebase.firestore.FieldValue.increment(-SKINS[key].price), inventory: firebase.firestore.FieldValue.arrayUnion(key) }); else alert("Need Coins"); }
-        function equipSkin(key) { db.collection('users').doc(currentUser.uid).update({ equippedSkin: key }); }
-        function showEndScreen(res, winnerSkin) { $('#end-screen-overlay').removeClass('hidden'); $('#global-win-fx').hide().removeClass(); let txt="SIEG!", c="text-success", r=""; if(res==='aborted'){txt="GEGNER WEG";c="text-danger";} else if(res==='draw'){txt="REMIS";c="text-warning";} else if(res!==myColor&&myColor!=='spectator'){txt="VERLOREN";c="text-danger";} else { r="+50 Coins!"; if(winnerSkin && SKINS[winnerSkin].winBg) $('#global-win-fx').addClass(SKINS[winnerSkin].winBg).fadeIn(500); } $('#end-title').text(txt).removeClass().addClass('win-title '+c); $('#end-reward').text(r); if(myColor!=='spectator' && gameMode !== 'bot') db.collection('users').doc(currentUser.uid).update({activeGameId: null}); }
-        function backToLobby() { if(gameListener) gameListener(); $('#end-screen-overlay').addClass('hidden'); $('#global-win-fx').fadeOut(200); if(wingsInterval) clearInterval(wingsInterval); db.collection('users').doc(currentUser.uid).update({activeGameId: null}); showScreen('lobby-screen'); }
-        function highlight(sq) { removeHighlights(); $(`.square-${sq}`).addClass('highlight-square'); game.moves({square:sq, verbose:true}).forEach(m => $(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
-        function removeHighlights() { $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
-        function leaveGame() { if(confirm("Verlassen?")) { if(gameMode==='online' && myColor!=='spectator') db.collection('games').doc(currentGameId).update({status:'aborted'}); backToLobby(); } }
-        function joinRankedQueue() { $('#queue-overlay').removeClass('hidden'); queueTime=0; if(queueInterval)clearInterval(queueInterval); queueInterval=setInterval(()=>{queueTime++;$('#queue-timer').text(`Zeit: ${queueTime}s`);checkMatchmaking();},2000); db.collection('queue').doc(currentUser.uid).set({uid:currentUser.uid,username:userData.username,displayId:userData.displayId,joinedAt:firebase.firestore.FieldValue.serverTimestamp(),gameId:null,skin:userData.equippedSkin}); if(queueListener)queueListener(); queueListener=db.collection('queue').doc(currentUser.uid).onSnapshot(d=>{if(d.exists&&d.data().gameId){leaveQueue(false);db.collection('queue').doc(currentUser.uid).delete();db.collection('users').doc(currentUser.uid).update({activeGameId:d.data().gameId});loadOnlineGame(d.data().gameId);}}); }
-        async function checkMatchmaking(){ const s=await db.collection('queue').orderBy('joinedAt','asc').limit(2).get(); if(s.size>=2){const p1=s.docs[0].data(),p2=s.docs[1].data(); if(p1.uid===currentUser.uid){const g=db.collection('games').doc(); await g.set({white:p1.uid,whiteName:p1.username,whiteId:p1.displayId,whiteSkin:p1.skin,black:p2.uid,blackName:p2.username,blackId:p2.displayId,blackSkin:p2.skin,fen:'start',turn:'w',status:'active',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); const b=db.batch(); b.update(db.collection('queue').doc(p1.uid),{gameId:g.id}); b.update(db.collection('queue').doc(p2.uid),{gameId:g.id}); await b.commit();}}}
-        function leaveQueue(d=true){ $('#queue-overlay').addClass('hidden'); if(queueInterval)clearInterval(queueInterval); if(queueListener)queueListener(); if(d)db.collection('queue').doc(currentUser.uid).delete(); }
-        function createPrivateGame(){ const c=Math.random().toString(36).substring(2,7).toUpperCase(); db.collection('games').doc(c).set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,status:'waiting_private',fen:'start',turn:'w',createdAt:firebase.firestore.FieldValue.serverTimestamp()}); $('#host-code-display').text(c); $('#private-create-modal').removeClass('hidden'); hostListener=db.collection('games').doc(c).onSnapshot(d=>{if(d.exists&&d.data().status==='active'){hostListener();closeModal('private-create-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);}}); currentGameId=c; }
-        function submitPrivateJoin(){ const c=$('#private-join-input').val().trim().toUpperCase(); db.collection('games').doc(c).get().then(d=>{if(d.exists&&d.data().status==='waiting_private'){db.collection('games').doc(c).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{closeModal('private-join-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:c});loadOnlineGame(c);});}else alert("Fehler");}); }
-        function registerUserWithId(){ const e=$('#email-input').val(),p=$('#password-input').val(),n=$('#username-input').val(); const c=db.collection('config').doc('userCounter'); auth.createUserWithEmailAndPassword(e,p).then(cr=>{ db.runTransaction(async t=>{const d=await t.get(c); let i=d.exists?d.data().count+1:1; t.set(c,{count:i}); t.set(db.collection('users').doc(cr.user.uid),{username:n,displayId:i,uid:cr.user.uid,wins:0,coins:0,inventory:['default'],equippedSkin:'default',friends:[]});});}); }
-        function loginUser(){ auth.signInWithEmailAndPassword($('#email-input').val(), $('#password-input').val()); }
-        function logout(){ auth.signOut(); location.reload(); }
-        function showScreen(id){ $('.hidden').removeClass('hidden').addClass('hidden'); $('#auth-screen, #lobby-screen, #game-screen').addClass('hidden'); $(`#${id}`).removeClass('hidden'); }
-        function closeModal(id){ $(`#${id}`).addClass('hidden'); }
-        function openNotifModal(){ $('#notif-modal').removeClass('hidden'); }
-        function openSettings(){ $('#settings-modal').removeClass('hidden'); }
-        function saveSettings(){ const n=$('#settings-username').val(); if(n)db.collection('users').doc(currentUser.uid).update({username:n}); closeModal('settings-modal'); }
-        function addLog(s){ $('#move-history').append(`<div>${s}</div>`).scrollTop(999); }
-        function sendFriendRequest(){ const i=$('#friend-id-input').val();if(!i)return; db.collection('users').where('displayId','==',parseInt(i)).get().then(s=>{if(s.empty)return alert("404"); const t=s.docs[0]; db.collection('users').doc(t.id).collection('notifications').add({type:'friend_request',fromUid:currentUser.uid,title:'Anfrage',message:`${userData.username} will Freund sein.`,timestamp:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>alert("Gesendet"));}); }
-        async function loadFriends(){ const l=$('#friends-list'); if(!userData.friends||userData.friends.length===0){l.html('<div class="text-center small mt-3">Keine Freunde</div>');return;} const d=await Promise.all(userData.friends.map(u=>db.collection('users').doc(u).get())); l.empty(); d.forEach(o=>{if(!o.exists)return;const f=o.data();if(!f.friends.includes(currentUser.uid))db.collection('users').doc(o.id).update({friends:firebase.firestore.FieldValue.arrayUnion(currentUser.uid)});const b=userData.bestFriends&&userData.bestFriends.includes(o.id); l.append(`<div class="friend-item" onclick="openProfile('${o.id}')"><div><i class="fas fa-star ${b?'best-friend':'text-muted'} me-2" onclick="toggleBest(event,'${o.id}')"></i><b>${f.username}</b> <small>#${f.displayId}</small></div>${f.activeGameId?'<span class="badge bg-danger">Spiel</span>':'<i class="fas fa-circle text-success"></i>'}</div>`); }); }
-        function toggleBest(e,u){ e.stopPropagation(); let o=userData.bestFriends&&userData.bestFriends.includes(u)?'arrayRemove':'arrayUnion'; db.collection('users').doc(currentUser.uid).update({bestFriends:firebase.firestore.FieldValue[o](u)}); }
-        function listenNotifications(){ if(notifListener)notifListener(); notifListener=db.collection('users').doc(currentUser.uid).collection('notifications').orderBy('timestamp','desc').onSnapshot(s=>{ $('#bell-badge').text(s.size).toggleClass('hidden',s.size===0); let h=s.size===0?'<div class="text-center small p-3">Leer</div>':''; s.forEach(d=>{const n=d.data(); h+=`<div class="notif-item"><b>${n.title}</b><div class="small mb-2">${n.message}</div><div class="d-flex gap-2"><button onclick="handleNotif('${d.id}','${n.type}',true,'${n.fromUid}','${n.payload}')" class="btn btn-sm btn-success flex-grow-1">Ja</button><button onclick="handleNotif('${d.id}','${n.type}',false)" class="btn btn-sm btn-secondary">Nein</button></div></div>`;}); $('#notif-list').html(h); }); }
-        function handleNotif(id,t,a,f,p){ const r=db.collection('users').doc(currentUser.uid).collection('notifications').doc(id); if(!a){r.delete();return;} if(t==='friend_request'){const b=db.batch(); b.update(db.collection('users').doc(currentUser.uid),{friends:firebase.firestore.FieldValue.arrayUnion(f)}); b.update(db.collection('users').doc(f),{friends:firebase.firestore.FieldValue.arrayUnion(currentUser.uid)}); b.delete(r); b.commit().then(()=>{closeModal('notif-modal');alert("Freund!");}); } else if(t==='game_invite'){ db.collection('games').doc(p).update({black:currentUser.uid,blackName:userData.username,blackId:userData.displayId,blackSkin:userData.equippedSkin,status:'active'}).then(()=>{r.delete();closeModal('notif-modal');db.collection('users').doc(currentUser.uid).update({activeGameId:p});loadOnlineGame(p);}); } }
-        function openProfile(u){ db.collection('users').doc(u).get().then(d=>{const f=d.data();$('#profile-name').text(f.username);$('#profile-id').text(`#${f.displayId}`);$('#profile-wins').text(f.wins||0);let b=`<button onclick="inviteFriend('${u}','${f.username}')" class="btn btn-primary w-100">Herausfordern</button>`;$('#profile-actions').html(b);$('#profile-modal').removeClass('hidden');});}
-        function inviteFriend(u,n){ const g=db.collection('games').doc(); g.set({white:currentUser.uid,whiteName:userData.username,whiteId:userData.displayId,whiteSkin:userData.equippedSkin,black:u,blackName:n,blackId:'?',fen:'start',turn:'w',status:'waiting_friend',createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{ db.collection('users').doc(u).collection('notifications').add({type:'game_invite',fromUid:currentUser.uid,title:'Herausforderung',message:`${userData.username} fordert dich.`,payload:g.id,timestamp:firebase.firestore.FieldValue.serverTimestamp()}).then(n=>{currentChallengeGameId=g.id;currentChallengeNotifId=n.id;currentChallengeTargetUid=u;$('#challenge-target-name').text(n);$('#challenge-wait-modal').removeClass('hidden');closeModal('profile-modal');if(challengeListener)challengeListener();challengeListener=g.onSnapshot(d=>{if(d.exists&&d.data().status==='active'){if(challengeListener)challengeListener();$('#challenge-wait-modal').addClass('hidden');db.collection('users').doc(currentUser.uid).update({activeGameId:g.id});loadOnlineGame(g.id);}});});});}
+        // --- CHALLENGE ---
+        function inviteFriend(uid, name) {
+            const gRef = db.collection('games').doc();
+            gRef.set({white:currentUser.uid, whiteName:userData.username, whiteId:userData.displayId, whiteSkin:userData.equippedSkin, black:uid, blackName:name, fen:'start', turn:'w', status:'waiting_friend', createdAt:firebase.firestore.FieldValue.serverTimestamp()})
+            .then(() => {
+                db.collection('users').doc(uid).collection('notifications').add({type:'game_invite', fromUid:currentUser.uid, payload:gRef.id, title:'Herausforderung', timestamp:firebase.firestore.FieldValue.serverTimestamp()})
+                .then(n => {
+                    currentChallengeGameId=gRef.id; currentChallengeNotifId=n.id; currentChallengeTargetUid=uid;
+                    $('#challenge-target-name').text(name); $('#challenge-wait-modal').removeClass('hidden');
+                    challengeListener = gRef.onSnapshot(d => { if(d.exists && d.data().status==='active') { $('#challenge-wait-modal').addClass('hidden'); loadOnlineGame(gRef.id); } });
+                });
+            });
+        }
         function cancelChallenge() { if(challengeListener) challengeListener(); db.collection('games').doc(currentChallengeGameId).delete(); db.collection('users').doc(currentChallengeTargetUid).collection('notifications').doc(currentChallengeNotifId).delete(); $('#challenge-wait-modal').addClass('hidden'); }
-        // LEGAL
-        function openLegal(tab){ showLegalTab(tab); $('#legal-modal').removeClass('hidden'); $('#settings-modal').addClass('hidden'); }
-        function showLegalTab(tab){ $('.nav-legal .nav-link').removeClass('active'); $(`.nav-legal .nav-link[onclick="showLegalTab('${tab}')"]`).addClass('active'); $('#legal-content').html(LEGAL_TEXTS[tab]||"TBD"); }
-        function deleteAccount(){ if(confirm("Account unwiderruflich löschen?")) { db.collection('users').doc(currentUser.uid).delete().then(()=>{ currentUser.delete().then(()=>location.reload()); }); } }
+
+        // --- HELPERS ---
+        function loadOnlineGame(id) {
+            currentGameId=id; gameMode='online'; showScreen('game-screen');
+            game=new Chess(); board=Chessboard('board',{position:'start', moveSpeed:200, draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'});
+            $('#board').off('click').on('click','.square-55d63', handleSquareClick);
+            db.collection('games').doc(id).onSnapshot(doc => {
+                if(!doc.exists) return; const data=doc.data();
+                currentWhiteSkin=data.whiteSkin||'default'; currentBlackSkin=data.blackSkin||'default'; updateBoardVisuals();
+                myColor = data.white===currentUser.uid?'w':'b'; board.orientation(myColor==='b'?'black':'white');
+                if(data.fen !== game.fen()) { 
+                    const t = new Chess(game.fen()); const m = t.move(data.lastMoveSan);
+                    if(m && m.captured) playKillAnim(m.to, SKINS[m.color==='w'?currentWhiteSkin:currentBlackSkin].anim);
+                    game.load(data.fen); board.position(data.fen, true); 
+                }
+                if(data.result) showEndScreen(data.result, data.result==='w'?currentWhiteSkin:currentBlackSkin);
+                if(data.status==='aborted') showEndScreen('aborted');
+            });
+        }
+        function selectPromotion(p){ $('#promotion-modal').addClass('hidden'); executeMove({from:pendingPromotion.from, to:pendingPromotion.to, promotion:p}); }
+        function showScreen(id){ $('.hidden').removeClass('hidden').addClass('hidden'); $(`#${id}, #lobby-screen, #game-screen`).addClass('hidden'); $(`#${id}`).removeClass('hidden'); }
+        function updateUI(){ $('#nav-username').text(userData.username); $('#nav-userid').text('#'+userData.displayId); $('#nav-coins').text(userData.coins); $('#nav-wins').text(userData.wins); }
+        function openSettings(){ $('#settings-modal').removeClass('hidden'); }
+        function closeModal(id){ $(`#${id}`).addClass('hidden'); }
+        function logout(){ auth.signOut(); location.reload(); }
+        function openShop() { renderShopUI(); $('#shop-modal').removeClass('hidden'); }
+        function renderShopUI() {
+            $('#shop-coins').text(userData.coins); const list=$('#skin-list'); list.empty();
+            for(const [k,s] of Object.entries(SKINS)){
+                if(s.adminOnly && !userData.inventory.includes(k)) continue;
+                const owned=userData.inventory.includes(k); const active=userData.equippedSkin===k;
+                list.append(`<div class="col-6"><div class="skin-card ${active?'active':''}"><h6>${s.name}</h6><button onclick="${owned?'equipSkin':'buySkin'}('${k}')" class="btn btn-sm ${owned?'btn-primary':'btn-warning'} w-100">${active?'Aktiv':(owned?'Wählen':s.price+' 🪙')}</button></div></div>`);
+            }
+        }
+        function equipSkin(k){ db.collection('users').doc(currentUser.uid).update({equippedSkin:k}); }
+        function buySkin(k){ if(userData.coins>=SKINS[k].price) db.collection('users').doc(currentUser.uid).update({coins:firebase.firestore.FieldValue.increment(-SKINS[k].price), inventory:firebase.firestore.FieldValue.arrayUnion(k)}); }
+        function highlight(s){ $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); $('.square-'+s).addClass('highlight-square'); game.moves({square:s,verbose:true}).forEach(m=>$(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
+        function removeHighlights(){ $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
+        function showLegalTab(t){ $('#legal-content').html(LEGAL_TEXTS[t]); $('#legal-modal').removeClass('hidden'); }
+        function openLegal(t){ showLegalTab(t); }
+        function backToLobby(){ location.reload(); }
+        function loginUser(){ auth.signInWithEmailAndPassword($('#email-input').val(), $('#password-input').val()); }
+        function registerUserWithId(){ const n=$('#username-input').val(); if(!n)return; auth.createUserWithEmailAndPassword($('#email-input').val(), $('#password-input').val()).then(c=>{ const r=db.collection('config').doc('userCounter'); db.runTransaction(async t=>{ const s=await t.get(r); const i=(s.exists?s.data().count:0)+1; t.set(r,{count:i}); t.set(db.collection('users').doc(c.user.uid),{username:n,displayId:i,uid:c.user.uid,wins:0,coins:0,inventory:['default'],equippedSkin:'default',friends:[]}); }); }); }
+        function showAdminTab(t){ $('#admin-tab-eco, #admin-tab-bans').addClass('hidden'); $('#admin-tab-'+t).removeClass('hidden'); }
+        function showPrivateMenu(){ $('#private-menu-modal').removeClass('hidden'); }
+        function startBotGame(){ gameMode='bot'; myColor='w'; currentWhiteSkin=userData.equippedSkin; currentBlackSkin='default'; showScreen('game-screen'); updateBoardVisuals(); game=new Chess(); board=Chessboard('board',{position:'start',moveSpeed:200,pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'}); $('#board').on('click','.square-55d63',handleSquareClick); }
+        function joinRankedQueue(){ alert("Suche..."); } // Vereinfacht für Platz
+        function updateLeaderboard(){ db.collection('users').orderBy('wins','desc').limit(5).get().then(s=>{ let h=''; s.forEach(d=>h+=`<div class="leaderboard-item"><span>${d.data().username}</span><span>${d.data().wins} 🏆</span></div>`); $('#leaderboard-list').html(h); }); }
     </script>
 </body>
 </html>
