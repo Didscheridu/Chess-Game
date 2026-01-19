@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Masters: The Ultimate Edition</title>
+    <title>Chess Masters: Pro Edition</title>
     
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,95 +12,63 @@
     
     <style>
         body { background-color: #18191a; color: #e4e6eb; font-family: 'Roboto', sans-serif; overflow-x: hidden; }
-        .app-container { max-width: 1200px; margin: 0 auto; padding: 20px; position: relative; z-index: 50; padding-bottom: 80px; }
-        .card-dark { background-color: #242526; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); margin-bottom: 20px; border: 1px solid #333; position: relative; z-index: 60; }
-        .btn-primary-custom { background-color: #2D88FF; color: white; font-weight: bold; border: none; }
-        .btn-primary-custom:hover { background-color: #1A73E8; color: white; }
-        .btn-admin { background: #e74c3c; color: white; font-weight: bold; box-shadow: 0 0 10px #e74c3c; border: none; }
         .hidden { display: none !important; }
-        #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; user-select: none; position: relative; z-index: 20; }
+        
+        /* Fullscreen Loader */
+        #app-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #18191a; z-index: 10000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        
+        .app-container { max-width: 1200px; margin: 0 auto; padding: 20px; padding-bottom: 80px; }
+        .card-dark { background-color: #242526; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); margin-bottom: 20px; border: 1px solid #333; position: relative; }
+        
+        /* Board & Pieces */
+        #board { width: 100%; border: 4px solid #3a3b3c; border-radius: 4px; user-select: none; }
         .board-wrapper { position: relative; max-width: 550px; margin: 0 auto; }
-        .piece-417db { transition: top 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), left 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important; z-index: 50; position: relative; }
-        
-        #fx-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; overflow: visible; }
-        .kill-effect { position: absolute; display: flex; justify-content: center; align-items: center; font-size: 4.5rem; pointer-events: none; animation: pop-fade 0.8s forwards; text-shadow: 0 0 15px black; font-weight: bold; transform-origin: center; }
-        @keyframes pop-fade { 0% { transform: scale(0.5); opacity: 0; } 40% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
-        .projectile { position: absolute; font-size: 3rem; z-index: 200; pointer-events: none; transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
-        
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        .modal-content-custom { background: #242526; width: 500px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; position: relative; max-height: 90vh; overflow-y: auto; z-index: 5001; }
-        
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; background: #7f8c8d; }
-        .status-online { background: #2ecc71; box-shadow: 0 0 5px #2ecc71; }
-        .status-ingame { background: #e74c3c; }
-        
-        .wing-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 45; display: flex; justify-content: center; align-items: center; }
-        .wing-left, .wing-right { font-size: 2.2rem; color: white; position: absolute; top: -5px; }
-        .wing-left { left: -12px; transform: scaleX(-1); animation: flap-l 0.6s infinite alternate; }
-        .wing-right { right: -12px; animation: flap-r 0.6s infinite alternate; }
-        @keyframes flap-r { from { transform: rotate(0deg); } to { transform: rotate(20deg); } }
-        @keyframes flap-l { from { transform: scaleX(-1) rotate(0deg); } to { transform: scaleX(-1) rotate(20deg); } }
+        .piece-417db { transition: top 0.2s ease-out, left 0.2s ease-out !important; z-index: 50; }
 
+        /* FX System */
+        #fx-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; overflow: visible; }
+        .kill-effect { position: absolute; display: flex; justify-content: center; align-items: center; font-size: 4rem; animation: pop-fade 0.8s forwards; text-shadow: 0 0 15px black; z-index: 110; }
+        @keyframes pop-fade { 0% { transform: scale(0.5); opacity: 0; } 40% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+        .projectile { position: absolute; font-size: 3rem; z-index: 200; transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; display: flex; justify-content: center; align-items: center; }
+        .modal-content-custom { background: #242526; width: 500px; padding: 20px; border-radius: 10px; border: 1px solid #3a3b3c; max-height: 90vh; overflow-y: auto; text-align: center; }
+
+        /* Admin & UI */
+        .btn-admin { background: #e74c3c; color: white; font-weight: bold; border: none; }
+        .coin-display { background: #f1c40f; color: #000; padding: 5px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .legal-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; padding: 10px; text-align: center; font-size: 0.8rem; z-index: 100; border-top: 1px solid #333; }
+        
+        /* Animations */
         @keyframes hacker-glitch-anim { 0% { transform: translate(0); } 20% { transform: translate(-1px, 1px); clip-path: inset(5% 0 5% 0); } 40% { transform: translate(1px, -1px); clip-path: inset(0 5% 0 5%); } 100% { transform: translate(0); clip-path: inset(0 0 0 0); } }
         @keyframes angel-float-anim { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-        @keyframes gold-shine-anim { 0%, 100% { filter: brightness(1) sepia(1) saturate(5); } 50% { filter: brightness(1.5) sepia(1) saturate(5) drop-shadow(0 0 10px gold); } }
-
-        .legal-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; padding: 10px; text-align: center; font-size: 0.8rem; z-index: 100; border-top: 1px solid #333; }
-        .legal-footer a { color: #aaa; margin: 0 10px; text-decoration: none; cursor: pointer; }
-        .coin-display { background: #f1c40f; color: #000; padding: 5px 12px; border-radius: 20px; font-weight: bold; margin-right: 15px; cursor: pointer; }
-        .promo-btn { font-size: 2rem; width: 60px; height: 60px; margin: 5px; }
-        .leaderboard-item { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid #333; }
+        
+        .wing-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 45; display: flex; justify-content: center; }
+        .wing-left, .wing-right { font-size: 2rem; color: white; position: absolute; top: -5px; animation: flap 0.6s infinite alternate; }
+        .wing-left { left: -10px; transform: scaleX(-1); } .wing-right { right: -10px; }
+        @keyframes flap { from { transform: rotate(0deg); } to { transform: rotate(20deg); } }
     </style>
 </head>
 <body>
 
+    <div id="app-loader">
+        <div class="spinner-border text-primary mb-3"></div>
+        <h4>Lade Chess Masters...</h4>
+    </div>
+
     <style id="dynamic-skin-styles"></style>
     <div id="global-win-fx" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none; display:none;"></div>
 
-    <div id="challenge-wait-modal" class="modal-overlay hidden">
-        <div class="modal-content-custom text-center">
-            <h3>Herausforderung gesendet</h3>
-            <div class="spinner-border text-primary my-3"></div>
-            <p>Warte auf <span id="challenge-target-name" class="fw-bold">...</span></p>
-            <button onclick="cancelChallenge()" class="btn btn-outline-danger w-100">Abbrechen</button>
-        </div>
-    </div>
-
-    <div id="admin-modal" class="modal-overlay hidden">
-        <div class="modal-content-custom" style="width: 700px;">
-            <h3 class="text-danger fw-bold"><i class="fas fa-shield-alt"></i> ADMIN PANEL</h3>
-            <div class="input-group mb-3">
-                <input type="text" id="admin-target-search" class="form-control" placeholder="User Name oder ID">
-                <button class="btn btn-light" onclick="adminLoadUser()">Laden</button>
-            </div>
-            <div id="admin-user-info" class="card bg-dark p-3 mb-3 hidden">
-                <h5 id="adm-u-name">...</h5>
-                <div class="row g-2 mb-3">
-                    <div class="col-6"><label>ID Nachtragen:</label><div class="input-group"><input type="number" id="adm-displayid" class="form-control"><button class="btn btn-primary" onclick="adminSetVal('displayId')">Set</button></div></div>
-                    <div class="col-6"><label>Coins:</label><div class="input-group"><input type="number" id="adm-coins" class="form-control"><button class="btn btn-success" onclick="adminSetVal('coins')">Set</button></div></div>
-                </div>
-                <div class="input-group mb-3">
-                    <input type="text" id="adm-skin-input" class="form-control" placeholder="Skin Key (z.B. admin_gold)">
-                    <button class="btn btn-warning" onclick="adminGiveSkin()">Skin geben</button>
-                </div>
-                <div class="d-flex gap-2">
-                    <button onclick="adminKick()" class="btn btn-outline-warning w-50">Match Kick</button>
-                    <button onclick="adminBan()" class="btn btn-danger w-50">BANNEN</button>
-                </div>
-            </div>
-            <button onclick="closeModal('admin-modal')" class="btn btn-secondary w-100 mt-3">Schließen</button>
-        </div>
-    </div>
-
-    <div id="auth-screen">
-        <div class="card-dark text-center" style="max-width: 400px; margin: 80px auto;">
-            <h2 class="fw-bold mb-4">Chess Masters</h2>
+    <div id="auth-screen" class="hidden">
+        <div class="card-dark text-center" style="max-width: 400px; margin: 100px auto;">
+            <h2 class="fw-bold mb-4">Login</h2>
             <div id="auth-error" class="alert alert-danger hidden"></div>
             <input id="email-input" class="form-control mb-2" placeholder="E-Mail">
             <input id="password-input" type="password" class="form-control mb-3" placeholder="Passwort">
-            <input id="username-input" class="form-control mb-3" placeholder="Username (Registrierung)">
-            <button onclick="loginUser()" class="btn btn-primary-custom w-100 mb-2">Login</button>
-            <button onclick="registerUserWithId()" class="btn btn-outline-light w-100">Konto erstellen</button>
+            <input id="username-input" class="form-control mb-3" placeholder="Username (nur Registrierung)">
+            <button onclick="loginUser()" class="btn btn-primary w-100 mb-2">Anmelden</button>
+            <button onclick="registerUser()" class="btn btn-outline-light w-100">Konto erstellen</button>
         </div>
     </div>
 
@@ -108,19 +76,22 @@
         <div class="app-container">
             <div class="d-flex justify-content-between align-items-center mb-4 p-3 card-dark">
                 <h3 class="m-0 fw-bold">CHESS MASTERS</h3>
-                <div id="nav-user-area" class="d-flex align-items-center">
+                <div class="d-flex align-items-center">
                     <button id="admin-btn" onclick="openAdminPanel()" class="btn btn-admin me-3 hidden">ADMIN</button>
-                    <div class="coin-display" onclick="openShop()"><i class="fas fa-coins"></i> <span id="nav-coins">0</span></div>
-                    <div class="me-3 ms-3 fw-bold text-warning">Wins: <span id="nav-wins">0</span> 🏆</div>
-                    <div class="me-3 text-end"><span id="nav-username" class="fw-bold">...</span><br><small id="nav-userid">#?</small></div>
-                    <button onclick="openSettings()" class="btn btn-sm btn-outline-light me-2"><i class="fas fa-cog"></i></button>
+                    <div class="coin-display me-3" onclick="openShop()"><i class="fas fa-coins"></i> <span id="nav-coins">0</span></div>
+                    <div class="me-3 text-warning">Wins: <span id="nav-wins">0</span> 🏆</div>
+                    <div class="text-end me-3">
+                        <span id="nav-username" class="fw-bold">...</span><br>
+                        <small id="nav-userid" class="text-muted">#?</small>
+                    </div>
                     <button onclick="logout()" class="btn btn-sm btn-outline-danger"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
             </div>
+
             <div class="row">
-                <div class="col-md-7">
-                    <div class="card-dark text-center" style="padding: 50px;">
-                        <button onclick="joinRankedQueue()" class="btn btn-primary-custom btn-lg w-100 mb-3">RANKED MATCH</button>
+                <div class="col-md-8">
+                    <div class="card-dark text-center" style="padding: 60px 20px;">
+                        <button onclick="startQueue()" class="btn btn-primary btn-lg w-100 mb-3 p-4">RANKED MATCH</button>
                         <div class="row g-2 mb-3">
                             <div class="col-6"><button onclick="startBotGame()" class="btn btn-warning w-100 p-3">VS BOT</button></div>
                             <div class="col-6"><button onclick="showPrivateMenu()" class="btn btn-info w-100 p-3">PRIVAT</button></div>
@@ -128,9 +99,11 @@
                         <button onclick="openShop()" class="btn btn-outline-warning w-100">SKIN SHOP</button>
                     </div>
                 </div>
-                <div class="col-md-5">
-                    <div class="card-dark mb-3"><h5>🏆 Rangliste</h5><div id="leaderboard-list"></div></div>
-                    <div class="card-dark"><h5>Freunde</h5><input type="number" id="friend-id-input" class="form-control mb-2" placeholder="ID"><button onclick="sendFriendRequest()" class="btn btn-sm btn-outline-info w-100">Add</button><div id="friends-list" class="mt-3"></div></div>
+                <div class="col-md-4">
+                    <div class="card-dark">
+                        <h5>🏆 Rangliste</h5>
+                        <div id="leaderboard-list"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -140,22 +113,34 @@
         <div class="app-container">
             <div class="row">
                 <div class="col-lg-8">
-                    <div class="d-flex justify-content-between mb-2"><span id="player-top">Gegner</span><button id="god-mode-btn" onclick="toggleGodMode()" class="btn btn-sm btn-danger hidden">GOD MODE</button></div>
-                    <div class="board-wrapper"><div id="board"></div><div id="fx-overlay"></div></div>
-                    <div class="mt-2"><span id="player-bottom">Du</span></div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span id="opponent-name">Gegner</span>
+                        <button id="god-mode-btn" onclick="toggleGodMode()" class="btn btn-sm btn-danger hidden">GOD MODE</button>
+                    </div>
+                    <div class="board-wrapper">
+                        <div id="board"></div>
+                        <div id="fx-overlay"></div>
+                    </div>
+                    <div class="mt-2"><span id="own-name">Du</span></div>
                 </div>
-                <div class="col-lg-4"><div class="card-dark h-100"><h5>Verlauf</h5><div id="move-history" style="height:300px; overflow-y:auto;"></div><button onclick="leaveGame()" class="btn btn-danger w-100 mt-3">Aufgeben</button></div></div>
+                <div class="col-lg-4">
+                    <div class="card-dark h-100 d-flex flex-column">
+                        <h5>Verlauf</h5>
+                        <div id="move-history" style="flex-grow:1; background:#111; padding:10px; border-radius:5px; height:300px; overflow-y:auto;"></div>
+                        <button onclick="leaveGame()" class="btn btn-danger w-100 mt-3">Spiel verlassen</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="shop-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h3>Shop</h3><div id="skin-list" class="row g-2"></div><button onclick="closeModal('shop-modal')" class="btn btn-secondary w-100 mt-3">Close</button></div></div>
-    <div id="promotion-modal" class="modal-overlay hidden"><div class="modal-content-custom text-center"><h4>Umwandlung</h4><div class="d-flex justify-content-center"><button onclick="selectPromotion('q')" class="btn btn-outline-light promo-btn">👸</button><button onclick="selectPromotion('r')" class="btn btn-outline-light promo-btn">🏰</button><button onclick="selectPromotion('b')" class="btn btn-outline-light promo-btn">♗</button><button onclick="selectPromotion('n')" class="btn btn-outline-light promo-btn">🐴</button></div></div></div>
-    <div id="settings-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Settings</h4><input id="settings-username" class="form-control mb-3"><hr><button onclick="openLegal('impressum')" class="btn btn-sm btn-outline-light w-100 mb-2">Rechtliches</button><button onclick="deleteAccount()" class="btn btn-sm btn-danger w-100">Widerruf / Löschen</button><hr><button onclick="saveSettings()" class="btn btn-success w-100">Save</button><button onclick="closeModal('settings-modal')" class="btn btn-link w-100">Close</button></div></div>
-    <div id="legal-modal" class="modal-overlay hidden"><div class="modal-content-custom" style="width:800px;"><div id="legal-content" style="text-align:left; font-size:0.9rem;"></div><button onclick="closeModal('legal-modal')" class="btn btn-secondary w-100 mt-3">Close</button></div></div>
-    <div id="end-screen-overlay" class="hidden"><div class="modal-content-custom text-center"><div id="end-title" class="win-title">SIEG!</div><div id="end-reward" class="text-warning fw-bold fs-4"></div><button onclick="backToLobby()" class="btn btn-light w-100 mt-3">Lobby</button></div></div>
+    <div id="admin-modal" class="modal-overlay hidden"><div class="modal-content-custom" style="width:600px;"><h3>Admin Panel</h3><div class="input-group mb-3"><input id="admin-search" class="form-control" placeholder="ID"><button onclick="adminLoadUser()" class="btn btn-light">Load</button></div><div id="admin-user-box" class="hidden text-start"><p id="adm-name"></p><input id="adm-coins" type="number" class="form-control mb-2" placeholder="Coins"><button onclick="adminSetVal('coins')" class="btn btn-success btn-sm mb-3">Set Coins</button><input id="adm-displayId" type="number" class="form-control mb-2" placeholder="ID Nachtragen"><button onclick="adminSetVal('displayId')" class="btn btn-primary btn-sm mb-3">Set ID</button><br><button onclick="adminBan()" class="btn btn-danger btn-sm">BAN USER</button></div><button onclick="closeModal('admin-modal')" class="btn btn-secondary w-100 mt-3">Close</button></div></div>
+    <div id="shop-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h3>Skin Shop</h3><div id="skin-list" class="row g-2"></div><button onclick="closeModal('shop-modal')" class="btn btn-secondary w-100 mt-3">Close</button></div></div>
+    <div id="promotion-modal" class="modal-overlay hidden"><div class="modal-content-custom"><h4>Wähle Figur</h4><div class="d-flex justify-content-center gap-2"><button onclick="promo('q')" class="btn btn-light btn-lg">♕</button><button onclick="promo('r')" class="btn btn-light btn-lg">♖</button><button onclick="promo('b')" class="btn btn-light btn-lg">♗</button><button onclick="promo('n')" class="btn btn-light btn-lg">♘</button></div></div></div>
 
-    <div class="legal-footer"><a onclick="openLegal('impressum')">Impressum</a> | <a onclick="openLegal('datenschutz')">Datenschutz</a></div>
+    <div class="legal-footer">
+        <a onclick="alert('Impressum hier')">Impressum</a> | <a onclick="alert('DSGVO hier')">Datenschutz</a>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
@@ -167,195 +152,195 @@
     <script>
         const firebaseConfig = { apiKey: "AIzaSyBqCKRhB87r_r-IgbOd9ESm9MQLKTGwSU0", authDomain: "chess-dff93.firebaseapp.com", projectId: "chess-dff93", storageBucket: "chess-dff93.firebasestorage.app", messagingSenderId: "1013706120323", appId: "1:1013706120323:web:768c8e77c5f49479150fb6" };
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+        const db = firebase.firestore(), auth = firebase.auth();
 
         const SKINS = {
-            'default': { name: 'Klassisch', price: 0, colorW: '#f0d9b5', colorB: '#b58863', filter: 'none', anim: '⚔️' },
-            'fire': { name: 'Inferno', price: 100, colorW: '#f6c7b6', colorB: '#a31621', filter: 'sepia(1) saturate(5) hue-rotate(-50deg)', anim: '💥', winBg: 'bg-win-fire' },
-            'admin_gold': { name: 'KING GOLD', adminOnly: true, colorW: '#ffd700', colorB: '#b8860b', filter: 'none', animCss: 'gold-shine-anim', anim: '👑', winBg: 'bg-win-gold' },
-            'admin_hacker': { name: 'HACKER', adminOnly: true, colorW: '#0f0', colorB: '#000', filter: 'contrast(1.5) grayscale(1) drop-shadow(0 0 2px white)', animCss: 'hacker-glitch-anim 0.3s infinite', anim: '💻', winBg: 'bg-win-hacker' },
-            'admin_angel': { name: 'ARCHANGEL', adminOnly: true, colorW: '#fff', colorB: '#87ceeb', filter: 'brightness(1.5) drop-shadow(0 0 5px white)', animCss: 'angel-float-anim 3s infinite', anim: '👼', winBg: 'bg-win-angel', hasWings: true },
-            'admin_football': { name: 'FUSSBALL', adminOnly: true, colorW: '#4caf50', colorB: '#fff', filter: 'drop-shadow(0 0 2px white)', anim: '⚽', isProjectile: true },
-            'admin_basketball': { name: 'BASKETBALL', adminOnly: true, colorW: '#e67e22', colorB: '#000', filter: 'drop-shadow(0 0 2px white)', anim: '🏀', isProjectile: true }
+            'default': { name: 'Klassisch', price: 0, filter: 'none', anim: '' },
+            'fire': { name: 'Inferno', price: 100, filter: 'sepia(1) saturate(8) hue-rotate(-50deg)', anim: '💥' },
+            'admin_gold': { name: 'GOLD', adminOnly: true, filter: 'brightness(1.2) sepia(1) saturate(5)', anim: '👑' },
+            'admin_hacker': { name: 'HACKER', adminOnly: true, filter: 'contrast(1.5) drop-shadow(0 0 2px white)', anim: '💻', glitch: true },
+            'admin_angel': { name: 'ANGEL', adminOnly: true, filter: 'brightness(1.5)', anim: '👼', wings: true },
+            'admin_football': { name: 'FOOTBALL', adminOnly: true, filter: 'drop-shadow(0 0 2px white)', anim: '⚽', projectile: true }
         };
 
-        let currentUser, userData, isAdmin = false, game = new Chess(), board, currentGameId = null, gameMode = 'lobby';
-        let currentWhiteSkin = 'default', currentBlackSkin = 'default', wingsInterval, selectedSquare, myColor, pendingPromotion;
-        let currentChallengeGameId, currentChallengeNotifId, currentChallengeTargetUid, challengeListener;
+        let currentUser = null, userData = null, game = new Chess(), board = null, currentGameId = null, gameMode = 'lobby';
+        let currentWhiteSkin = 'default', currentBlackSkin = 'default', wingsInterval = null, pendingMove = null;
 
+        // --- AUTH LOGIC ---
         auth.onAuthStateChanged(user => {
+            $('#app-loader').addClass('hidden');
             if (user) {
                 currentUser = user;
                 db.collection('users').doc(user.uid).onSnapshot(doc => {
                     if (doc.exists) {
                         userData = doc.data();
-                        if (userData.banned && userData.displayId > 2) { auth.signOut(); location.reload(); return; }
-                        isAdmin = (userData.displayId === 1 || userData.displayId === 2);
+                        if (userData.banned) { auth.signOut(); location.reload(); return; }
+                        
+                        // ID 1 & 2 ADMIN
+                        const isAdmin = (userData.displayId === 1 || userData.displayId === 2);
                         if (isAdmin) $('#admin-btn, #god-mode-btn').removeClass('hidden');
-                        updateUI();
-                        if (gameMode === 'lobby' && userData.activeGameId && userData.activeGameId !== currentGameId) loadOnlineGame(userData.activeGameId);
-                        else if (!userData.activeGameId && gameMode !== 'bot') showScreen('lobby-screen');
+
+                        updateNav();
+                        
+                        // Only auto-load online game if we are NOT in a bot game
+                        if (gameMode !== 'bot' && userData.activeGameId && userData.activeGameId !== currentGameId) {
+                            loadOnlineGame(userData.activeGameId);
+                        } else if (!userData.activeGameId && gameMode === 'lobby') {
+                            showScreen('lobby-screen');
+                        }
                     }
                 });
-            } else showScreen('auth-screen');
+            } else {
+                showScreen('auth-screen');
+            }
         });
 
-        // --- VISUALS ---
-        function updateBoardVisuals() {
-            const sW = SKINS[currentWhiteSkin] || SKINS['default'];
-            const sB = SKINS[currentBlackSkin] || SKINS['default'];
-            const cols = ['a','b','c','d','e','f','g','h'];
-            let css = "";
-            for(let r=1; r<=4; r++) { cols.forEach((c, idx) => { css += `.square-${c}${r} { background-color: ${(r+idx)%2!==0?sW.colorB:sW.colorW} !important; } `; }); }
-            for(let r=5; r<=8; r++) { cols.forEach((c, idx) => { css += `.square-${c}${r} { background-color: ${(r+idx)%2!==0?sB.colorB:sB.colorW} !important; } `; }); }
-            css += `img[src*="/w"] { filter: ${sW.filter} drop-shadow(0 0 2px black) !important; ${sW.animCss ? 'animation:'+sW.animCss : ''} } `;
-            css += `img[src*="/b"] { filter: ${sB.filter} drop-shadow(0 0 2px white) !important; ${sB.animCss ? 'animation:'+sB.animCss : ''} } `;
-            document.getElementById('dynamic-skin-styles').innerHTML = css;
-            if (wingsInterval) clearInterval(wingsInterval);
-            if (sW.hasWings || sB.hasWings) wingsInterval = setInterval(() => renderWings(sW.hasWings, sB.hasWings), 300);
+        function showScreen(id) {
+            $('#auth-screen, #lobby-screen, #game-screen').addClass('hidden');
+            $(`#${id}`).removeClass('hidden');
         }
 
-        function renderWings(wH, bH) {
-            $('.wing-container').each(function(){ if($(this).siblings('img').length===0) $(this).remove(); });
-            if(wH) $('img[src*="/w"]').each(function(){ if($(this).parent().find('.wing-container').length===0) $(this).parent().append('<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>'); });
-            if(bH) $('img[src*="/b"]').each(function(){ if($(this).parent().find('.wing-container').length===0) $(this).parent().append('<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>'); });
+        function updateNav() {
+            $('#nav-coins').text(userData.coins || 0);
+            $('#nav-wins').text(userData.wins || 0);
+            $('#nav-username').text(userData.username);
+            $('#nav-userid').text('#' + userData.displayId);
         }
 
-        // --- CORE GAMEPLAY ---
+        // --- GAME CORE ---
+        function startBotGame() {
+            gameMode = 'bot';
+            showScreen('game-screen');
+            currentWhiteSkin = userData.equippedSkin || 'default';
+            currentBlackSkin = 'default';
+            initBoard();
+            updateSkins();
+        }
+
+        function loadOnlineGame(id) {
+            gameMode = 'online';
+            currentGameId = id;
+            showScreen('game-screen');
+            db.collection('games').doc(id).onSnapshot(doc => {
+                if (!doc.exists) return;
+                const data = doc.data();
+                currentWhiteSkin = data.whiteSkin;
+                currentBlackSkin = data.blackSkin;
+                const myColor = (data.white === currentUser.uid) ? 'w' : 'b';
+                
+                if (data.fen !== game.fen()) {
+                    const t = new Chess(game.fen());
+                    const m = t.move(data.lastMoveSan);
+                    if (m && m.captured) handleFX(m);
+                    game.load(data.fen);
+                    board.position(data.fen, true);
+                }
+                updateSkins();
+                board.orientation(myColor === 'w' ? 'white' : 'black');
+                if (data.result) alert("Spiel Ende: " + data.result);
+            });
+            initBoard();
+        }
+
+        function initBoard() {
+            game = new Chess();
+            board = Chessboard('board', {
+                position: 'start',
+                draggable: false,
+                moveSpeed: 200,
+                pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+            });
+            $('#board').off('click').on('click', '.square-55d63', handleSquareClick);
+        }
+
         function handleSquareClick() {
-            if(game.game_over() || (gameMode==='online' && game.turn()!==myColor)) return;
             const sq = $(this).attr('data-square');
-            if(selectedSquare) {
-                const p = game.get(selectedSquare);
-                if(p && p.type==='p' && ((p.color==='w'&&sq[1]==='8')||(p.color==='b'&&sq[1]==='1'))) {
-                    const temp = new Chess(game.fen());
-                    if(temp.move({from:selectedSquare, to:sq, promotion:'q'})) { pendingPromotion={from:selectedSquare, to:sq}; $('#promotion-modal').removeClass('hidden'); return; }
+            const myTurnColor = (gameMode === 'bot') ? 'w' : (currentGameId ? (game.turn()) : 'w');
+            
+            if (pendingMove) {
+                const move = game.move({ from: pendingMove, to: sq, promotion: 'q' });
+                if (move) {
+                    // Promotion check
+                    if (move.piece === 'p' && (sq[1] === '8' || sq[1] === '1')) {
+                        game.undo();
+                        $('#promotion-modal').removeClass('hidden');
+                        pendingMove = { from: pendingMove, to: sq };
+                        return;
+                    }
+                    game.undo();
+                    makeMove(pendingMove, sq, 'q');
+                    pendingMove = null;
+                } else {
+                    pendingMove = sq;
                 }
-                executeMove({from:selectedSquare, to:sq, promotion:'q'});
-            } else { if(game.get(sq) && game.get(sq).color===(gameMode==='bot'?'w':myColor)) { selectedSquare=sq; highlight(sq); } }
-        }
-
-        function executeMove(mObj) {
-            const move = game.move(mObj);
-            if(!move) { selectedSquare=null; removeHighlights(); return; }
-            selectedSquare=null; removeHighlights();
-            const sK = (myColor==='w'?currentWhiteSkin:currentBlackSkin);
-            if(move.captured && sK !== 'default') {
-                if(SKINS[sK].isProjectile) shootProjectile(move.from, move.to, SKINS[sK].anim, () => finishMove(move));
-                else { playKillAnim(move.to, SKINS[sK].anim); finishMove(move); }
-            } else finishMove(move);
-        }
-
-        function finishMove(move) {
-            if(gameMode==='online') {
-                let res = null;
-                if(game.game_over()) {
-                    if(game.in_checkmate()) { res=game.turn()==='w'?'b':'w'; if(res===myColor) db.collection('users').doc(currentUser.uid).update({wins:firebase.firestore.FieldValue.increment(1), coins:firebase.firestore.FieldValue.increment(50)}); }
-                    else res='draw';
-                }
-                db.collection('games').doc(currentGameId).update({fen:game.fen(), turn:game.turn(), lastMoveSan:move.san, result:res});
             } else {
+                if (game.get(sq)) pendingMove = sq;
+            }
+        }
+
+        function makeMove(from, to, promo) {
+            const move = game.move({ from, to, promotion: promo });
+            if (move) {
+                if (move.captured) handleFX(move);
                 board.position(game.fen(), true);
-                if(game.game_over()) showEndScreen(game.in_checkmate()?(game.turn()==='w'?'b':'w'):'draw');
-                else setTimeout(botMove, 500);
+                if (gameMode === 'online') {
+                    db.collection('games').doc(currentGameId).update({
+                        fen: game.fen(),
+                        lastMoveSan: move.san,
+                        turn: game.turn()
+                    });
+                } else {
+                    setTimeout(botMove, 500);
+                }
             }
         }
 
         function botMove() {
-            const moves = game.moves(); if(moves.length===0) return;
-            const move = moves[Math.floor(Math.random()*moves.length)];
-            game.move(move); board.position(game.fen(), true);
-            if(game.game_over()) showEndScreen(game.in_checkmate()?(game.turn()==='w'?'b':'w'):'draw');
+            const moves = game.moves();
+            if (moves.length === 0) return;
+            game.move(moves[Math.floor(Math.random() * moves.length)]);
+            board.position(game.fen(), true);
         }
 
-        // --- FX ---
-        function shootProjectile(f,t,e,cb) {
-            const $f=$('.square-'+f), $t=$('.square-'+t); if($f.length===0||$t.length===0) return cb();
-            const p1=$f.position(), p2=$t.position();
-            const $b=$(`<div class="projectile" style="top:${p1.top}px;left:${p1.left}px;width:${$f.width()}px;height:${$f.height()}px;display:flex;justify-content:center;align-items:center;">${e}</div>`);
-            $('#fx-overlay').append($b); $b.animate({top:p2.top, left:p2.left}, 500, () => { $b.remove(); playKillAnim(t, '💥'); cb(); });
-        }
-        function playKillAnim(s,e) {
-            const $s=$('.square-'+s); if($s.length===0) return;
-            const p=$s.position(); const $el=$(`<div class="kill-effect" style="top:${p.top}px;left:${p.left}px;width:${$s.width()}px;height:${$s.height()}px;">${e}</div>`);
-            $('#fx-overlay').append($el); setTimeout(()=>$el.remove(),1000);
+        function handleFX(move) {
+            const skinKey = (move.color === 'w') ? currentWhiteSkin : currentBlackSkin;
+            const skin = SKINS[skinKey];
+            if (!skin || skinKey === 'default') return;
+
+            const $sq = $(`.square-${move.to}`);
+            const pos = $sq.position();
+            const el = $(`<div class="kill-effect" style="top:${pos.top}px; left:${pos.left}px; width:${$sq.width()}px; height:${$sq.height()}px;">${skin.anim}</div>`);
+            $('#fx-overlay').append(el);
+            setTimeout(() => el.remove(), 1000);
         }
 
-        // --- ADMIN ---
-        async function adminLoadUser() {
-            const val = $('#admin-target-search').val();
-            let s = await db.collection('users').where('displayId','==',parseInt(val)).get();
-            if(s.empty) s = await db.collection('users').where('username','==',val).get();
-            if(!s.empty) { const d=s.docs[0].data(); adminLoadedUserUid=s.docs[0].id; $('#adm-u-name').text(d.username); $('#adm-displayid').val(d.displayId); $('#adm-coins').val(d.coins); $('#admin-user-info').removeClass('hidden'); }
+        function updateSkins() {
+            const sW = SKINS[currentWhiteSkin] || SKINS['default'];
+            const sB = SKINS[currentBlackSkin] || SKINS['default'];
+            let css = `img[src*="/w"] { filter: ${sW.filter}; ${sW.glitch ? 'animation: hacker-glitch-anim 0.3s infinite;' : ''} }`;
+            css += `img[src*="/b"] { filter: ${sB.filter}; ${sB.glitch ? 'animation: hacker-glitch-anim 0.3s infinite;' : ''} }`;
+            $('#dynamic-skin-styles').html(css);
+            
+            if (wingsInterval) clearInterval(wingsInterval);
+            wingsInterval = setInterval(() => {
+                $('.wing-container').remove();
+                if (sW.wings) $('img[src*="/w"]').parent().append('<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>');
+                if (sB.wings) $('img[src*="/b"]').parent().append('<div class="wing-container"><div class="wing-left">🪽</div><div class="wing-right">🪽</div></div>');
+            }, 500);
         }
-        function adminSetVal(f) { db.collection('users').doc(adminLoadedUserUid).update({[f]:parseInt($('#adm-'+f.toLowerCase()).val())}).then(()=>alert("OK")); }
-        function adminGiveSkin() { db.collection('users').doc(adminLoadedUserUid).update({inventory:firebase.firestore.FieldValue.arrayUnion($('#adm-skin-input').val())}).then(()=>alert("OK")); }
-        function adminKick() { db.collection('users').doc(adminLoadedUserUid).get().then(d => { if(d.data().activeGameId) db.collection('games').doc(d.data().activeGameId).update({status:'aborted'}); }); }
-        function adminBan() { db.collection('users').doc(adminLoadedUserUid).update({banned:true}); }
 
-        // --- CHALLENGE ---
-        function inviteFriend(uid, name) {
-            const gRef = db.collection('games').doc();
-            gRef.set({white:currentUser.uid, whiteName:userData.username, whiteId:userData.displayId, whiteSkin:userData.equippedSkin, black:uid, blackName:name, fen:'start', turn:'w', status:'waiting_friend', createdAt:firebase.firestore.FieldValue.serverTimestamp()})
-            .then(() => {
-                db.collection('users').doc(uid).collection('notifications').add({type:'game_invite', fromUid:currentUser.uid, payload:gRef.id, title:'Herausforderung', timestamp:firebase.firestore.FieldValue.serverTimestamp()})
-                .then(n => {
-                    currentChallengeGameId=gRef.id; currentChallengeNotifId=n.id; currentChallengeTargetUid=uid;
-                    $('#challenge-target-name').text(name); $('#challenge-wait-modal').removeClass('hidden');
-                    challengeListener = gRef.onSnapshot(d => { if(d.exists && d.data().status==='active') { $('#challenge-wait-modal').addClass('hidden'); loadOnlineGame(gRef.id); } });
+        // --- AUTH HELPERS ---
+        function loginUser() { auth.signInWithEmailAndPassword($('#email-input').val(), $('#password-input').val()); }
+        function logout() { auth.signOut(); location.reload(); }
+        function registerUser() {
+            const name = $('#username-input').val();
+            auth.createUserWithEmailAndPassword($('#email-input').val(), $('#password-input').val()).then(cred => {
+                db.collection('users').doc(cred.user.uid).set({
+                    username: name, wins: 0, coins: 0, displayId: Math.floor(Math.random() * 1000), inventory: ['default'], equippedSkin: 'default'
                 });
             });
         }
-        function cancelChallenge() { if(challengeListener) challengeListener(); db.collection('games').doc(currentChallengeGameId).delete(); db.collection('users').doc(currentChallengeTargetUid).collection('notifications').doc(currentChallengeNotifId).delete(); $('#challenge-wait-modal').addClass('hidden'); }
-
-        // --- HELPERS ---
-        function loadOnlineGame(id) {
-            currentGameId=id; gameMode='online'; showScreen('game-screen');
-            game=new Chess(); board=Chessboard('board',{position:'start', moveSpeed:200, draggable:false, pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'});
-            $('#board').off('click').on('click','.square-55d63', handleSquareClick);
-            db.collection('games').doc(id).onSnapshot(doc => {
-                if(!doc.exists) return; const data=doc.data();
-                currentWhiteSkin=data.whiteSkin||'default'; currentBlackSkin=data.blackSkin||'default'; updateBoardVisuals();
-                myColor = data.white===currentUser.uid?'w':'b'; board.orientation(myColor==='b'?'black':'white');
-                if(data.fen !== game.fen()) { 
-                    const t = new Chess(game.fen()); const m = t.move(data.lastMoveSan);
-                    if(m && m.captured) playKillAnim(m.to, SKINS[m.color==='w'?currentWhiteSkin:currentBlackSkin].anim);
-                    game.load(data.fen); board.position(data.fen, true); 
-                }
-                if(data.result) showEndScreen(data.result, data.result==='w'?currentWhiteSkin:currentBlackSkin);
-                if(data.status==='aborted') showEndScreen('aborted');
-            });
-        }
-        function selectPromotion(p){ $('#promotion-modal').addClass('hidden'); executeMove({from:pendingPromotion.from, to:pendingPromotion.to, promotion:p}); }
-        function showScreen(id){ $('.hidden').removeClass('hidden').addClass('hidden'); $(`#${id}, #lobby-screen, #game-screen`).addClass('hidden'); $(`#${id}`).removeClass('hidden'); }
-        function updateUI(){ $('#nav-username').text(userData.username); $('#nav-userid').text('#'+userData.displayId); $('#nav-coins').text(userData.coins); $('#nav-wins').text(userData.wins); }
-        function openSettings(){ $('#settings-modal').removeClass('hidden'); }
-        function closeModal(id){ $(`#${id}`).addClass('hidden'); }
-        function logout(){ auth.signOut(); location.reload(); }
-        function openShop() { renderShopUI(); $('#shop-modal').removeClass('hidden'); }
-        function renderShopUI() {
-            $('#shop-coins').text(userData.coins); const list=$('#skin-list'); list.empty();
-            for(const [k,s] of Object.entries(SKINS)){
-                if(s.adminOnly && !userData.inventory.includes(k)) continue;
-                const owned=userData.inventory.includes(k); const active=userData.equippedSkin===k;
-                list.append(`<div class="col-6"><div class="skin-card ${active?'active':''}"><h6>${s.name}</h6><button onclick="${owned?'equipSkin':'buySkin'}('${k}')" class="btn btn-sm ${owned?'btn-primary':'btn-warning'} w-100">${active?'Aktiv':(owned?'Wählen':s.price+' 🪙')}</button></div></div>`);
-            }
-        }
-        function equipSkin(k){ db.collection('users').doc(currentUser.uid).update({equippedSkin:k}); }
-        function buySkin(k){ if(userData.coins>=SKINS[k].price) db.collection('users').doc(currentUser.uid).update({coins:firebase.firestore.FieldValue.increment(-SKINS[k].price), inventory:firebase.firestore.FieldValue.arrayUnion(k)}); }
-        function highlight(s){ $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); $('.square-'+s).addClass('highlight-square'); game.moves({square:s,verbose:true}).forEach(m=>$(`.square-${m.to}`).append('<div class="highlight-dot"></div>')); }
-        function removeHighlights(){ $('.square-55d63').removeClass('highlight-square'); $('.highlight-dot').remove(); }
-        function showLegalTab(t){ $('#legal-content').html(LEGAL_TEXTS[t]); $('#legal-modal').removeClass('hidden'); }
-        function openLegal(t){ showLegalTab(t); }
-        function backToLobby(){ location.reload(); }
-        function loginUser(){ auth.signInWithEmailAndPassword($('#email-input').val(), $('#password-input').val()); }
-        function registerUserWithId(){ const n=$('#username-input').val(); if(!n)return; auth.createUserWithEmailAndPassword($('#email-input').val(), $('#password-input').val()).then(c=>{ const r=db.collection('config').doc('userCounter'); db.runTransaction(async t=>{ const s=await t.get(r); const i=(s.exists?s.data().count:0)+1; t.set(r,{count:i}); t.set(db.collection('users').doc(c.user.uid),{username:n,displayId:i,uid:c.user.uid,wins:0,coins:0,inventory:['default'],equippedSkin:'default',friends:[]}); }); }); }
-        function showAdminTab(t){ $('#admin-tab-eco, #admin-tab-bans').addClass('hidden'); $('#admin-tab-'+t).removeClass('hidden'); }
-        function showPrivateMenu(){ $('#private-menu-modal').removeClass('hidden'); }
-        function startBotGame(){ gameMode='bot'; myColor='w'; currentWhiteSkin=userData.equippedSkin; currentBlackSkin='default'; showScreen('game-screen'); updateBoardVisuals(); game=new Chess(); board=Chessboard('board',{position:'start',moveSpeed:200,pieceTheme:'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'}); $('#board').on('click','.square-55d63',handleSquareClick); }
-        function joinRankedQueue(){ alert("Suche..."); } // Vereinfacht für Platz
-        function updateLeaderboard(){ db.collection('users').orderBy('wins','desc').limit(5).get().then(s=>{ let h=''; s.forEach(d=>h+=`<div class="leaderboard-item"><span>${d.data().username}</span><span>${d.data().wins} 🏆</span></div>`); $('#leaderboard-list').html(h); }); }
+        function closeModal(id) { $(`#${id}`).addClass('hidden'); }
     </script>
 </body>
 </html>
